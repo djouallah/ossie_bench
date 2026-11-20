@@ -35,6 +35,16 @@ def grid_notes():
     return out
 
 
+def measures():
+    """[{name, meaning, standard}]: the table of semantic_model/a_baseline/measures.md."""
+    out = []
+    for line in (ROOT / "semantic_model" / "a_baseline" / "measures.md").read_text(encoding="utf-8").splitlines():
+        m = re.match(r"\| `(\w+)` \|(.*)\|(.*)\|\s*$", line)
+        if m:
+            out.append({"name": m.group(1), "meaning": m.group(2).strip(), "standard": m.group(3).strip()})
+    return out
+
+
 def question(qdir, notes):
     lines = (qdir / "README.md").read_text(encoding="utf-8").strip().splitlines()
     rows = list(csv.DictReader((qdir / "results.csv").open(encoding="utf-8")))
@@ -79,7 +89,7 @@ def main():
     qs = [question(d, notes) for d in sorted((ROOT / "questions").glob("q*/")) if (d / "results.csv").exists()]
     out = ROOT / "docs" / "data.js"
     out.parent.mkdir(exist_ok=True)
-    out.write_text("window.DATA = " + json.dumps({"questions": qs}, ensure_ascii=False, indent=1) + ";\n",
+    out.write_text("window.DATA = " + json.dumps({"measures": measures(), "questions": qs}, ensure_ascii=False, indent=1) + ";\n",
                    encoding="utf-8", newline="\n")
     plain = {p: sum(1 for q in qs for r in q["runs"] if r["label"] == p and r["status"] == "match") for p in PLATFORMS}
     print(f"{out.relative_to(ROOT)}: {len(qs)} questions; plain matches {plain}")

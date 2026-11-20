@@ -1,4 +1,86 @@
 window.DATA = {
+ "measures": [
+  {
+   "name": "sales_quantity",
+   "meaning": "Units sold.",
+   "standard": "yes"
+  },
+  {
+   "name": "net_profit_total",
+   "meaning": "Net profit (negative for Clearance).",
+   "standard": "yes"
+  },
+  {
+   "name": "budget_quantity",
+   "meaning": "Budgeted units, by month, country and category.",
+   "standard": "yes"
+  },
+  {
+   "name": "sales_vs_budget_pct",
+   "meaning": "(sales - budget) / budget. Each side is summed at its own table's grain first.",
+   "standard": "yes: `AGG()` of the two measures above"
+  },
+  {
+   "name": "sales_qty_ly",
+   "meaning": "Units sold in the same period one calendar year earlier, at whatever grain is asked (day, month, year, total).",
+   "standard": "no: period over period"
+  },
+  {
+   "name": "net_profit_ly",
+   "meaning": "Net profit in the same period one calendar year earlier.",
+   "standard": "no: period over period"
+  },
+  {
+   "name": "sales_qty_fly",
+   "meaning": "Units sold in the same period of the last fiscal year: 364 days earlier (4-4-5, 52 weeks).",
+   "standard": "no: period over period"
+  },
+  {
+   "name": "sales_qty_yoy_pct",
+   "meaning": "(sales - last year) / last year.",
+   "standard": "no: period over period"
+  },
+  {
+   "name": "country_qty_all_customers",
+   "meaning": "Units sold to every customer, whatever customers the query filters or shows. Every other filter is kept.",
+   "standard": "no: fields included in or excluded from the grouping"
+  },
+  {
+   "name": "customer_share_all",
+   "meaning": "sales / `country_qty_all_customers`.",
+   "standard": "no: fields included in or excluded from the grouping"
+  },
+  {
+   "name": "country_total_allselected",
+   "meaning": "Units sold to the customers the query shows, taken together.",
+   "standard": "no: fields included in or excluded from the grouping"
+  },
+  {
+   "name": "customer_share_allselected",
+   "meaning": "sales / `country_total_allselected`.",
+   "standard": "no: fields included in or excluded from the grouping"
+  },
+  {
+   "name": "country_total_allexcept",
+   "meaning": "Units sold with every filter removed except those on country and year.",
+   "standard": "no: fields included in or excluded from the grouping"
+  },
+  {
+   "name": "country_total_fixed",
+   "meaning": "Units sold for the country and the year shown, whatever else is filtered.",
+   "standard": "no: fields included in or excluded from the grouping"
+  },
+  {
+   "name": "country_qty_all_cust_cat",
+   "meaning": "Units sold to every customer in every category. Every other filter is kept.",
+   "standard": "no: fields included in or excluded from the grouping"
+  },
+  {
+   "name": "cust_cat_share_all",
+   "meaning": "sales / `country_qty_all_cust_cat`.",
+   "standard": "no: fields included in or excluded from the grouping"
+  }
+ ],
  "questions": [
   {
    "id": "q01",

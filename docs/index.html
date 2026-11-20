@@ -37,7 +37,6 @@
   --good-bg: #132a13; --warn-bg: #33290c; --crit-bg: #331616; --note-bg: #14233a;
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 64px; }
 body { margin: 0; background: var(--page); color: var(--ink);
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
 a { color: inherit; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
@@ -70,9 +69,72 @@ h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: v
   border-radius: 6px; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
 .btn:hover { color: var(--ink); }
 
-section { padding: 44px 0 8px; }
-.hero { padding: 40px 0 0; }
-.hero p { margin-top: 10px; font-size: 16px; }
+.view { display: none; padding: 26px 0 8px; }
+.view.on { display: block; }
+.top nav a[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--ring); }
+
+/* the model graph */
+.graphwrap { overflow-x: auto; }
+#graph { display: block; width: 100%; min-width: 760px; height: auto; }
+#graph .node rect { fill: var(--surface); stroke: var(--line-2); stroke-width: 1.2; }
+#graph .node.fact rect { fill: var(--sunken); stroke: var(--ink); stroke-width: 1.6; }
+#graph .node.shared rect { fill: var(--note-bg); stroke: var(--p-fabric); }
+#graph .node text { fill: var(--ink-2); font-size: 11.5px; }
+#graph .node text.t { fill: var(--ink); font-family: var(--mono); font-size: 13.5px; font-weight: 700; }
+#graph .edge path { fill: none; stroke: var(--line-2); stroke-width: 1.6; }
+#graph .edge text { fill: var(--muted); font-size: 11px; font-family: var(--mono); paint-order: stroke;
+  stroke: var(--surface); stroke-width: 4px; }
+#graph marker path { fill: var(--line-2); }
+#graph .node { cursor: default; transition: opacity .2s; } #graph .edge { transition: opacity .2s; }
+#graph.focus .node:not(.lit), #graph.focus .edge:not(.lit) { opacity: .22; }
+#graph .edge.lit path { stroke: var(--ink); } #graph .edge.lit text { fill: var(--ink); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .k { width: 14px; height: 14px; border-radius: 3px; border: 1.2px solid var(--line-2); background: var(--surface); }
+.legend .k.fact { background: var(--sunken); border-color: var(--ink); }
+.legend .k.shared { background: var(--note-bg); border-color: var(--p-fabric); }
+
+/* the drill-across walkthrough */
+.demo-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.seg { display: inline-flex; background: var(--sunken); border-radius: 8px; padding: 3px; }
+.seg button { font: inherit; font-size: 13.5px; font-weight: 600; border: 0; background: none; color: var(--ink-2);
+  padding: 6px 14px; border-radius: 6px; cursor: pointer; }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--ring); }
+.stepper { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; flex: 1; }
+.stepper button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--ink-2); border-radius: 999px; padding: 4px 12px 4px 5px; cursor: pointer; display: inline-flex; gap: 7px;
+  align-items: center; }
+.stepper button b { width: 20px; height: 20px; border-radius: 50%; background: var(--sunken); display: grid;
+  place-items: center; font-size: 11.5px; }
+.stepper button[aria-current="step"] { border-color: var(--ink); color: var(--ink); }
+.stepper button.done b { background: var(--ink); color: var(--surface); }
+.caption { font-size: 16px; min-height: 3em; max-width: 80ch; }
+.stage { display: grid; grid-template-columns: 1fr 24px 1.1fr 24px 1.3fr; gap: 10px; align-items: start; min-height: 400px; }
+.stage .arrow { align-self: center; text-align: center; color: var(--muted); font-size: 20px; }
+.col { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.col > h4 { min-height: 18px; }
+.oplabel { font-size: 12.5px; color: var(--ink-2); }
+.oplabel b { font-family: var(--mono); font-weight: 600; color: var(--ink); }
+.src { border: 1px solid var(--line-2); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.src header { padding: 7px 10px; background: var(--sunken); display: flex; justify-content: space-between; gap: 8px;
+  font-size: 12px; color: var(--ink-2); }
+.src header b { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+.yr { display: flex; justify-content: space-between; gap: 10px; padding: 6px 10px; border-top: 1px solid var(--line);
+  font-size: 13px; font-variant-numeric: tabular-nums; }
+.yr.hot { background: var(--note-bg); font-weight: 600; }
+.yr.none { color: var(--muted); font-style: italic; border-top-style: dashed; }
+.yr.lost { background: var(--crit-bg); }
+.rv { opacity: 0; transform: translateY(10px); transition: opacity .45s ease, transform .45s ease; }
+.rv.on { opacity: 1; transform: none; }
+.rv[hidden] { display: none; }
+.rv tbody tr, .rv .yr, .rv .verdict { opacity: 0; transition: opacity .4s ease; }
+.rv.on tbody tr, .rv.on .yr, .rv.on .verdict { opacity: 1; }
+.rv.on tbody tr:nth-child(1), .rv.on .yr:nth-of-type(1) { transition-delay: .15s; }
+.rv.on tbody tr:nth-child(2), .rv.on .yr:nth-of-type(2) { transition-delay: .30s; }
+.rv.on tbody tr:nth-child(3), .rv.on .yr:nth-of-type(3) { transition-delay: .45s; }
+.rv.on tbody tr:nth-child(4), .rv.on .yr:nth-of-type(4) { transition-delay: .60s; }
+.rv.on .verdict { transition-delay: .9s; }
+@media (prefers-reduced-motion: reduce) { .rv, .rv tbody tr, .rv .yr, .rv .verdict { transition: none; } }
 .head { display: grid; gap: 8px; margin-bottom: 20px; }
 .card { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 18px; }
 .grid2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; }
@@ -131,7 +193,7 @@ ol.steps li::before { content: counter(s); width: 22px; height: 22px; border-rad
 details > summary { cursor: pointer; font-size: 13px; color: var(--ink-2); }
 details[open] > summary { margin-bottom: 8px; }
 
-/* scoreboard */
+/* what it took */
 .tile .big { font-size: 40px; font-weight: 650; letter-spacing: -.02em; line-height: 1.1; }
 .tile .big small { font-size: 18px; font-weight: 500; color: var(--muted); }
 .tile dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13px; }
@@ -147,7 +209,7 @@ details[open] > summary { margin-bottom: 8px; }
 
 /* explorer */
 .explorer { display: grid; grid-template-columns: 270px 1fr; gap: 16px; align-items: start; }
-.qlist { display: grid; gap: 2px; position: sticky; top: 64px; max-height: calc(100vh - 80px); overflow-y: auto; }
+.qlist { display: grid; gap: 2px; }
 .qlist button { font: inherit; text-align: left; background: none; border: 0; border-radius: 6px; padding: 7px 10px;
   color: var(--ink-2); cursor: pointer; display: grid; grid-template-columns: 30px 1fr; gap: 6px; font-size: 13.5px; }
 .qlist button:hover { background: var(--sunken); }
@@ -161,11 +223,13 @@ details[open] > summary { margin-bottom: 8px; }
 footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 @media (max-width: 960px) {
-  .grid2, .grid3, .explorer, .pair { grid-template-columns: 1fr; }
-  .qlist { position: static; max-height: none; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .grid2, .grid3, .explorer, .pair, .stage { grid-template-columns: 1fr !important; }
+  .stage { min-height: 0; } .stage .arrow { transform: rotate(90deg); }
+  .qlist { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
 @media (max-width: 560px) {
   .wrap { padding: 0 16px; } .branches { grid-template-columns: 1fr; } .top strong { display: none; }
+  .stepper { flex: 1 1 100%; order: 3; } .stepper button { white-space: nowrap; }
   h1 { font-size: 22px; }
 }
 </style>
@@ -175,11 +239,12 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 <div class="top"><div class="wrap">
   <strong>One model, three platforms</strong>
   <nav>
-    <a href="#idea">The idea</a>
-    <a href="#platforms">How each platform does it</a>
+    <a href="#model">The model</a>
+    <a href="#drill">Drill across</a>
+    <a href="#platforms">The three engines</a>
     <a href="#grain">One grain</a>
-    <a href="#score">Scoreboard</a>
-    <a href="#questions">Questions</a>
+    <a href="#results">What it took</a>
+    <a href="#questions">The 13 questions</a>
   </nav>
   <button class="btn" id="theme" type="button">Dark</button>
   <a class="btn" href="https://github.com/djouallah/semantic_models">GitHub</a>
@@ -187,49 +252,92 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 <div class="wrap">
 
-<div class="hero head">
-  <h1>One semantic model, three platforms</h1>
-  <p class="lead">One model with two facts at two grains (daily sales, monthly budget), built natively on Power BI,
-  Snowflake and Databricks, then asked the same 13 questions. Every platform can reach every answer. What differs
-  is who does the work: the engine, the model, or the person writing the query.</p>
-</div>
-
-<!-- ============================== 1. the idea -->
-<section id="idea">
+<!-- ============================== 0. the model -->
+<section id="model" class="view">
   <div class="head">
-    <h2>The idea: drill across</h2>
-    <p class="lead">Kimball's rule for a question that touches more than one table: group each table on its own,
-    down to the dimension they share, then merge the results on that dimension. Never join the tables first.</p>
-    <p class="lead">The smallest example in this repo: <b>days in the calendar and sales, by year</b>. The calendar
-    runs to 2023. Sales stop at 2022.</p>
+    <h1>One semantic model, three platforms</h1>
+    <p class="lead">Daily sales and a monthly budget for a retailer in three countries, 2020 to 2022. The same model
+    is built natively on Power BI, Snowflake and Databricks, then asked the same 13 questions. Every platform
+    reaches every answer. What differs is who does the work.</p>
   </div>
-  <div class="grid2">
-    <div class="card lane">
-      <header><h3>Drill across</h3><p class="sub">Two group-bys, then a merge.</p></header>
-      <div class="branches">
-        <div class="branch">
-          <div class="box"><b>dim_calendar</b><span>1,461 rows, 2020 to 2023</span></div>
-          <div class="op"><b>GROUP BY year</b></div>
-          <div id="d-cal"></div>
+  <div class="card stack">
+    <header class="demo-bar"><h3 style="flex:1">7 tables, 8 relationships, two facts at two grains</h3>
+      <div class="legend"><span><i class="k fact"></i>Fact</span><span><i class="k dim"></i>Dimension</span>
+        <span><i class="k shared"></i>Dimension shared by both facts</span></div></header>
+    <div class="graphwrap"><svg id="graph" viewBox="0 0 1100 480" role="img"
+      aria-label="The model: fact_sales and fact_budget, joined to calendar, category and country; sales also to product and store"></svg></div>
+    <p class="sub">Each arrow points from many rows to one. The budget has no store and no product: it meets sales
+    only through the calendar, the category and the country. Those three shared dimensions are what the two
+    facts are merged on. Point at a table to see what it reaches.</p>
+  </div>
+  <div class="card stack" style="margin-top:16px">
+    <header><h3>The 16 measures</h3><p class="sub">What each one means, in business words. The last column says
+    whether the open standard (Apache Ossie, development version) can express it yet.</p></header>
+    <div class="tw"><table id="measures" class="wrapcell"></table></div>
+  </div>
+</section>
+
+<!-- ============================== 1. drill across -->
+<section id="drill" class="view">
+  <div class="head">
+    <h2>Drill across</h2>
+    <p class="lead">Kimball's rule for a question that touches more than one table: group each table on its own,
+    down to the dimension they share, then merge the results. Never join the tables first.</p>
+    <p class="lead">The question here: <b>days in the calendar and sales, by year</b>. The calendar runs to 2023.
+    Sales stop at 2022. Follow 2023.</p>
+  </div>
+  <div class="card stack demo">
+    <div class="demo-bar">
+      <div class="seg" role="tablist" aria-label="Route">
+        <button type="button" role="tab" data-mode="drill">Drill across</button>
+        <button type="button" role="tab" data-mode="single">Join first</button>
+      </div>
+      <div class="stepper" id="stepper"></div>
+      <button class="btn" type="button" id="play">Replay</button>
+    </div>
+    <p class="caption" id="caption" aria-live="polite"></p>
+    <div class="stage" id="stage">
+      <div class="col">
+        <h4>The tables</h4>
+        <div class="src rv" data-from="1">
+          <header><b>dim_calendar</b><span>1,461 rows</span></header>
+          <div class="yr"><span>2020</span><span>366 days</span></div>
+          <div class="yr"><span>2021</span><span>365 days</span></div>
+          <div class="yr"><span>2022</span><span>365 days</span></div>
+          <div class="yr hot"><span>2023</span><span>365 days</span></div>
         </div>
-        <div class="branch">
-          <div class="box"><b>fact_sales</b><span>2,411,200 rows, 2020 to 2022</span></div>
-          <div class="op"><b>GROUP BY year</b></div>
-          <div id="d-sales"></div>
+        <div class="src rv" data-from="1">
+          <header><b>fact_sales</b><span>2,411,200 rows</span></header>
+          <div class="yr"><span>2020</span><span>805,200 rows</span></div>
+          <div class="yr"><span>2021</span><span>803,000 rows</span></div>
+          <div class="yr"><span>2022</span><span>803,000 rows</span></div>
+          <div class="yr none"><span>2023</span><span>no rows</span></div>
         </div>
       </div>
-      <div class="op"><b>merge on year</b> (full outer join)</div>
-      <div id="d-merged"></div>
-      <div class="verdict ok"><b>4 rows.</b> 2023 is there: 365 days, no sales.</div>
-    </div>
-    <div class="card lane">
-      <header><h3>Single pass</h3><p class="sub">One join, then one group-by.</p></header>
-      <div class="box"><b>fact_sales</b> <span style="display:inline">LEFT JOIN</span> <b>dim_calendar</b>
-        <span>one row per sale: 2,411,200 rows, none of them dated 2023</span></div>
-      <div class="op"><b>GROUP BY year</b></div>
-      <div id="d-single"></div>
-      <div class="verdict no"><b>3 rows.</b> 2023 is gone, and nothing says so. The day count is the days that
-      had a sale, which happens to equal the calendar here.</div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="col">
+        <h4 id="c2"></h4>
+        <div class="rv stack" data-mode="drill" data-from="2"><div class="oplabel"><b>dim_calendar</b> GROUP BY year</div><div id="d-cal"></div></div>
+        <div class="rv stack" data-mode="drill" data-from="2"><div class="oplabel"><b>fact_sales</b> GROUP BY year</div><div id="d-sales"></div></div>
+        <div class="rv stack" data-mode="single" data-from="2">
+          <div class="oplabel"><b>fact_sales</b> LEFT JOIN <b>dim_calendar</b></div>
+          <div class="src">
+            <header><b>one rowset</b><span>one row per sale</span></header>
+            <div class="yr"><span>2020</span><span>805,200 rows</span></div>
+            <div class="yr"><span>2021</span><span>803,000 rows</span></div>
+            <div class="yr"><span>2022</span><span>803,000 rows</span></div>
+            <div class="yr lost"><span>2023</span><span>no sale picks up these 365 days</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="arrow" aria-hidden="true">&rarr;</div>
+      <div class="col">
+        <h4 id="c3"></h4>
+        <div class="rv stack" data-mode="drill" data-from="3"><div class="oplabel">full outer join on <b>year</b></div><div id="d-merged"></div>
+          <div class="verdict ok"><b>4 rows.</b> 2023 is there: 365 days, no sales.</div></div>
+        <div class="rv stack" data-mode="single" data-from="3"><div class="oplabel">one <b>GROUP BY year</b></div><div id="d-single"></div>
+          <div class="verdict no"><b>3 rows.</b> 2023 is gone, and nothing says so.</div></div>
+      </div>
     </div>
   </div>
 
@@ -238,7 +346,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       <p class="sub">Actual against budget by category, 2021. Sales are daily by store and product; the budget is
       monthly by country and category. Each is summed on its own, then merged on category. The percentage is
       computed after the merge, from the two totals.</p></header>
-    <div class="grid3" style="align-items:start">
+    <div class="grid3" style="align-items:start; grid-template-columns: 1fr 1fr 1.7fr">
       <div class="branch"><div class="box"><b>fact_sales</b><span>grouped by category, through product</span></div>
         <div id="f-sales"></div></div>
       <div class="branch"><div class="box"><b>fact_budget</b><span>grouped by category, its own column</span></div>
@@ -250,7 +358,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 </section>
 
 <!-- ============================== 2. platforms -->
-<section id="platforms">
+<section id="platforms" class="view">
   <div class="head">
     <h2>How each platform does it</h2>
     <p class="lead">The same question, days and sales by year, asked as plainly as each platform allows. The steps
@@ -312,7 +420,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 </section>
 
 <!-- ============================== 3. one grain -->
-<section id="grain">
+<section id="grain" class="view">
   <div class="head">
     <h2>A metric view is one grain</h2>
     <p class="lead">A metric view is one source table with its dimensions joined on, so everything in it lives at
@@ -355,10 +463,10 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
   </div>
 </section>
 
-<!-- ============================== 4. scoreboard -->
-<section id="score">
+<!-- ============================== 4. what it took -->
+<section id="results" class="view">
   <div class="head">
-    <h2>Scoreboard</h2>
+    <h2>What it took</h2>
     <p class="lead">Each answer is compared with a reference written in plain SQL and run on DuckDB, which no
     vendor owns. A platform's native features used as designed count as a plain query. Copies of the fact,
     helper tables, extra views and logic moved into the query are named.</p>
@@ -369,7 +477,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
 </section>
 
 <!-- ============================== 5. questions -->
-<section id="questions">
+<section id="questions" class="view">
   <div class="head"><h2>The 13 questions</h2>
     <p class="lead">Every query as it was run, and every answer beside the reference.</p></div>
   <div class="explorer">
@@ -430,7 +538,92 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
   function run(q, l) { return q.runs.filter(function (r) { return r.label === l; })[0]; }
   function runTable(q, r) { return table(q.columns, q.measures, r.rows, { diff: r.diff, missing: r.missing }); }
 
-  // ---------- 1. the idea (q13, q12)
+  // ---------- 0. the model: a graph of the tables and their relationships, and the measures
+  (function () {
+    var N = {
+      fact_sales:   { x: 10,  y: 190, w: 215, h: 100, k: "fact", l: ["2,411,200 rows", "one row per day, store and product", "sales_qty · net_profit"] },
+      fact_budget:  { x: 875, y: 190, w: 215, h: 100, k: "fact", l: ["432 rows", "one row per month, country, category", "budget_qty"] },
+      dim_product:  { x: 315, y: 205, w: 185, h: 70, k: "dim", l: ["40 products", "brand · manufacturer"] },
+      dim_store:    { x: 315, y: 385, w: 185, h: 70, k: "dim", l: ["55 stores", "customer: a chain in a country"] },
+      dim_calendar: { x: 590, y: 25,  w: 195, h: 70, k: "dim shared", l: ["1,461 days, 2020 to 2023", "year · month · 4-4-5 fiscal period"] },
+      dim_category: { x: 590, y: 205, w: 195, h: 70, k: "dim shared", l: ["4 categories"] },
+      dim_country:  { x: 590, y: 385, w: 195, h: 70, k: "dim shared", l: ["3 countries"] }
+    };
+    var E = [
+      ["fact_sales", "dim_calendar", "M117,190 C117,60 360,60 584,60", "sale_date", 266, 80],
+      ["fact_sales", "dim_product", "M225,240 L309,240", "product_id", 267, 229],
+      ["fact_sales", "dim_store", "M117,290 C117,420 220,420 309,420", "store_id", 180, 408],
+      ["dim_product", "dim_category", "M500,240 L584,240", "category", 542, 229],
+      ["dim_store", "dim_country", "M500,420 L584,420", "country", 542, 409],
+      ["fact_budget", "dim_calendar", "M982,190 C982,60 900,60 791,60", "month_start", 927, 80],
+      ["fact_budget", "dim_category", "M875,240 L791,240", "category", 833, 229],
+      ["fact_budget", "dim_country", "M982,290 C982,420 900,420 791,420", "country", 927, 408]
+    ];
+    var h = '<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>';
+    E.forEach(function (e, i) {
+      h += '<g class="edge" data-a="' + e[0] + '" data-b="' + e[1] + '"><path d="' + e[2] + '" marker-end="url(#arr)"/></g>';
+    });
+    Object.keys(N).forEach(function (id) {
+      var n = N[id];
+      h += '<g class="node ' + n.k + '" data-id="' + id + '"><rect x="' + n.x + '" y="' + n.y + '" width="' + n.w + '" height="' + n.h + '" rx="8"/>' +
+        '<text class="t" x="' + (n.x + 12) + '" y="' + (n.y + 24) + '">' + id + "</text>" +
+        n.l.map(function (t, i) { return '<text x="' + (n.x + 12) + '" y="' + (n.y + 43 + i * 17) + '">' + t + "</text>"; }).join("") + "</g>";
+    });
+    E.forEach(function (e) {          // the key of each relationship, drawn last so nothing covers it
+      h += '<g class="edge" data-a="' + e[0] + '" data-b="' + e[1] + '"><text x="' + e[4] + '" y="' + e[5] + '" text-anchor="middle">' + e[3] + "</text></g>";
+    });
+    var g = $("graph"); g.innerHTML = h;
+    function reach(id) {              // the table, and every table it reaches by following the arrows
+      var seen = {}; seen[id] = 1; var grew = true;
+      while (grew) { grew = false; E.forEach(function (e) { if (seen[e[0]] && !seen[e[1]]) { seen[e[1]] = 1; grew = true; } }); }
+      return seen;
+    }
+    function focus(id) {
+      var seen = id ? reach(id) : {};
+      g.classList.toggle("focus", !!id);
+      Array.prototype.forEach.call(g.querySelectorAll(".node"), function (n) { n.classList.toggle("lit", !!seen[n.dataset.id]); });
+      Array.prototype.forEach.call(g.querySelectorAll(".edge"), function (e) { e.classList.toggle("lit", !!(seen[e.dataset.a] && seen[e.dataset.b])); });
+    }
+    g.addEventListener("mouseover", function (e) { var n = e.target.closest(".node"); focus(n ? n.dataset.id : null); });
+    g.addEventListener("mouseleave", function () { focus(null); });
+
+    $("measures").innerHTML = "<thead><tr><th>Measure</th><th>Meaning</th><th>In the open standard</th></tr></thead><tbody>" +
+      DATA.measures.map(function (m) {
+        return "<tr><td><code>" + esc(m.name) + "</code></td><td>" + esc(m.meaning).replace(/`(.+?)`/g, "<code>$1</code>") +
+          "</td><td>" + esc(m.standard).replace(/`(.+?)`/g, "<code>$1</code>") + "</td></tr>";
+      }).join("") + "</tbody>";
+  })();
+
+  // ---------- 1. drill across (q13, q12): a walkthrough in three steps, two routes
+  var demo = { mode: "drill", step: 1, timer: null, played: false };
+  var STEPS = { drill: ["Two tables", "Group each on its own", "Merge on year"], single: ["Two tables", "Join first", "Group once"] };
+  var CAPTION = {
+    drill: ["The calendar has four years. The sales fact has three: nothing was sold in 2023.",
+            "Each table is grouped by year on its own. The calendar keeps its four years; sales have three.",
+            "The two results are merged on year. 2023 comes from the calendar alone, with no sales beside it."],
+    single: ["The same two tables. This time they are joined before anything is grouped.",
+             "Every sale picks up its calendar row. No sale is dated 2023, so nothing picks up those 365 days.",
+             "One group-by over the joined rows. 2023 was never in them, so it is not in the answer."]
+  };
+  function paintDemo() {
+    Array.prototype.forEach.call($("stage").querySelectorAll("[data-from]"), function (el) {
+      el.hidden = !!el.dataset.mode && el.dataset.mode !== demo.mode;
+      el.classList.toggle("on", +el.dataset.from <= demo.step);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".seg button"), function (b) { b.setAttribute("aria-selected", b.dataset.mode === demo.mode); });
+    $("stepper").innerHTML = STEPS[demo.mode].map(function (t, i) {
+      return '<button type="button" data-step="' + (i + 1) + '"' + (i + 1 === demo.step ? ' aria-current="step"' : "") +
+        ' class="' + (i + 1 < demo.step ? "done" : "") + '"><b>' + (i + 1) + "</b>" + t + "</button>";
+    }).join("");
+    $("caption").textContent = CAPTION[demo.mode][demo.step - 1];
+    $("c2").textContent = demo.step >= 2 ? STEPS[demo.mode][1] : "";
+    $("c3").textContent = demo.step >= 3 ? STEPS[demo.mode][2] : "";
+  }
+  function stopDemo() { clearInterval(demo.timer); demo.timer = null; }
+  function playDemo() {
+    stopDemo(); demo.played = true; demo.step = 1; paintDemo();
+    demo.timer = setInterval(function () { if (demo.step < 3) { demo.step++; paintDemo(); } else stopDemo(); }, 2200);
+  }
   (function () {
     var q = Q.q13, ref = q.expected.rows, is2023 = function (r) { return r[0] === "2023"; };
     var cal = pick(q, ["year", "day_count"]), sal = pick(q, ["year", "sales_quantity"]);
@@ -438,6 +631,10 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     $("d-sales").innerHTML = table(sal.cols, sal.measures, sal.rows(ref).filter(function (r) { return r[1] !== ""; }));
     $("d-merged").innerHTML = table(q.columns, q.measures, ref, { hot: is2023 });
     $("d-single").innerHTML = runTable(q, run(q, "dbx"));
+    document.querySelector(".seg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { demo.mode = b.dataset.mode; playDemo(); } });
+    $("stepper").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { stopDemo(); demo.step = +b.dataset.step; paintDemo(); } });
+    $("play").addEventListener("click", playDemo);
+    paintDemo();
 
     var f = Q.q12, rows = f.expected.rows.filter(function (r) { return r[0] !== ""; });
     var a = pick(f, ["category", "sales_quantity"]), b = pick(f, ["category", "budget_quantity"]),
@@ -477,7 +674,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     $("g-table").innerHTML = h + "</tbody></table></div>";
   })();
 
-  // ---------- 4. scoreboard
+  // ---------- 4. what it took
   (function () {
     var facts = {
       fabric: [["Models", "1"], ["Tables", "7"], ["Measures", "16"], ["Queries", "one per question"]],
@@ -516,7 +713,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
 
   // ---------- 5. explorer
   var cur = { q: "q13", tab: "fabric" };
-  function show(id, tab, scroll) {
+  function show(id, tab) {
     var q = Q[id]; if (!q) return;
     cur.q = id; cur.tab = tab && (tab === "expected" || run(q, tab)) ? tab : q.runs[0].label;
     Array.prototype.forEach.call($("qlist").children, function (b) { b.setAttribute("aria-selected", b.dataset.q === id); });
@@ -534,16 +731,26 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     }
     $("qview").innerHTML = "<header class='stack' style='gap:6px'><h3>" + q.id + ": " + esc(q.title) + "</h3><p class='sub'>" + esc(q.text).replace(/`(.+?)`/g, "<code>$1</code>") + "</p></header>" +
       '<div class="tabs" role="tablist">' + tabs + "</div>" + body;
-    if (scroll) $("questions").scrollIntoView();
   }
   $("qlist").innerHTML = DATA.questions.map(function (q) {
     return '<button type="button" role="tab" data-q="' + q.id + '"><b>' + q.id + "</b><span>" + esc(q.title) + "</span></button>";
   }).join("");
   $("qlist").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { history.replaceState(null, "", "#" + b.dataset.q); show(b.dataset.q); } });
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
-  function route(scroll) { var h = location.hash.slice(1); if (Q[h]) show(h, null, scroll); }
-  window.addEventListener("hashchange", function () { route(true); });
-  show("q13"); route(true);
+  var VIEWS = ["model", "drill", "platforms", "grain", "results", "questions"];
+  function route() {
+    var h = location.hash.slice(1), v = Q[h] ? "questions" : (VIEWS.indexOf(h) >= 0 ? h : "model");
+    VIEWS.forEach(function (x) { $(x).classList.toggle("on", x === v); });
+    Array.prototype.forEach.call(document.querySelectorAll(".top nav a"), function (a) {
+      if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+    if (Q[h]) show(h);
+    window.scrollTo(0, 0);
+    if (v === "drill" && !demo.played) playDemo();
+    if (v !== "drill") stopDemo();
+  }
+  window.addEventListener("hashchange", route);
+  show("q13"); route();
 
   // ---------- theme
   var root = document.documentElement, btn = $("theme");
