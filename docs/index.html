@@ -76,7 +76,7 @@ h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: v
 /* the model graphs */
 .graphwrap { overflow-x: auto; }
 .graph { display: block; width: 100%; height: auto; }
-#g-base, #g-plat { min-width: 820px; }
+#g-plat { min-width: 820px; }
 .graph .node rect { fill: var(--surface); stroke: var(--line-2); stroke-width: 1.2; }
 .graph .node.fact rect, .graph .node.factcopy rect { fill: var(--sunken); stroke: var(--ink); stroke-width: 1.6; }
 .graph .node.factcopy rect { stroke-dasharray: 6 4; }
@@ -279,17 +279,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     reaches every answer. What differs is who does the work.</p>
   </div>
   <div class="card stack">
-    <header class="demo-bar"><h3 style="flex:1">The model: 7 tables, 8 relationships, two facts at two grains</h3>
-      <div class="legend" id="leg-base"></div></header>
-    <div class="graphwrap"><svg id="g-base" class="graph" role="img"
-      aria-label="Dimensions on top, the two facts at the bottom: calendar, category and country reach both facts; product and store reach sales only"></svg></div>
-    <p class="sub">Dimensions at the top, facts at the bottom, so every filter flows downhill, from the one side
-    (<b>1</b>) to the many side (<b>*</b>). The budget has no store and no product: it meets sales only through the
-    calendar, the category and the country. Point at a table to see what it filters and what filters it.</p>
-  </div>
-
-  <div class="card stack" style="margin-top:16px">
-    <header class="demo-bar"><h3 style="flex:1">The same model, as each platform holds it</h3>
+    <header class="demo-bar"><h3 style="flex:1">The model, as each platform holds it</h3>
       <div class="seg" role="tablist" aria-label="Platform" id="platseg">
         <button type="button" role="tab" data-p="fabric">Power BI</button>
         <button type="button" role="tab" data-p="snowflake">Snowflake</button>
@@ -671,8 +661,6 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
       { a: "dim_category", b: "fact_budget", label: "category", fa: 0.8, fb: 0.7 }
     ] };
     var LEG_BASE = [["fact", "Fact"], ["dim", "Dimension"], ["dim shared", "Dimension shared by both facts"]];
-    drawGraph($("g-base"), BASE);
-    $("leg-base").innerHTML = legend(LEG_BASE);
 
     // Power BI, read with INFO.VIEW.RELATIONSHIPS / TABLES / MEASURES: the same 8 relationships, and the measures' table.
     var PBI = { w: 1100, h: 500, card: true, nodes: {}, edges: BASE.edges };
@@ -741,8 +729,8 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
 
     var PLAT = {
       fabric: { g: PBI, leg: LEG_BASE.concat([["measures", "Table of measures"]]),
-        cap: "One model. The 7 tables and 8 relationships of the baseline, each one-to-many and filtering one way, exactly as drawn above. The 16 measures sit in one more table, Metrics, which holds nothing else.",
-        src: "Read from the service with INFO.VIEW.TABLES, INFO.VIEW.RELATIONSHIPS and INFO.VIEW.MEASURES." },
+        cap: "One model: 7 tables and 8 relationships, two facts at two grains. Dimensions sit on top and facts at the bottom, so every filter flows downhill, from the one side (1) to the many side (*). The budget has no store and no product: it meets sales only through the calendar, the category and the country. The 16 measures sit in one more table, Metrics, which holds nothing else.",
+        src: "Read from the service with INFO.VIEW.TABLES, INFO.VIEW.RELATIONSHIPS and INFO.VIEW.MEASURES. Point at a table to see what it filters and what filters it." },
       snowflake: { g: SF, leg: [["fact", "Fact"], ["factcopy", "FACT_SALES again"], ["dim", "Dimension"], ["copy", "Dimension again"], ["helper", "Table added for the model"]],
         cap: "One semantic view, 16 logical tables over 9 physical ones, 32 relationships. FACT_SALES appears six times: the facts themselves, last year, last year by day, last fiscal year, and two denominators that must ignore the customer filter. DIM_PRODUCT and DIM_STORE appear twice, and two tables exist only for the model.",
         src: "Read from the service with DESCRIBE SEMANTIC VIEW. Point at a table to follow its relationships." },
