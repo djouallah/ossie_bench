@@ -76,6 +76,15 @@ nav#nav .ind { position: absolute; top: 4px; bottom: 4px; left: 0; border-radius
 
 .view { display: none; padding: 30px 0 8px; }
 .view.on { display: block; animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+.subtabs { display: flex; gap: 4px; padding: 4px; margin-bottom: 16px; width: fit-content; max-width: 100%; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.subtabs button { font: inherit; font-size: 14px; font-weight: 550; border: 0; background: none; color: var(--ink-2);
+  padding: 7px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; white-space: nowrap; }
+.subtabs button:hover { color: var(--ink); }
+.subtabs button[aria-selected="true"] { background: var(--sunken); color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line-2), 0 0 22px -6px color-mix(in srgb, var(--k-fact) 60%, transparent); }
+[data-pane-of]:not(.on) { display: none !important; }
+[data-pane-of].on { animation: rise .35s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
 .head { display: grid; gap: 10px; margin-bottom: 22px; }
 .card { background: linear-gradient(180deg, var(--surface-2), var(--surface)); border: 1px solid var(--line);
@@ -248,6 +257,8 @@ details[open] > summary { margin-bottom: 8px; }
 .tile .big small { font-size: 18px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
 #grid th { white-space: nowrap; }
 #os-std td:first-child, #os-std td:first-child code { white-space: nowrap; overflow-wrap: normal; }
+#os-std td { padding-top: 5px; padding-bottom: 5px; }
+#os-std .why { display: inline; margin-left: 8px; }
 .tile dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13px; }
 .tile dt { color: var(--muted); } .tile dd { margin: 0; }
 .bar { height: 6px; border-radius: 3px; background: var(--sunken); overflow: hidden; }
@@ -265,7 +276,6 @@ details[open] > summary { margin-bottom: 8px; }
 .ev pre { font-size: 11.5px; }
 
 /* explorer */
-#qpanel { margin-top: 18px; scroll-margin-top: 80px; }
 .explorer { display: grid; grid-template-columns: 250px 1fr; gap: 18px; align-items: start; }
 .qlist { display: grid; gap: 2px; }
 .qlist button { font: inherit; text-align: left; background: none; border: 0; border-radius: 8px; padding: 7px 10px;
@@ -321,7 +331,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 <!-- ============================== 1. the model -->
 <section id="model" class="view">
-  <div class="stack" style="gap:18px" id="graphs"></div>
+  <div class="subtabs" id="st-model"></div>
+  <div id="graphs"></div>
 </section>
 
 <!-- ============================== 2. how they work -->
@@ -400,11 +411,15 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 <!-- ============================== 3. ossie -->
 <section id="ossie" class="view">
-  <div class="card stack">
+  <div class="subtabs" id="st-ossie">
+    <button type="button" data-k="std">What Ossie supports</button>
+    <button type="button" data-k="plat">What each platform supports</button>
+  </div>
+  <div class="card stack" data-pane-of="st-ossie" data-k="std">
     <header class="stack" style="gap:6px"><h3>What Ossie supports</h3><p class="sub" id="os-std-sub"></p></header>
     <div class="tw"><table id="os-std" class="wrapcell"></table></div>
   </div>
-  <div class="card stack" style="margin-top:16px">
+  <div class="card stack" data-pane-of="st-ossie" data-k="plat">
     <header class="stack" style="gap:6px"><h3>What each platform supports</h3>
       <p class="sub">What each platform does with an Ossie file, as tried on this model.</p></header>
     <div class="tw"><table id="sup-feat"></table></div>
@@ -413,16 +428,21 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 <!-- ============================== 4. results -->
 <section id="results" class="view">
-  <div class="head">
-    <h2>Results</h2>
+  <div class="subtabs" id="st-results">
+    <button type="button" data-k="sum">Summary</button>
+    <button type="button" data-k="grid">By question</button>
+    <button type="button" data-k="q">Queries and answers</button>
+  </div>
+  <div class="stack" data-pane-of="st-results" data-k="sum">
     <p class="lead">Each answer is compared with a reference written in raw SQL straight over the tables, with no
     semantic model and no vendor in between. A platform's native features used as designed count as a plain query.
     Copies of the fact, helper tables, extra views and logic moved into the query are named.</p>
+    <div class="grid3" id="tiles"></div>
   </div>
-  <div class="grid3" id="tiles"></div>
-  <div class="tw" style="margin-top:16px"><table id="grid" class="wrapcell"></table></div>
-  <p class="sub" style="margin-top:8px">Select a row to open the question below: every query as it was run, and every answer beside the reference.</p>
-  <div class="card" id="qpanel">
+  <div data-pane-of="st-results" data-k="grid">
+    <div class="tw"><table id="grid" class="wrapcell"></table></div>
+  </div>
+  <div class="card" data-pane-of="st-results" data-k="q">
     <div class="explorer">
       <div class="qlist" id="qlist" role="tablist" aria-label="Questions"></div>
       <div class="stack" id="qview"></div>
@@ -483,6 +503,19 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   }
   function run(q, l) { return q.runs.filter(function (r) { return r.label === l; })[0]; }
   function runTable(q, r) { return table(q.columns, q.measures, r.rows, { diff: r.diff, missing: r.missing }); }
+  // A bar of sub-tabs: buttons with data-k, panes with data-pane-of="<bar id>" data-k. Returns select(k).
+  function subtabs(bar, onShow) {
+    var cur = null;
+    function select(k) {
+      cur = k;
+      each($(bar).children, function (b) { b.setAttribute("aria-selected", b.dataset.k === k); });
+      each(document.querySelectorAll('[data-pane-of="' + bar + '"]'), function (x) { x.classList.toggle("on", x.dataset.k === k); });
+      if (onShow) onShow(k);
+    }
+    $(bar).addEventListener("click", function (e) { var b = e.target.closest("button[data-k]"); if (b) select(b.dataset.k); });
+    select.current = function () { return cur; };
+    return select;
+  }
   function plainMatches(p) { return DATA.questions.filter(function (q) { return (run(q, p) || {}).status === "match"; }).length; }
 
   // ---------- 1. the model: one renderer for the three platforms' graphs
@@ -739,8 +772,9 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     function legend(items) {
       return items.map(function (x) { return '<span><i class="k ' + x[0] + '">' + (x[0] === "gulf" ? "✕" : "") + "</i>" + x[1] + "</span>"; }).join("");
     }
+    $("st-model").innerHTML = PLATS.map(function (p) { return '<button type="button" data-k="' + p + '"><span class="dot ' + p + '"></span>' + NAME[p] + "</button>"; }).join("");
     $("graphs").innerHTML = PLATS.map(function (p) {
-      return '<div class="card graphcard"><div class="gc-head"><h3><span class="dot ' + p + '"></span>' + NAME[p] + '</h3><p class="caption">' + PLAT[p].cap + "</p></div>" +
+      return '<div class="card graphcard" data-pane-of="st-model" data-k="' + p + '"><div class="gc-head"><h3><span class="dot ' + p + '"></span>' + NAME[p] + '</h3><p class="caption">' + PLAT[p].cap + "</p></div>" +
         '<div class="graphwrap" id="gw-' + p + '"><svg id="g-' + p + '" class="graph" role="img" aria-label="The model on ' + NAME[p] + '"></svg><div class="tip" id="tip-' + p + '" hidden></div></div>' +
         '<div class="gc-foot"><div class="legend">' + legend(PLAT[p].leg) + "</div></div></div>";
     }).join("");
@@ -750,11 +784,12 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       if (p === "dbx") phoneLayout = phone;
       drawGraph($("g-" + p), p === "dbx" ? DBX(phone) : PLAT[p].g, $("tip-" + p), wrap);
     }
-    window.__replot = function () { PLATS.forEach(plot); };
+    var selModel = subtabs("st-model", function (k) { if ($("model").classList.contains("on")) plot(k); });
+    window.__replot = function () { selModel(selModel.current() || "fabric"); };
     var rt;
     window.addEventListener("resize", function () {
       clearTimeout(rt);
-      rt = setTimeout(function () { if ($("model").classList.contains("on") && ($("gw-dbx").clientWidth < 640) !== phoneLayout) plot("dbx"); }, 150);
+      rt = setTimeout(function () { if ($("model").classList.contains("on") && selModel.current() === "dbx" && ($("gw-dbx").clientWidth < 640) !== phoneLayout) plot("dbx"); }, 150);
     });
   })();
 
@@ -867,13 +902,12 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     }
     $("grid").innerHTML = "<thead><tr><th>Question</th>" + PLATS.map(function (p) { return '<th><span class="dot ' + p + '"></span>' + NAME[p] + "</th>"; }).join("") + "</tr></thead><tbody>" +
       DATA.questions.map(function (q) {
-        return '<tr data-q="' + q.id + '"><td><a href="#' + q.id + '"><b>' + q.id + "</b> " + esc(q.title) + "</a></td>" +
+        return '<tr data-q="' + q.id + '"><td><b>' + q.id + "</b> " + esc(q.title) + "</td>" +
           PLATS.map(function (p) { return "<td>" + chip((run(q, p) || {}).status) + why(q.notes[p] || "") + "</td>"; }).join("") + "</tr>";
       }).join("") + "</tbody>";
     $("grid").addEventListener("click", function (e) {
       var tr = e.target.closest("tr[data-q]"); if (!tr) return;
-      e.preventDefault();
-      if (location.hash === "#" + tr.dataset.q) route(); else location.hash = tr.dataset.q;
+      show(tr.dataset.q); selResults("q");
     });
   })();
 
@@ -901,12 +935,13 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   $("qlist").innerHTML = DATA.questions.map(function (q) {
     return '<button type="button" role="tab" data-q="' + q.id + '"><b>' + q.id + "</b><span>" + esc(q.title) + "</span></button>";
   }).join("");
-  $("qlist").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { history.replaceState(null, "", "#" + b.dataset.q); show(b.dataset.q); } });
+  $("qlist").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) show(b.dataset.q); });
+  var selResults = subtabs("st-results"), selOssie = subtabs("st-ossie");
+  selResults("sum"); selOssie("std");
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
 
-  // ---------- routing: 4 tabs; the old tab names still land where their content went
+  // ---------- routing: the 4 tabs
   var VIEWS = ["model", "answer", "ossie", "results"];
-  var ALIAS = { drill: ["answer"], platforms: ["answer"], grain: ["answer"], support: ["ossie"], questions: ["results", "qpanel"] };
   var nav = $("nav"), ind = nav.querySelector(".ind");
   function moveInd() {
     var a = nav.querySelector('a[aria-current="page"]'); if (!a) return;
@@ -914,21 +949,13 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   }
   var shown = null;
   function route() {
-    var h = location.hash.slice(1), v, target = null;
-    if (Q[h]) { v = "results"; target = "qpanel"; show(h); }
-    else if (ALIAS[h]) { v = ALIAS[h][0]; target = ALIAS[h][1] || null; }
-    else v = VIEWS.indexOf(h) >= 0 ? h : "model";
+    var h = location.hash.slice(1), v = VIEWS.indexOf(h) >= 0 ? h : "model";
     VIEWS.forEach(function (x) { $(x).classList.toggle("on", x === v); });
     each(nav.querySelectorAll("a"), function (a) {
       if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
     moveInd();
-    if (target) {
-      var go = function (b) { $(target).scrollIntoView({ behavior: b }); };
-      setTimeout(function () { go(shown === v && !REDUCE ? "smooth" : "auto"); }, 30);
-      if (shown !== v) setTimeout(function () { go("auto"); }, 450);   // again once the walkthrough has laid out
-    }
-    else window.scrollTo(0, 0);
+    window.scrollTo(0, 0);
     if (v === "model" && shown !== "model") window.__replot();
     if (v === "answer" && !demo.played) playDemo();
     if (v !== "answer") stopDemo();
