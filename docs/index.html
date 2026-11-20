@@ -53,24 +53,36 @@ h4 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color:
 .muted { color: var(--muted); }
 
 /* top bar */
-.top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--page) 80%, transparent);
+.top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--page) 85%, transparent);
   backdrop-filter: blur(14px) saturate(1.4); border-bottom: 1px solid var(--line); }
-.top .wrap { display: flex; align-items: center; gap: 18px; min-height: 60px; flex-wrap: wrap; }
-.brand { display: inline-flex; align-items: center; gap: 10px; font: 700 15px var(--mono); letter-spacing: -.02em;
-  text-decoration: none; white-space: nowrap; }
-.logo { width: 22px; height: 22px; border-radius: 7px; position: relative;
+.top .wrap { display: grid; gap: 10px; padding-top: 14px; padding-bottom: 12px; }
+.tophead { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.brand { display: inline-flex; align-items: center; gap: 11px; font-size: 30px; font-weight: 800; letter-spacing: -.035em;
+  line-height: 1.1; text-decoration: none; white-space: nowrap; align-self: center; }
+.tagline { color: var(--ink-2); font-size: 15px; }
+.toplinks { margin-left: auto; display: flex; align-items: center; gap: 22px; align-self: center; }
+.toplinks a, .toplinks button { font: inherit; font-size: 15px; font-weight: 550; color: var(--ink-2); text-decoration: none;
+  background: none; border: 0; padding: 0; cursor: pointer; }
+.toplinks a:hover, .toplinks button:hover, .toplinks a[aria-current="page"] { color: var(--ink); }
+.toplinks .gh { display: inline-flex; color: var(--ink); }
+.toplinks .gh svg { width: 30px; height: 30px; fill: currentColor; }
+.logo { width: 26px; height: 26px; border-radius: 8px; position: relative; flex: none;
   background: conic-gradient(from 210deg, var(--p-fabric), var(--p-snowflake), var(--p-dbx), var(--p-fabric));
   box-shadow: 0 0 18px -2px color-mix(in srgb, var(--k-fact) 70%, transparent); }
-.logo::after { content: ""; position: absolute; inset: 5px; border-radius: 3px; background: var(--page); }
-nav#nav { position: relative; display: flex; gap: 2px; padding: 4px; border-radius: 12px; background: var(--surface);
-  border: 1px solid var(--line); margin-right: auto; }
-nav#nav a { position: relative; z-index: 1; padding: 6px 14px; border-radius: 8px; text-decoration: none; color: var(--ink-2);
-  font-size: 14px; font-weight: 550; white-space: nowrap; transition: color .2s; }
+.logo::after { content: ""; position: absolute; inset: 6px; border-radius: 3px; background: var(--page); }
+nav#nav { position: relative; display: flex; padding: 4px; border-radius: 14px; background: var(--sunken); border: 1px solid var(--line); }
+nav#nav a { position: relative; z-index: 1; flex: 1; text-align: center; padding: 9px 10px; border-radius: 10px; text-decoration: none;
+  color: var(--ink-2); font-size: 15px; font-weight: 550; white-space: nowrap; transition: color .2s; }
 nav#nav a:hover { color: var(--ink); }
-nav#nav a[aria-current="page"] { color: var(--ink); }
-nav#nav .ind { position: absolute; top: 4px; bottom: 4px; left: 0; border-radius: 8px; background: var(--sunken);
-  box-shadow: inset 0 0 0 1px var(--line-2), 0 0 22px -6px color-mix(in srgb, var(--k-fact) 60%, transparent);
-  transition: transform .35s cubic-bezier(.3,.8,.2,1), width .35s cubic-bezier(.3,.8,.2,1); }
+nav#nav a[aria-current="page"] { color: var(--ink); font-weight: 650; }
+nav#nav .ind { position: absolute; top: 4px; bottom: 4px; left: 0; border-radius: 10px; background: var(--surface);
+  box-shadow: 0 1px 2px rgba(0,0,0,.18), inset 0 0 0 1px var(--line-2), 0 0 22px -8px color-mix(in srgb, var(--k-fact) 60%, transparent);
+  transition: transform .35s cubic-bezier(.3,.8,.2,1), width .35s cubic-bezier(.3,.8,.2,1), opacity .2s; }
+nav#nav .ind.off { opacity: 0; }
+.about { max-width: 76ch; display: grid; gap: 14px; }
+.about h3 { margin-top: 8px; }
+.about p { color: var(--ink-2); font-size: 15.5px; line-height: 1.65; }
+.about p b { color: var(--ink); }
 .btn { font: inherit; font-size: 13px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line-2);
   border-radius: 8px; padding: 6px 11px; cursor: pointer; white-space: nowrap; text-decoration: none; }
 .btn:hover { color: var(--ink); border-color: var(--muted); }
@@ -324,11 +336,11 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   .stage { min-height: 0; } .stage .arrow { transform: rotate(90deg); }
   .qlist { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
-@media (max-width: 700px) {
-  .top .wrap { gap: 10px; padding-top: 8px; padding-bottom: 8px; }
-  nav#nav { order: 3; flex: 1 1 100%; margin-right: 0; }
-  nav#nav a { flex: 1; text-align: center; padding: 6px 4px; font-size: 13px; }
-  .brand { margin-right: auto; }
+@media (max-width: 760px) {
+  .tagline { display: none; }
+  .brand { font-size: 22px; }
+  .toplinks { gap: 14px; } .toplinks a, .toplinks button { font-size: 13.5px; } .toplinks .gh svg { width: 24px; height: 24px; }
+  nav#nav a { padding: 7px 2px; font-size: 12.5px; min-width: 0; }
 }
 @media (max-width: 560px) {
   .wrap { padding: 0 16px; } .branches { grid-template-columns: 1fr; }
@@ -340,7 +352,16 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 <body>
 
 <div class="top"><div class="wrap">
-  <a class="brand" href="#model"><span class="logo" aria-hidden="true"></span>ossie_bench</a>
+  <div class="tophead">
+    <a class="brand" href="#model"><span class="logo" aria-hidden="true"></span>ossie_bench</a>
+    <span class="tagline">one semantic model · Power BI, Snowflake, Databricks · Apache Ossie</span>
+    <div class="toplinks">
+      <a href="https://github.com/djouallah/ossie_bench/issues">Bug reports</a>
+      <a href="#about" id="aboutlink">About</a>
+      <button type="button" id="theme">Light</button>
+      <a class="gh" href="https://github.com/djouallah/ossie_bench" aria-label="GitHub repository"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+    </div>
+  </div>
   <nav id="nav">
     <span class="ind" aria-hidden="true"></span>
     <a href="#model">The model</a>
@@ -348,8 +369,6 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     <a href="#ossie">Ossie</a>
     <a href="#results">Results</a>
   </nav>
-  <button class="btn" id="theme" type="button">Light</button>
-  <a class="btn" href="https://github.com/djouallah/ossie_bench">GitHub</a>
 </div></div>
 
 <div class="wrap">
@@ -440,6 +459,24 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     <header class="stack" style="gap:6px"><h3>What each platform supports</h3>
       <p class="sub">What each platform does with an Ossie file, as tried on this model.</p></header>
     <div class="tw"><table id="sup-feat"></table></div>
+  </div>
+</section>
+
+<!-- ============================== about -->
+<section id="about" class="view">
+  <div class="card about">
+    <h2>About</h2>
+    <p><b>ossie_bench is not a benchmark.</b> It is an educational repo about semantic modeling, something I care about
+    a lot. One small model, a retailer's daily sales and monthly budget, is built natively on Power BI, Snowflake and
+    Databricks and written in Apache Ossie, then asked the same 13 questions, to see how each one thinks.</p>
+    <h3>How it was built</h3>
+    <p>All the models here were built with AI. I have a decent conceptual understanding of Power BI, which is my main
+    tool. I kind of understand Databricks, as its metric views remind me of Malloy. I am not sure I really get LOD in
+    Snowflake. Every answer is checked against raw SQL over the same tables, but any mistake is still mine.</p>
+    <h3>A personal project</h3>
+    <p>This is a personal project. The views are mine, not my employer's, and nothing here is endorsed by Microsoft,
+    Snowflake, Databricks or the Apache Software Foundation. Found something wrong? Open a
+    <a href="https://github.com/djouallah/ossie_bench/issues">bug report</a>.</p>
   </div>
 </section>
 
@@ -1038,10 +1075,10 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
 
   // ---------- routing: the 4 tabs
-  var VIEWS = ["model", "answer", "ossie", "results"];
+  var VIEWS = ["model", "answer", "ossie", "results", "about"];
   var nav = $("nav"), ind = nav.querySelector(".ind");
   function moveInd() {
-    var a = nav.querySelector('a[aria-current="page"]'); if (!a) return;
+    var a = nav.querySelector('a[aria-current="page"]'); ind.classList.toggle("off", !a); if (!a) return;
     ind.style.width = a.offsetWidth + "px"; ind.style.transform = "translateX(" + a.offsetLeft + "px)";
   }
   var shown = null;
@@ -1051,6 +1088,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     each(nav.querySelectorAll("a"), function (a) {
       if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
+    if (v === "about") $("aboutlink").setAttribute("aria-current", "page"); else $("aboutlink").removeAttribute("aria-current");
     moveInd();
     window.scrollTo(0, 0);
     if (v === "model" && shown !== "model") window.__replot();
