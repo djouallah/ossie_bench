@@ -241,6 +241,15 @@ tr.total td { font-weight: 650; }
 .plat { --pc: var(--p-fabric); border-top: 2px solid color-mix(in srgb, var(--pc) 70%, transparent); }
 .plat.snowflake { --pc: var(--p-snowflake); } .plat.dbx { --pc: var(--p-dbx); }
 .plat > header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.how { display: grid; gap: 10px; }
+.how .appr { font-size: 22px; font-weight: 750; letter-spacing: -.02em; color: var(--pc); }
+.how.fabric { --pc: var(--p-fabric); } .how.snowflake { --pc: var(--p-snowflake); } .how.dbx { --pc: var(--p-dbx); }
+ul.facts { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; max-width: 110ch; }
+ul.facts li { position: relative; padding-left: 18px; font-size: 14.5px; color: var(--ink); }
+ul.facts li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--pc); box-shadow: 0 0 8px var(--pc); }
+ul.facts .src { font-size: 12px; color: var(--muted); margin-left: 6px; white-space: nowrap; }
+ul.facts .tag { font-size: 11px; color: var(--muted); border: 1px solid var(--line-2); border-radius: 999px; padding: 0 7px; margin-left: 6px; white-space: nowrap; }
 .plist { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13.5px; color: var(--ink-2); }
 .plist > span { display: inline-flex; align-items: center; }
 .who { font-size: 22px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2; color: var(--pc); }
@@ -338,20 +347,12 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 <!-- ============================== 2. how they work -->
 <section id="answer" class="view">
   <div class="subtabs" id="st-answer">
-    <button type="button" data-k="drill">Drill across</button>
-    <button type="button" data-k="single">One base table</button>
+    <button type="button" data-k="fabric"><span class="dot fabric"></span>Power BI</button>
+    <button type="button" data-k="snowflake"><span class="dot snowflake"></span>Snowflake</button>
+    <button type="button" data-k="dbx"><span class="dot dbx"></span>Databricks</button>
   </div>
   <div class="card stack demo">
-    <div class="stack" style="gap:6px" data-pane-of="st-answer" data-k="drill">
-      <div class="plist"><span><span class="dot fabric"></span>Power BI</span><span><span class="dot snowflake"></span>Snowflake</span></div>
-      <p class="lead">Group each table on its own, then merge the results on the dimensions they share. Nothing is
-      lost: a year with no sales still shows, with a blank.</p>
-    </div>
-    <div class="stack" style="gap:6px" data-pane-of="st-answer" data-k="single">
-      <div class="plist"><span><span class="dot dbx"></span>Databricks metric views</span><span>Malloy, and the like</span></div>
-      <p class="lead">Start from one table, join its dimensions on, group once. What the base table has no rows for
-      is gone. Another fact, or another grain, is a join you write in the query.</p>
-    </div>
+    <div id="how" class="how"></div>
     <p class="sub">The example: days in the calendar and sales, by year. The calendar runs to 2023; sales stop at 2022. Follow 2023.</p>
     <div class="demo-bar">
       <div class="stepper" id="stepper"></div>
@@ -822,28 +823,67 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   })();
 
   // ---------- 2. how they answer: the drill-across walkthrough (q13), two facts (q12)
-  var demo = { mode: "drill", step: 1, timer: null, played: false };
-  var STEPS = { drill: ["Two tables", "Group each on its own", "Merge on year"], single: ["Two tables", "Join to the base table", "Group once"] };
-  var CAPTION = {
-    drill: ["The calendar has four years. The sales fact has three: nothing was sold in 2023.",
-            "Each table is grouped by year on its own. The calendar keeps its four years; sales have three.",
-            "The two results are merged on year. 2023 comes from the calendar alone, with no sales beside it."],
-    single: ["The same two tables. This time they are joined before anything is grouped.",
-             "Every sale picks up its calendar row. No sale is dated 2023, so nothing picks up those 365 days.",
-             "One group-by over the joined rows. 2023 was never in them, so it is not in the answer."]
+  var demo = { plat: "fabric", mode: "drill", step: 1, timer: null, played: false };
+  var MODE = { fabric: "drill", snowflake: "drill", dbx: "single" };
+  var STEPS = {
+    fabric: ["Two tables", "Each measure in its own filter context", "Keep a year if any value"],
+    snowflake: ["Two logical tables", "Aggregate each on its own", "Full outer join on year"],
+    dbx: ["Two tables", "Left join to the base table", "Group once"]
   };
+  var CAPTION = {
+    fabric: ["The calendar has four years. The sales fact has three: nothing was sold in 2023.",
+             "Each year becomes a filter. COUNTROWS runs on the calendar and the sales measure on the fact, each in that filter.",
+             "A year is kept when any expression is non-blank. 2023 has 365 days, and a blank for sales."],
+    snowflake: ["Two logical tables, CALENDAR and SALES, related on the date.",
+                "Each logical table is aggregated on its own, by year.",
+                "The two results are full-outer-joined on year, so 2023 stays, with no sales. This is what EXPLAIN shows."],
+    dbx: ["The same two tables. The metric view's source, the base table, is fact_sales.",
+          "The calendar is left-joined onto each sale. No sale is dated 2023, so nothing picks up those 365 days.",
+          "One group-by over the joined rows. 2023 was never in them, so it is not in the answer, and nothing says so."]
+  };
+  function src(t, u) { return '<a class="src" href="' + u + '">' + t + " ↗</a>"; }
+  function tag(t) { return '<span class="tag">' + t + "</span>"; }
+  var MS = "https://learn.microsoft.com/en-us/dax/", SQLBI = "https://www.sqlbi.com/articles/",
+      SF = "https://docs.snowflake.com/en/user-guide/views-semantic/", DBXD = "https://docs.databricks.com/aws/en/";
+  var HOW = {
+    fabric: { appr: "Drill across, by filter context", who: "Each measure is evaluated on its own table; the engine does the drill-across.", facts: [
+      "A query is <code>SUMMARIZECOLUMNS</code>: the group-by columns are combined, and a row is kept when at least one expression is non-blank." + src("Microsoft Learn", MS + "summarizecolumns-function-dax"),
+      "Each measure runs in its row's filter context. The filter flows from the dimension along one-to-many relationships to that measure's own fact table." + src("SQLBI", SQLBI + "expanded-tables-in-dax/"),
+      "<code>CALCULATE</code> rewrites the filter context per measure: <code>ALL</code> drops a filter, <code>SAMEPERIODLASTYEAR</code> shifts the dates in it, so last year works at any grain. Context transition turns a row into a filter." + src("Microsoft Learn", MS + "calculate-function-dax") + src("SQLBI", SQLBI + "understanding-context-transition/"),
+      "Each table's numbers are fetched on their own and joined in the formula engine: drill-across in effect, though Microsoft doesn't use the word." + tag("our reading") + src("SQLBI", SQLBI + "formula-engine-and-storage-engine-in-dax/")
+    ] },
+    snowflake: { appr: "Drill across, over logical tables", who: "The engine drills across, but every change of grain or filter is another logical table.", facts: [
+      "Everything is a logical table. A metric aggregates its own table; a derived metric combines metrics from several." + src("Snowflake docs", SF + "overview"),
+      "A dimension can go with a metric only if its table is at the same or a coarser grain than the metric's table." + src("Snowflake docs", SF + "querying"),
+      "One physical table can appear many times, each alias an independent logical table. This model uses it for last year, last fiscal year and the denominators that ignore the customer: FACT_SALES is in it six times." + src("Snowflake docs", SF + "sql"),
+      "LOD (<code>FIXED</code>, <code>EXCLUDE DIMENSIONS</code>, in preview) changes one metric's grain. <code>FIXED</code> is computed before the query's filters, so it ignores all of them. <code>time_shift</code> is in private preview." + src("Snowflake docs", SF + "sql"),
+      "How metrics from different tables meet is not documented. EXPLAIN shows each aggregated on its own, then full-outer-joined on the shared dimensions." + tag("observed")
+    ] },
+    dbx: { appr: "One base table, like Malloy and Looker", who: "The base table decides the rows; anything beyond it is a join you write.", facts: [
+      "A metric view has one <code>source</code>. Its dimensions are left-outer-joined, many-to-one, and measures aggregate the source's rows." + src("Databricks docs", DBXD + "uc-semantics/metric-views/joins"),
+      "Malloy (a source extends one table, left joins, aggregate locality) and Looker (the Explore's base view in FROM, left outer joins, symmetric aggregates) work the same way." + src("Malloy", "https://docs.malloydata.dev/documentation/language/join") + src("Looker", "https://docs.cloud.google.com/looker/docs/reference/param-explore-explore"),
+      "Last year is a window measure ordered by one column. Grouped by another date field, it returns another number, with no error." + src("Databricks docs", DBXD + "metric-views/data-modeling/window-measures"),
+      "A second fact is a second view joined in the query, or a <code>one_to_many</code> join from a dimension source (Runtime 18.1+), which aggregates each fact on its own and blends them: <code>bridge_mv</code> here." + src("Databricks docs", DBXD + "uc-semantics/metric-views/joins")
+    ] }
+  };
+  function paintHow() {
+    var h = HOW[demo.plat];
+    $("how").className = "how " + demo.plat;
+    $("how").innerHTML = '<div class="appr">' + h.appr + '</div><p class="lead">' + h.who + '</p><ul class="facts">' +
+      h.facts.map(function (f) { return "<li>" + f + "</li>"; }).join("") + "</ul>";
+  }
   function paintDemo() {
     each($("stage").querySelectorAll("[data-from]"), function (el) {
       el.hidden = !!el.dataset.mode && el.dataset.mode !== demo.mode;
       el.classList.toggle("on", +el.dataset.from <= demo.step);
     });
-    $("stepper").innerHTML = STEPS[demo.mode].map(function (t, i) {
+    $("stepper").innerHTML = STEPS[demo.plat].map(function (t, i) {
       return '<button type="button" data-step="' + (i + 1) + '"' + (i + 1 === demo.step ? ' aria-current="step"' : "") +
         ' class="' + (i + 1 < demo.step ? "done" : "") + '"><b>' + (i + 1) + "</b>" + t + "</button>";
     }).join("");
-    $("caption").textContent = CAPTION[demo.mode][demo.step - 1];
-    $("c2").textContent = demo.step >= 2 ? STEPS[demo.mode][1] : "";
-    $("c3").textContent = demo.step >= 3 ? STEPS[demo.mode][2] : "";
+    $("caption").textContent = CAPTION[demo.plat][demo.step - 1];
+    $("c2").textContent = demo.step >= 2 ? STEPS[demo.plat][1] : "";
+    $("c3").textContent = demo.step >= 3 ? STEPS[demo.plat][2] : "";
   }
   function stopDemo() { clearInterval(demo.timer); demo.timer = null; }
   function playDemo() {
@@ -857,8 +897,11 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     $("d-sales").innerHTML = table(sal.cols, sal.measures, sal.rows(ref).filter(function (r) { return r[1] !== ""; }));
     $("d-merged").innerHTML = table(q.columns, q.measures, ref, { hot: is2023 });
     $("d-single").innerHTML = runTable(q, run(q, "dbx"));
-    var selAnswer = subtabs("st-answer", function (k) { if (k !== demo.mode) { demo.mode = k; playDemo(); } });
-    selAnswer("drill");
+    var selAnswer = subtabs("st-answer", function (k) {
+      var again = k !== demo.plat; demo.plat = k; demo.mode = MODE[k]; paintHow();
+      if (again) playDemo();
+    });
+    selAnswer("fabric");
     $("stepper").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { stopDemo(); demo.step = +b.dataset.step; paintDemo(); } });
     $("play").addEventListener("click", playDemo);
     paintDemo();
