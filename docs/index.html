@@ -73,26 +73,44 @@ h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: v
 .view.on { display: block; }
 .top nav a[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--ring); }
 
-/* the model graph */
+/* the model graphs */
 .graphwrap { overflow-x: auto; }
-#graph { display: block; width: 100%; min-width: 760px; height: auto; }
-#graph .node rect { fill: var(--surface); stroke: var(--line-2); stroke-width: 1.2; }
-#graph .node.fact rect { fill: var(--sunken); stroke: var(--ink); stroke-width: 1.6; }
-#graph .node.shared rect { fill: var(--note-bg); stroke: var(--p-fabric); }
-#graph .node text { fill: var(--ink-2); font-size: 11.5px; }
-#graph .node text.t { fill: var(--ink); font-family: var(--mono); font-size: 13.5px; font-weight: 700; }
-#graph .edge path { fill: none; stroke: var(--line-2); stroke-width: 1.6; }
-#graph .edge text { fill: var(--muted); font-size: 11px; font-family: var(--mono); paint-order: stroke;
+.graph { display: block; width: 100%; height: auto; }
+#g-base, #g-plat { min-width: 820px; }
+.graph .node rect { fill: var(--surface); stroke: var(--line-2); stroke-width: 1.2; }
+.graph .node.fact rect, .graph .node.factcopy rect { fill: var(--sunken); stroke: var(--ink); stroke-width: 1.6; }
+.graph .node.factcopy rect { stroke-dasharray: 6 4; }
+.graph .node.copy rect { stroke-dasharray: 6 4; stroke: var(--ink-2); }
+.graph .node.helper rect { fill: var(--warn-bg); stroke: #c98500; }
+.graph .node.shared rect { fill: var(--note-bg); stroke: var(--p-fabric); }
+.graph .node.measures rect { fill: var(--surface); stroke: var(--muted); stroke-dasharray: 2 3; }
+.graph .node text { fill: var(--ink-2); font-size: 11.5px; }
+.graph .node text.t { fill: var(--ink); font-family: var(--mono); font-size: 13.5px; font-weight: 700; }
+.graph.dense .node text { font-size: 10.5px; }
+.graph.dense .node text.t { font-size: 12px; }
+.graph .edge path { fill: none; stroke: var(--line-2); stroke-width: 1.6; }
+.graph.dense .edge path { stroke-width: 1.2; }
+.graph .edge text { fill: var(--muted); font-size: 11px; font-family: var(--mono); paint-order: stroke;
   stroke: var(--surface); stroke-width: 4px; }
-#graph marker path { fill: var(--line-2); }
-#graph .node { cursor: default; transition: opacity .2s; } #graph .edge { transition: opacity .2s; }
-#graph.focus .node:not(.lit), #graph.focus .edge:not(.lit) { opacity: .22; }
-#graph .edge.lit path { stroke: var(--ink); } #graph .edge.lit text { fill: var(--ink); }
+.graph .edge text.card { font-family: inherit; font-weight: 700; font-size: 12px; fill: var(--ink-2); }
+.graph marker path { fill: var(--line-2); }
+.graph .node { cursor: default; transition: opacity .2s; } .graph .edge { transition: opacity .2s; }
+.graph.focus .node:not(.lit), .graph.focus .edge:not(.lit) { opacity: .18; }
+.graph .edge.lit path { stroke: var(--ink); } .graph .edge.lit text { fill: var(--ink); }
 .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
-.legend .k { width: 14px; height: 14px; border-radius: 3px; border: 1.2px solid var(--line-2); background: var(--surface); }
-.legend .k.fact { background: var(--sunken); border-color: var(--ink); }
+.legend .k { width: 16px; height: 12px; border-radius: 3px; border: 1.2px solid var(--line-2); background: var(--surface); }
+.legend .k.fact, .legend .k.factcopy { background: var(--sunken); border: 1.6px solid var(--ink); }
+.legend .k.factcopy, .legend .k.copy { border-style: dashed; }
+.legend .k.copy { border-color: var(--ink-2); }
+.legend .k.helper { background: var(--warn-bg); border-color: #c98500; }
 .legend .k.shared { background: var(--note-bg); border-color: var(--p-fabric); }
+.legend .k.measures { border-style: dotted; border-color: var(--muted); }
+.mvgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); gap: 12px; }
+.mvgrid[hidden] { display: none; }
+.mv { padding: 12px; gap: 6px; }
+.mv header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.mv header code { font-weight: 700; font-size: 13px; }
 
 /* the drill-across walkthrough */
 .demo-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
@@ -261,15 +279,29 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     reaches every answer. What differs is who does the work.</p>
   </div>
   <div class="card stack">
-    <header class="demo-bar"><h3 style="flex:1">7 tables, 8 relationships, two facts at two grains</h3>
-      <div class="legend"><span><i class="k fact"></i>Fact</span><span><i class="k dim"></i>Dimension</span>
-        <span><i class="k shared"></i>Dimension shared by both facts</span></div></header>
-    <div class="graphwrap"><svg id="graph" viewBox="0 0 1100 480" role="img"
-      aria-label="The model: fact_sales and fact_budget, joined to calendar, category and country; sales also to product and store"></svg></div>
-    <p class="sub">Each arrow points from many rows to one. The budget has no store and no product: it meets sales
-    only through the calendar, the category and the country. Those three shared dimensions are what the two
-    facts are merged on. Point at a table to see what it reaches.</p>
+    <header class="demo-bar"><h3 style="flex:1">The model: 7 tables, 8 relationships, two facts at two grains</h3>
+      <div class="legend" id="leg-base"></div></header>
+    <div class="graphwrap"><svg id="g-base" class="graph" role="img"
+      aria-label="Dimensions on top, the two facts at the bottom: calendar, category and country reach both facts; product and store reach sales only"></svg></div>
+    <p class="sub">Dimensions at the top, facts at the bottom, so every filter flows downhill, from the one side
+    (<b>1</b>) to the many side (<b>*</b>). The budget has no store and no product: it meets sales only through the
+    calendar, the category and the country. Point at a table to see what it filters and what filters it.</p>
   </div>
+
+  <div class="card stack" style="margin-top:16px">
+    <header class="demo-bar"><h3 style="flex:1">The same model, as each platform holds it</h3>
+      <div class="seg" role="tablist" aria-label="Platform" id="platseg">
+        <button type="button" role="tab" data-p="fabric">Power BI</button>
+        <button type="button" role="tab" data-p="snowflake">Snowflake</button>
+        <button type="button" role="tab" data-p="dbx">Databricks</button>
+      </div></header>
+    <p class="caption" id="plat-cap"></p>
+    <div class="graphwrap" id="plat-svgwrap"><svg id="g-plat" class="graph" role="img"></svg></div>
+    <div class="mvgrid" id="g-dbx" hidden></div>
+    <div class="legend" id="leg-plat"></div>
+    <p class="sub" id="plat-src"></p>
+  </div>
+
   <div class="card stack" style="margin-top:16px">
     <header><h3>The 16 measures</h3><p class="sub">What each one means, in business words. The last column says
     whether the open standard (Apache Ossie, development version) can express it yet.</p></header>
@@ -288,7 +320,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   </div>
   <div class="card stack demo">
     <div class="demo-bar">
-      <div class="seg" role="tablist" aria-label="Route">
+      <div class="seg" role="tablist" aria-label="Route" id="routeseg">
         <button type="button" role="tab" data-mode="drill">Drill across</button>
         <button type="button" role="tab" data-mode="single">Join first</button>
       </div>
@@ -538,54 +570,195 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
   function run(q, l) { return q.runs.filter(function (r) { return r.label === l; })[0]; }
   function runTable(q, r) { return table(q.columns, q.measures, r.rows, { diff: r.diff, missing: r.missing }); }
 
-  // ---------- 0. the model: a graph of the tables and their relationships, and the measures
-  (function () {
-    var N = {
-      fact_sales:   { x: 10,  y: 190, w: 215, h: 100, k: "fact", l: ["2,411,200 rows", "one row per day, store and product", "sales_qty · net_profit"] },
-      fact_budget:  { x: 875, y: 190, w: 215, h: 100, k: "fact", l: ["432 rows", "one row per month, country, category", "budget_qty"] },
-      dim_product:  { x: 315, y: 205, w: 185, h: 70, k: "dim", l: ["40 products", "brand · manufacturer"] },
-      dim_store:    { x: 315, y: 385, w: 185, h: 70, k: "dim", l: ["55 stores", "customer: a chain in a country"] },
-      dim_calendar: { x: 590, y: 25,  w: 195, h: 70, k: "dim shared", l: ["1,461 days, 2020 to 2023", "year · month · 4-4-5 fiscal period"] },
-      dim_category: { x: 590, y: 205, w: 195, h: 70, k: "dim shared", l: ["4 categories"] },
-      dim_country:  { x: 590, y: 385, w: 195, h: 70, k: "dim shared", l: ["3 countries"] }
-    };
-    var E = [
-      ["fact_sales", "dim_calendar", "M117,190 C117,60 360,60 584,60", "sale_date", 266, 80],
-      ["fact_sales", "dim_product", "M225,240 L309,240", "product_id", 267, 229],
-      ["fact_sales", "dim_store", "M117,290 C117,420 220,420 309,420", "store_id", 180, 408],
-      ["dim_product", "dim_category", "M500,240 L584,240", "category", 542, 229],
-      ["dim_store", "dim_country", "M500,420 L584,420", "country", 542, 409],
-      ["fact_budget", "dim_calendar", "M982,190 C982,60 900,60 791,60", "month_start", 927, 80],
-      ["fact_budget", "dim_category", "M875,240 L791,240", "category", 833, 229],
-      ["fact_budget", "dim_country", "M982,290 C982,420 900,420 791,420", "country", 927, 408]
-    ];
-    var h = '<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>';
-    E.forEach(function (e, i) {
-      h += '<g class="edge" data-a="' + e[0] + '" data-b="' + e[1] + '"><path d="' + e[2] + '" marker-end="url(#arr)"/></g>';
+  // ---------- 0. the model: graphs of the model, and of the model as each platform holds it
+  // g: {w, h, dense, labels, card, nodes: {id: {x, y, w, h, k, t, l: [lines]}}, edges: [{a: one side, b: many side,
+  // label, as/bs: side of a/b, fa/fb: where on that side}]}. Arrows point the way a filter flows: one -> many.
+  function drawGraph(svg, g) {
+    var NORMAL = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] }, N = g.nodes, ports = {};
+    var edges = g.edges.map(function (e) { var c = {}; for (var k in e) c[k] = e[k]; return c; });
+    function pt(n, side, f) {
+      return side === "top" ? [n.x + n.w * f, n.y] : side === "bottom" ? [n.x + n.w * f, n.y + n.h] :
+             side === "left" ? [n.x, n.y + n.h * f] : [n.x + n.w, n.y + n.h * f];
+    }
+    function r(v) { return Math.round(v * 10) / 10; }
+    edges.forEach(function (e) {
+      var A = N[e.a], B = N[e.b];
+      if (!e.as) { e.as = Math.abs(A.y - B.y) < 10 ? (B.x > A.x ? "right" : "left") : (B.y > A.y ? "bottom" : "top"); }
+      if (!e.bs) { e.bs = { bottom: "top", top: "bottom", left: "right", right: "left" }[e.as]; }
+      [["a", "as", "fa", "b"], ["b", "bs", "fb", "a"]].forEach(function (k) {
+        if (e[k[2]] == null) { var key = e[k[0]] + ":" + e[k[1]]; (ports[key] = ports[key] || []).push({ e: e, f: k[2], o: N[e[k[3]]] }); }
+      });
     });
-    Object.keys(N).forEach(function (id) {
-      var n = N[id];
-      h += '<g class="node ' + n.k + '" data-id="' + id + '"><rect x="' + n.x + '" y="' + n.y + '" width="' + n.w + '" height="' + n.h + '" rx="8"/>' +
-        '<text class="t" x="' + (n.x + 12) + '" y="' + (n.y + 24) + '">' + id + "</text>" +
-        n.l.map(function (t, i) { return '<text x="' + (n.x + 12) + '" y="' + (n.y + 43 + i * 17) + '">' + t + "</text>"; }).join("") + "</g>";
+    Object.keys(ports).forEach(function (key) {      // edges sharing a side of a box are spread along it, in order
+      var list = ports[key], side = key.split(":")[1], vert = side === "top" || side === "bottom";
+      list.sort(function (p, q) { return vert ? (p.o.x + p.o.w / 2) - (q.o.x + q.o.w / 2) : p.o.y - q.o.y; });
+      list.forEach(function (p, i) { p.e[p.f] = (i + 1) / (list.length + 1); });
     });
-    E.forEach(function (e) {          // the key of each relationship, drawn last so nothing covers it
-      h += '<g class="edge" data-a="' + e[0] + '" data-b="' + e[1] + '"><text x="' + e[4] + '" y="' + e[5] + '" text-anchor="middle">' + e[3] + "</text></g>";
+    var id = svg.id, paths = "", texts = "", boxes = "";
+    edges.forEach(function (e) {
+      var p1 = pt(N[e.a], e.as, e.fa), p2 = pt(N[e.b], e.bs, e.fb), n1 = NORMAL[e.as], n2 = NORMAL[e.bs];
+      var k = Math.max(28, Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) * 0.4);
+      var c1 = [p1[0] + n1[0] * k, p1[1] + n1[1] * k], c2 = [p2[0] + n2[0] * k, p2[1] + n2[1] * k];
+      var tag = '<g class="edge" data-a="' + e.a + '" data-b="' + e.b + '">';
+      paths += tag + '<path d="M' + r(p1[0]) + "," + r(p1[1]) + " C" + r(c1[0]) + "," + r(c1[1]) + " " + r(c2[0]) + "," + r(c2[1]) +
+        " " + r(p2[0]) + "," + r(p2[1]) + '" marker-end="url(#arr-' + id + ')"/></g>';
+      var t = "";
+      if (g.labels !== false && e.label) {
+        var mx = (p1[0] + 3 * c1[0] + 3 * c2[0] + p2[0]) / 8, my = (p1[1] + 3 * c1[1] + 3 * c2[1] + p2[1]) / 8;
+        t += '<text x="' + r(e.lx || mx) + '" y="' + r((e.ly || my) + 4) + '" text-anchor="middle">' + e.label + "</text>";
+      }
+      if (g.card) {
+        [[p1, n1, "1"], [p2, n2, "*"]].forEach(function (c) {
+          var x = c[0][0] + c[1][0] * 13 - c[1][1] * 9, y = c[0][1] + c[1][1] * 13 + c[1][0] * 9;
+          t += '<text class="card" x="' + r(x) + '" y="' + r(y + 4) + '" text-anchor="middle">' + c[2] + "</text>";
+        });
+      }
+      if (t) texts += tag + t + "</g>";
     });
-    var g = $("graph"); g.innerHTML = h;
-    function reach(id) {              // the table, and every table it reaches by following the arrows
-      var seen = {}; seen[id] = 1; var grew = true;
-      while (grew) { grew = false; E.forEach(function (e) { if (seen[e[0]] && !seen[e[1]]) { seen[e[1]] = 1; grew = true; } }); }
+    var ty = g.dense ? [18, 34, 14] : [24, 43, 17];
+    Object.keys(N).forEach(function (nid) {
+      var n = N[nid];
+      boxes += '<g class="node ' + n.k + '" data-id="' + nid + '"><rect x="' + n.x + '" y="' + n.y + '" width="' + n.w + '" height="' + n.h + '" rx="8"/>' +
+        '<text class="t" x="' + (n.x + 10) + '" y="' + (n.y + ty[0]) + '">' + esc(n.t || nid) + "</text>" +
+        (n.l || []).map(function (line, i) { return '<text x="' + (n.x + 10) + '" y="' + (n.y + ty[1] + i * ty[2]) + '">' + esc(line) + "</text>"; }).join("") + "</g>";
+    });
+    svg.setAttribute("viewBox", "0 0 " + g.w + " " + g.h);
+    svg.classList.toggle("dense", !!g.dense);
+    svg.innerHTML = '<defs><marker id="arr-' + id + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>' +
+      paths + boxes + texts;
+    function reach(start) {                           // what it filters, and what filters it
+      var seen = {}; seen[start] = 1;
+      [["a", "b"], ["b", "a"]].forEach(function (d) {
+        var todo = [start], s2 = {}; s2[start] = 1;
+        while (todo.length) {
+          var x = todo.pop();
+          edges.forEach(function (e) { if (e[d[0]] === x && !s2[e[d[1]]]) { s2[e[d[1]]] = 1; seen[e[d[1]]] = 1; todo.push(e[d[1]]); } });
+        }
+      });
       return seen;
     }
-    function focus(id) {
-      var seen = id ? reach(id) : {};
-      g.classList.toggle("focus", !!id);
-      Array.prototype.forEach.call(g.querySelectorAll(".node"), function (n) { n.classList.toggle("lit", !!seen[n.dataset.id]); });
-      Array.prototype.forEach.call(g.querySelectorAll(".edge"), function (e) { e.classList.toggle("lit", !!(seen[e.dataset.a] && seen[e.dataset.b])); });
+    function focus(nid) {
+      var seen = nid ? reach(nid) : {};
+      svg.classList.toggle("focus", !!nid);
+      Array.prototype.forEach.call(svg.querySelectorAll(".node"), function (n) { n.classList.toggle("lit", !!seen[n.dataset.id]); });
+      Array.prototype.forEach.call(svg.querySelectorAll(".edge"), function (e) { e.classList.toggle("lit", !!(seen[e.dataset.a] && seen[e.dataset.b])); });
     }
-    g.addEventListener("mouseover", function (e) { var n = e.target.closest(".node"); focus(n ? n.dataset.id : null); });
-    g.addEventListener("mouseleave", function () { focus(null); });
+    svg.onmouseover = function (ev) { var n = ev.target.closest(".node"); focus(n ? n.dataset.id : null); };
+    svg.onmouseleave = function () { focus(null); };
+  }
+  function legend(items) {
+    return items.map(function (x) { return '<span><i class="k ' + x[0] + '"></i>' + x[1] + "</span>"; }).join("");
+  }
+
+  (function () {
+    // The model: the 7 tables and 8 relationships of semantic_model/a_baseline/model.ossie.yaml.
+    var BASE = { w: 1100, h: 500, card: true, nodes: {
+      dim_product:  { x: 150, y: 20,  w: 210, h: 66, k: "dim", l: ["40 products", "brand · manufacturer"] },
+      dim_category: { x: 740, y: 20,  w: 210, h: 66, k: "dim shared", l: ["4 categories"] },
+      dim_store:    { x: 270, y: 145, w: 210, h: 66, k: "dim", l: ["55 stores", "customer: a chain in a country"] },
+      dim_country:  { x: 620, y: 145, w: 210, h: 66, k: "dim shared", l: ["3 countries"] },
+      dim_calendar: { x: 445, y: 270, w: 210, h: 66, k: "dim shared", l: ["1,461 days, 2020 to 2023", "year · month · 4-4-5 fiscal period"] },
+      fact_sales:   { x: 40,  y: 395, w: 270, h: 90, k: "fact", l: ["2,411,200 rows", "one row per day, store and product", "sales_qty · net_profit"] },
+      fact_budget:  { x: 790, y: 395, w: 270, h: 90, k: "fact", l: ["432 rows", "one row per month, country and category", "budget_qty"] }
+    }, edges: [
+      { a: "dim_category", b: "dim_product", label: "category" },
+      { a: "dim_product", b: "fact_sales", label: "product_id", fa: 0.3, fb: 0.63 },
+      { a: "dim_country", b: "dim_store", label: "country" },
+      { a: "dim_store", b: "fact_sales", label: "store_id", fa: 0.3, fb: 0.93 },
+      { a: "dim_calendar", b: "fact_sales", label: "sale_date", as: "left", bs: "right", fa: 0.5, fb: 0.35 },
+      { a: "dim_calendar", b: "fact_budget", label: "month_start", as: "right", bs: "left", fa: 0.5, fb: 0.35 },
+      { a: "dim_country", b: "fact_budget", label: "country", fa: 0.8, fb: 0.2 },
+      { a: "dim_category", b: "fact_budget", label: "category", fa: 0.8, fb: 0.7 }
+    ] };
+    var LEG_BASE = [["fact", "Fact"], ["dim", "Dimension"], ["dim shared", "Dimension shared by both facts"]];
+    drawGraph($("g-base"), BASE);
+    $("leg-base").innerHTML = legend(LEG_BASE);
+
+    // Power BI, read with INFO.VIEW.RELATIONSHIPS / TABLES / MEASURES: the same 8 relationships, and the measures' table.
+    var PBI = { w: 1100, h: 500, card: true, nodes: {}, edges: BASE.edges };
+    Object.keys(BASE.nodes).forEach(function (k) { PBI.nodes[k] = BASE.nodes[k]; });
+    PBI.nodes.Metrics = { x: 450, y: 405, w: 200, h: 70, k: "measures", l: ["the 16 measures", "no relationships"] };
+
+    // Snowflake, read with DESCRIBE SEMANTIC VIEW: 16 logical tables over 9 physical ones, 32 relationships.
+    var SF = { w: 1100, h: 510, dense: true, labels: false, nodes: {
+      all_members:   { x: 910, y: 20,  w: 170, h: 48, k: "helper", l: ["DIM_ALL_MEMBERS, 1 row"] },
+      category:      { x: 60,  y: 125, w: 170, h: 48, k: "dim", l: ["DIM_CATEGORY"] },
+      brand:         { x: 250, y: 125, w: 170, h: 48, k: "helper", l: ["DIM_BRAND"] },
+      country:       { x: 560, y: 125, w: 170, h: 48, k: "dim", l: ["DIM_COUNTRY"] },
+      product:       { x: 20,  y: 245, w: 160, h: 48, k: "dim", l: ["DIM_PRODUCT"] },
+      product_attrs: { x: 200, y: 245, w: 160, h: 48, k: "copy", l: ["DIM_PRODUCT again"] },
+      calendar:      { x: 380, y: 245, w: 160, h: 48, k: "dim", l: ["DIM_CALENDAR"] },
+      store:         { x: 560, y: 245, w: 160, h: 48, k: "dim", l: ["DIM_STORE"] },
+      store_geo:     { x: 740, y: 245, w: 160, h: 48, k: "copy", l: ["DIM_STORE again"] },
+      sales:              { x: 10,  y: 430, w: 145, h: 62, k: "fact", l: ["FACT_SALES"] },
+      sales_ly:           { x: 165, y: 430, w: 145, h: 62, k: "factcopy", l: ["FACT_SALES", "date + 1 year"] },
+      sales_ly_day:       { x: 320, y: 430, w: 145, h: 62, k: "factcopy", l: ["FACT_SALES", "+ 1 year, no Feb 29"] },
+      sales_fly:          { x: 475, y: 430, w: 145, h: 62, k: "factcopy", l: ["FACT_SALES", "date + 364 days"] },
+      sales_all_cust:     { x: 630, y: 430, w: 145, h: 62, k: "factcopy", l: ["FACT_SALES", "all customers"] },
+      sales_all_cust_cat: { x: 785, y: 430, w: 145, h: 62, k: "factcopy", l: ["FACT_SALES", "all cust. and categories"] },
+      budget:             { x: 940, y: 430, w: 145, h: 62, k: "fact", l: ["FACT_BUDGET"] }
+    }, edges: [] };
+    [["all_members", "category"], ["all_members", "sales_all_cust_cat"], ["category", "product"], ["category", "budget"],
+     ["brand", "product_attrs"], ["country", "store"], ["country", "store_geo"], ["country", "budget"]]
+      .forEach(function (e) { SF.edges.push({ a: e[0], b: e[1] }); });
+    var SALES4 = ["sales", "sales_ly", "sales_ly_day", "sales_fly"];
+    ["sales", "sales_ly", "sales_ly_day", "sales_fly", "sales_all_cust", "sales_all_cust_cat", "budget"].forEach(function (f) { SF.edges.push({ a: "calendar", b: f }); });
+    SALES4.concat(["sales_all_cust"]).forEach(function (f) { SF.edges.push({ a: "product", b: f }); });
+    SALES4.concat(["sales_all_cust", "sales_all_cust_cat"]).forEach(function (f) { SF.edges.push({ a: "product_attrs", b: f }); });
+    SALES4.forEach(function (f) { SF.edges.push({ a: "store", b: f }); });
+    ["sales_all_cust", "sales_all_cust_cat"].forEach(function (f) { SF.edges.push({ a: "store_geo", b: f }); });
+
+    // Databricks, read with SHOW VIEWS: 5 metric views, each one source with its joins, and nothing between them.
+    function five(source, line) {
+      return { w: 340, h: 220, dense: true, labels: false, nodes: {
+        dim_category: { x: 120, y: 8, w: 100, h: 40, k: "dim" }, dim_country: { x: 230, y: 8, w: 100, h: 40, k: "dim" },
+        dim_calendar: { x: 10, y: 80, w: 100, h: 40, k: "dim" }, dim_product: { x: 120, y: 80, w: 100, h: 40, k: "dim" },
+        dim_store: { x: 230, y: 80, w: 100, h: 40, k: "dim" },
+        src: { x: 70, y: 162, w: 200, h: 48, k: "fact", t: source, l: [line] }
+      }, edges: [{ a: "dim_category", b: "dim_product" }, { a: "dim_country", b: "dim_store" }, { a: "dim_calendar", b: "src" },
+                 { a: "dim_product", b: "src" }, { a: "dim_store", b: "src" }] };
+    }
+    var MV = [
+      ["sales_mv", "14 measures, 9 of them windows", "Sales, with its dimensions left-joined.", five("fact_sales", "source")],
+      ["sales_ly_mv", "2 measures", "The same fact with its date moved a year, for last year at any grain.", five("fact_sales", "source, date + 1 year")],
+      ["budget_mv", "1 measure", "The budget, with its three dimensions.", { w: 340, h: 220, dense: true, labels: false, nodes: {
+        dim_calendar: { x: 10, y: 40, w: 100, h: 40, k: "dim" }, dim_category: { x: 120, y: 40, w: 100, h: 40, k: "dim" },
+        dim_country: { x: 230, y: 40, w: 100, h: 40, k: "dim" }, src: { x: 70, y: 150, w: 200, h: 48, k: "fact", t: "fact_budget", l: ["source"] }
+      }, edges: [{ a: "dim_calendar", b: "src" }, { a: "dim_category", b: "src" }, { a: "dim_country", b: "src" }] }],
+      ["bridge_mv", "3 measures", "Both facts under one source: every date, category and country, each fact joined one-to-many.", { w: 340, h: 220, dense: true, labels: false, nodes: {
+        src: { x: 30, y: 20, w: 280, h: 48, k: "dim", t: "calendar × category × country", l: ["source: a cross join"] },
+        sales: { x: 15, y: 150, w: 150, h: 48, k: "fact", t: "fact_sales", l: ["with product and store"] },
+        budget: { x: 175, y: 150, w: 150, h: 48, k: "fact", t: "fact_budget", l: ["joined"] }
+      }, edges: [{ a: "src", b: "sales" }, { a: "src", b: "budget" }] }],
+      ["calendar_mv", "no measures", "The calendar alone, so its days can be counted.", { w: 340, h: 220, dense: true, labels: false, nodes: {
+        dim_calendar: { x: 95, y: 86, w: 150, h: 48, k: "dim", l: ["source, no joins"] } }, edges: [] }]
+    ];
+    $("g-dbx").innerHTML = MV.map(function (m, i) {
+      return '<div class="card stack mv"><header><code>' + m[0] + '</code><span class="sub">' + m[1] + "</span></header>" +
+        '<svg id="g-dbx-' + i + '" class="graph" role="img" aria-label="' + m[0] + '"></svg><p class="sub">' + m[2] + "</p></div>";
+    }).join("");
+    MV.forEach(function (m, i) { drawGraph($("g-dbx-" + i), m[3]); });
+
+    var PLAT = {
+      fabric: { g: PBI, leg: LEG_BASE.concat([["measures", "Table of measures"]]),
+        cap: "One model. The 7 tables and 8 relationships of the baseline, each one-to-many and filtering one way, exactly as drawn above. The 16 measures sit in one more table, Metrics, which holds nothing else.",
+        src: "Read from the service with INFO.VIEW.TABLES, INFO.VIEW.RELATIONSHIPS and INFO.VIEW.MEASURES." },
+      snowflake: { g: SF, leg: [["fact", "Fact"], ["factcopy", "FACT_SALES again"], ["dim", "Dimension"], ["copy", "Dimension again"], ["helper", "Table added for the model"]],
+        cap: "One semantic view, 16 logical tables over 9 physical ones, 32 relationships. FACT_SALES appears six times: the facts themselves, last year, last year by day, last fiscal year, and two denominators that must ignore the customer filter. DIM_PRODUCT and DIM_STORE appear twice, and two tables exist only for the model.",
+        src: "Read from the service with DESCRIBE SEMANTIC VIEW. Point at a table to follow its relationships." },
+      dbx: { leg: [["fact", "Fact, the source of the view"], ["dim", "Dimension, left-joined"]],
+        cap: "Five metric views and nothing that relates them. Each is one source with its dimensions left-joined, so each answers at the grain of its source. A question that needs two of them is a join you write in the query.",
+        src: "Read from the service with SHOW VIEWS: sales_mv, sales_ly_mv, budget_mv, bridge_mv, calendar_mv, all of them metric views." }
+    };
+    function showPlat(p) {
+      var x = PLAT[p];
+      Array.prototype.forEach.call($("platseg").children, function (b) { b.setAttribute("aria-selected", b.dataset.p === p); });
+      $("plat-svgwrap").hidden = p === "dbx"; $("g-dbx").hidden = p !== "dbx";
+      if (x.g) drawGraph($("g-plat"), x.g);
+      $("plat-cap").textContent = x.cap; $("plat-src").textContent = x.src; $("leg-plat").innerHTML = legend(x.leg);
+    }
+    $("platseg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) showPlat(b.dataset.p); });
+    showPlat("fabric");
 
     $("measures").innerHTML = "<thead><tr><th>Measure</th><th>Meaning</th><th>In the open standard</th></tr></thead><tbody>" +
       DATA.measures.map(function (m) {
@@ -610,7 +783,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
       el.hidden = !!el.dataset.mode && el.dataset.mode !== demo.mode;
       el.classList.toggle("on", +el.dataset.from <= demo.step);
     });
-    Array.prototype.forEach.call(document.querySelectorAll(".seg button"), function (b) { b.setAttribute("aria-selected", b.dataset.mode === demo.mode); });
+    Array.prototype.forEach.call(document.querySelectorAll("#routeseg button"), function (b) { b.setAttribute("aria-selected", b.dataset.mode === demo.mode); });
     $("stepper").innerHTML = STEPS[demo.mode].map(function (t, i) {
       return '<button type="button" data-step="' + (i + 1) + '"' + (i + 1 === demo.step ? ' aria-current="step"' : "") +
         ' class="' + (i + 1 < demo.step ? "done" : "") + '"><b>' + (i + 1) + "</b>" + t + "</button>";
@@ -631,7 +804,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     $("d-sales").innerHTML = table(sal.cols, sal.measures, sal.rows(ref).filter(function (r) { return r[1] !== ""; }));
     $("d-merged").innerHTML = table(q.columns, q.measures, ref, { hot: is2023 });
     $("d-single").innerHTML = runTable(q, run(q, "dbx"));
-    document.querySelector(".seg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { demo.mode = b.dataset.mode; playDemo(); } });
+    $("routeseg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { demo.mode = b.dataset.mode; playDemo(); } });
     $("stepper").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { stopDemo(); demo.step = +b.dataset.step; paintDemo(); } });
     $("play").addEventListener("click", playDemo);
     paintDemo();
