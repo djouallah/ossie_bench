@@ -859,9 +859,9 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     var F = [
       ["Imports an Ossie file", ["yes", "Publish compiles it into a Direct Lake model." + ev("semantic_model/fabric/publish_response.json")],
         ["yes", "<code>SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML</code>" + ev("semantic_model/snowflake/tests/import_response.txt")], ["no", "No Ossie import."]],
-      ["Ossie version it reads", ["yes", "<code>" + fv + "</code>"], ["part", "<code>0.1.1</code> only"], ["na", ""]],
-      ["Measures in Ossie's own SQL", ["no", "<code>ANSI_SQL</code> metrics are ignored with a warning: <em>Non-DAX metric expressions are not supported</em>. 0.3.0.dev0's <code>expression.sql</code> is refused: version mismatch." + ev("semantic_model/fabric/ossie_sql_response.txt")],
-        ["part", "<code>ANSI_SQL</code> metrics work in 0.1.1. 0.3.0.dev0's <code>expression.sql</code> is refused: unsupported version." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["na", ""]],
+      ["Ossie version it reads", ["yes", "<code>" + fv + "</code>, a development version"], ["yes", "<code>0.1.1</code>, the released version"], ["na", ""]],
+      ["Measures in Ossie's own SQL", ["no", "<code>ANSI_SQL</code> metrics are ignored, with the warning <em>Non-DAX metric expressions are not supported</em>." + ev("semantic_model/fabric/ossie_sql_response.txt")],
+        ["yes", "<code>ANSI_SQL</code> metrics work in 0.1.1, the released version." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["na", ""]],
       ["Its own dialect inside the file", ["yes", "DAX: all 16 measures, 0 errors."],
         ["no", "The SNOWFLAKE dialect is refused: <code>FIXED</code>, <code>EXCLUDE DIMENSIONS</code>." + ev("semantic_model/snowflake/tests/lod_via_ossie_response.txt")], ["na", ""]],
       ["Vendor extensions", ["part", "Its own <code>POWER_BI</code> format strings are dropped without a warning."],
