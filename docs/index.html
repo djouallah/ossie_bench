@@ -3,498 +3,534 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>One semantic model, three platforms</title>
-<meta name="description" content="How Power BI, Snowflake and Databricks answer the same 13 questions over one model, explained through drill-across.">
+<title>ossie_bench</title>
+<meta name="description" content="One semantic model on Power BI, Snowflake and Databricks, and in Apache Ossie: how each holds it, how each answers the same 13 questions, and what Ossie carries between them.">
+<script>try { document.documentElement.dataset.theme = localStorage.getItem("theme") || "dark"; } catch (e) { document.documentElement.dataset.theme = "dark"; }</script>
 <style>
 :root {
-  color-scheme: light;
-  --page: #f9f9f7; --surface: #fcfcfb; --sunken: #f1f0ec;
-  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
-  --line: #e1e0d9; --line-2: #c3c2b7; --ring: rgba(11,11,11,.10);
-  --p-fabric: #2a78d6; --p-snowflake: #eb6834; --p-dbx: #1baf7a;
-  --good: #0ca30c; --good-ink: #006300; --warn: #fab219; --crit: #d03b3b;
-  --good-bg: #e7f5e7; --warn-bg: #fdf1d2; --crit-bg: #fae6e6; --note-bg: #eaf2fc;
+  color-scheme: dark;
+  --page: #08090c; --surface: #0f1117; --surface-2: #141721; --sunken: #1b1f2a;
+  --ink: #eef0f6; --ink-2: #b3b8c7; --muted: #7c8294;
+  --line: #21252f; --line-2: #323846; --ring: rgba(255,255,255,.07);
+  --p-fabric: #4d9cff; --p-snowflake: #ff7d47; --p-dbx: #2fd39a;
+  --k-fact: #9085e9; --k-shared: #d55181; --k-helper: #c98500; --k-dim: #a7adbd;
+  --good: #22c55e; --good-ink: #4ade80; --warn: #fbbf24; --warn-ink: #fbbf24; --crit: #f87171;
+  --good-bg: rgba(34,197,94,.13); --warn-bg: rgba(251,191,36,.13); --crit-bg: rgba(248,113,113,.13); --note-bg: rgba(77,156,255,.12);
+  --glow-a: rgba(144,133,233,.16); --glow-b: rgba(47,211,154,.08);
   --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, Menlo, monospace;
 }
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) {
-    color-scheme: dark;
-    --page: #0d0d0d; --surface: #1a1a19; --sunken: #232322;
-    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
-    --line: #2c2c2a; --line-2: #383835; --ring: rgba(255,255,255,.10);
-    --p-fabric: #3987e5; --p-snowflake: #d95926; --p-dbx: #199e70;
-    --good-ink: #0ca30c;
-    --good-bg: #132a13; --warn-bg: #33290c; --crit-bg: #331616; --note-bg: #14233a;
-  }
-}
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --page: #0d0d0d; --surface: #1a1a19; --sunken: #232322;
-  --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
-  --line: #2c2c2a; --line-2: #383835; --ring: rgba(255,255,255,.10);
-  --p-fabric: #3987e5; --p-snowflake: #d95926; --p-dbx: #199e70;
-  --good-ink: #0ca30c;
-  --good-bg: #132a13; --warn-bg: #33290c; --crit-bg: #331616; --note-bg: #14233a;
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page: #f6f6f3; --surface: #ffffff; --surface-2: #fbfbf9; --sunken: #f0efea;
+  --ink: #0d0e12; --ink-2: #4a4d57; --muted: #7f828c;
+  --line: #e4e3dc; --line-2: #cfcec6; --ring: rgba(13,14,18,.08);
+  --p-fabric: #2a78d6; --p-snowflake: #e8622c; --p-dbx: #14996a;
+  --k-fact: #6250d6; --k-shared: #e87ba4; --k-helper: #eda100; --k-dim: #5d6170;
+  --good: #0ca30c; --good-ink: #006300; --warn: #d99a00; --warn-ink: #8a6200; --crit: #d03b3b;
+  --good-bg: #e7f5e7; --warn-bg: #fdf1d2; --crit-bg: #fae6e6; --note-bg: #eaf2fc;
+  --glow-a: rgba(98,80,214,.07); --glow-b: rgba(20,153,106,.05);
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--page); color: var(--ink);
-  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+body { margin: 0; color: var(--ink); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: radial-gradient(1100px 600px at 8% -12%, var(--glow-a), transparent 60%),
+              radial-gradient(900px 520px at 100% -8%, var(--glow-b), transparent 60%), var(--page);
+  background-attachment: fixed; }
 a { color: inherit; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
 a:hover { text-decoration-color: currentColor; }
 code, pre { font-family: var(--mono); font-size: 12.5px; }
-code { background: var(--sunken); padding: 1px 5px; border-radius: 4px; }
-pre { margin: 0; padding: 12px 14px; background: var(--sunken); border-radius: 8px; overflow-x: auto;
-  line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+code { background: var(--sunken); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+pre { margin: 0; padding: 12px 14px; background: var(--sunken); border: 1px solid var(--line); border-radius: 10px;
+  overflow-x: auto; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 pre code { background: none; padding: 0; }
 h1, h2, h3, h4, p { margin: 0; }
-h1 { font-size: 26px; line-height: 1.2; letter-spacing: -.01em; }
-h2 { font-size: 21px; line-height: 1.25; letter-spacing: -.01em; }
-h3 { font-size: 16px; }
-h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+h2 { font-size: 28px; line-height: 1.15; letter-spacing: -.025em; font-weight: 750; }
+h3 { font-size: 16.5px; letter-spacing: -.01em; }
+h4 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 650; }
 .wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
-.lead { color: var(--ink-2); max-width: 76ch; }
+.lead { color: var(--ink-2); max-width: 78ch; font-size: 15.5px; }
 .sub { color: var(--ink-2); font-size: 13.5px; }
 .muted { color: var(--muted); }
 
 /* top bar */
-.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--page) 88%, transparent);
-  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
-.top .wrap { display: flex; align-items: center; gap: 18px; height: 52px; }
-.top strong { font-size: 14px; white-space: nowrap; }
-.top nav { display: flex; gap: 4px; overflow-x: auto; flex: 1; scrollbar-width: none; }
-.top nav a { padding: 6px 10px; border-radius: 6px; text-decoration: none; color: var(--ink-2); font-size: 13.5px;
-  white-space: nowrap; }
-.top nav a:hover { background: var(--sunken); color: var(--ink); }
+.top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--page) 80%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 18px; min-height: 60px; flex-wrap: wrap; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font: 700 15px var(--mono); letter-spacing: -.02em;
+  text-decoration: none; white-space: nowrap; }
+.logo { width: 22px; height: 22px; border-radius: 7px; position: relative;
+  background: conic-gradient(from 210deg, var(--p-fabric), var(--p-snowflake), var(--p-dbx), var(--p-fabric));
+  box-shadow: 0 0 18px -2px color-mix(in srgb, var(--k-fact) 70%, transparent); }
+.logo::after { content: ""; position: absolute; inset: 5px; border-radius: 3px; background: var(--page); }
+nav#nav { position: relative; display: flex; gap: 2px; padding: 4px; border-radius: 12px; background: var(--surface);
+  border: 1px solid var(--line); margin-right: auto; }
+nav#nav a { position: relative; z-index: 1; padding: 6px 14px; border-radius: 8px; text-decoration: none; color: var(--ink-2);
+  font-size: 14px; font-weight: 550; white-space: nowrap; transition: color .2s; }
+nav#nav a:hover { color: var(--ink); }
+nav#nav a[aria-current="page"] { color: var(--ink); }
+nav#nav .ind { position: absolute; top: 4px; bottom: 4px; left: 0; border-radius: 8px; background: var(--sunken);
+  box-shadow: inset 0 0 0 1px var(--line-2), 0 0 22px -6px color-mix(in srgb, var(--k-fact) 60%, transparent);
+  transition: transform .35s cubic-bezier(.3,.8,.2,1), width .35s cubic-bezier(.3,.8,.2,1); }
 .btn { font: inherit; font-size: 13px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line-2);
-  border-radius: 6px; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
-.btn:hover { color: var(--ink); }
+  border-radius: 8px; padding: 6px 11px; cursor: pointer; white-space: nowrap; text-decoration: none; }
+.btn:hover { color: var(--ink); border-color: var(--muted); }
 
-.view { display: none; padding: 26px 0 8px; }
-.view.on { display: block; }
-.top nav a[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--ring); }
+.view { display: none; padding: 30px 0 8px; }
+.view.on { display: block; animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+.head { display: grid; gap: 10px; margin-bottom: 22px; }
+.card { background: linear-gradient(180deg, var(--surface-2), var(--surface)); border: 1px solid var(--line);
+  border-radius: 16px; padding: 20px; }
+.grid2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.stack { display: grid; gap: 12px; align-content: start; }
+.grid2 > *, .grid3 > *, .stack > *, .lane > *, .branch > *, .branches > *, .pair > *, .explorer > *, .plats > * { min-width: 0; }
 
-/* the model graphs */
-.graphwrap { overflow-x: auto; }
+/* chapters */
+.chapter { padding-top: 8px; margin-bottom: 44px; scroll-margin-top: 130px; }
+.chead { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; margin-bottom: 20px; }
+.chead > div { display: grid; gap: 10px; }
+.num { font: 700 13px var(--mono); padding: 5px 9px; border-radius: 8px; margin-top: 4px; color: var(--ink);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--k-fact) 35%, transparent), color-mix(in srgb, var(--p-dbx) 25%, transparent));
+  border: 1px solid color-mix(in srgb, var(--k-fact) 45%, transparent); }
+.chapnav { position: sticky; top: 61px; z-index: 10; display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 0; margin: -10px 0 18px;
+  background: color-mix(in srgb, var(--page) 85%, transparent); backdrop-filter: blur(10px); }
+.chapnav button { font: inherit; font-size: 13px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 999px; padding: 5px 13px 5px 6px; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
+.chapnav button b { font: 700 11px var(--mono); padding: 2px 6px; border-radius: 999px; background: var(--sunken); }
+.chapnav button:hover { color: var(--ink); border-color: var(--line-2); }
+
+/* platform cards */
+.plats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 18px; }
+.pcard { --pc: var(--p-fabric); font: inherit; color: inherit; text-align: left; cursor: pointer; position: relative; overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 7%, var(--surface-2)), var(--surface));
+  border: 1px solid var(--line); border-radius: 16px; padding: 18px 18px 16px; display: grid; gap: 12px; align-content: start;
+  transition: border-color .25s, box-shadow .25s, transform .25s; }
+.pcard::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--pc), transparent); opacity: .5; transition: opacity .25s; }
+.pcard:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--pc) 45%, var(--line)); }
+.pcard[aria-pressed="true"] { border-color: color-mix(in srgb, var(--pc) 75%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--pc) 50%, transparent), 0 18px 50px -18px color-mix(in srgb, var(--pc) 60%, transparent); }
+.pcard[aria-pressed="true"]::before { opacity: 1; }
+.pcard.snowflake { --pc: var(--p-snowflake); } .pcard.dbx { --pc: var(--p-dbx); }
+.pc-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 650; font-size: 15px; }
+.pc-top span.sub { font-weight: 400; font-size: 12.5px; }
+.pc-big { display: flex; align-items: baseline; gap: 6px; }
+.pc-big b { font-size: 46px; line-height: 1; font-weight: 750; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.pc-big small { font-size: 18px; color: var(--muted); font-weight: 600; }
+.pc-lbl { font-size: 12.5px; color: var(--ink-2); margin-top: -6px; }
+.pc-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.pc-stats div { min-width: 0; }
+.pc-stats dd { margin: 0; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.pc-stats dt { font-size: 11px; color: var(--muted); line-height: 1.25; }
+
+/* the graph */
+.graphcard { padding: 0; overflow: hidden; }
+.gc-head { padding: 18px 20px 6px; display: grid; gap: 6px; }
+.gc-head h3 { display: flex; align-items: center; gap: 8px; }
+.caption { font-size: 14.5px; color: var(--ink-2); max-width: 92ch; }
+.graphwrap { position: relative; overflow-x: auto; }
 .graph { display: block; width: 100%; height: auto; }
-#g-plat { min-width: 820px; }
-.graph .node rect { fill: var(--surface); stroke: var(--line-2); stroke-width: 1.2; }
-.graph .node.fact rect, .graph .node.factcopy rect { fill: var(--sunken); stroke: var(--ink); stroke-width: 1.6; }
-.graph .node.factcopy rect { stroke-dasharray: 6 4; }
-.graph .node.copy rect { stroke-dasharray: 6 4; stroke: var(--ink-2); }
-.graph .node.helper rect { fill: var(--warn-bg); stroke: #c98500; }
-.graph .node.shared rect { fill: var(--note-bg); stroke: var(--p-fabric); }
-.graph .node.measures rect { fill: var(--surface); stroke: var(--muted); stroke-dasharray: 2 3; }
-.graph .node text { fill: var(--ink-2); font-size: 11.5px; }
-.graph .node text.t { fill: var(--ink); font-family: var(--mono); font-size: 13.5px; font-weight: 700; }
-.graph.dense .node text { font-size: 10.5px; }
-.graph.dense .node text.t { font-size: 12px; }
-.graph .edge path { fill: none; stroke: var(--line-2); stroke-width: 1.6; }
-.graph.dense .edge path { stroke-width: 1.2; }
-.graph .edge text { fill: var(--muted); font-size: 11px; font-family: var(--mono); paint-order: stroke;
-  stroke: var(--surface); stroke-width: 4px; }
-.graph .edge text.card { font-family: inherit; font-weight: 700; font-size: 12px; fill: var(--ink-2); }
-.graph marker path { fill: var(--line-2); }
-.graph .node { cursor: default; transition: opacity .2s; } .graph .edge { transition: opacity .2s; }
-.graph.focus .node:not(.lit), .graph.focus .edge:not(.lit) { opacity: .18; }
-.graph .edge.lit path { stroke: var(--ink); } .graph .edge.lit text { fill: var(--ink); }
-.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
-.legend .k { width: 16px; height: 12px; border-radius: 3px; border: 1.2px solid var(--line-2); background: var(--surface); }
-.legend .k.fact, .legend .k.factcopy { background: var(--sunken); border: 1.6px solid var(--ink); }
-.legend .k.factcopy, .legend .k.copy { border-style: dashed; }
-.legend .k.copy { border-color: var(--ink-2); }
-.legend .k.helper { background: var(--warn-bg); border-color: #c98500; }
-.legend .k.shared { background: var(--note-bg); border-color: var(--p-fabric); }
-.legend .k.measures { border-style: dotted; border-color: var(--muted); }
-.mvgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); gap: 12px; }
-.mvgrid[hidden] { display: none; }
-.mv { padding: 12px; gap: 6px; }
-.mv header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.mv header code { font-weight: 700; font-size: 13px; }
+.gc-foot { padding: 6px 20px 18px; display: grid; gap: 10px; }
+.graph .dotp { fill: var(--line-2); }
+.graph .h0 { stop-color: var(--k-fact); stop-opacity: .30; } .graph .h1 { stop-color: var(--k-fact); stop-opacity: 0; }
+.graph .s-fact { stop-color: var(--k-fact); } .graph .s-dim { stop-color: var(--k-dim); } .graph .s-shared { stop-color: var(--k-shared); }
+.graph .s-helper { stop-color: var(--k-helper); } .graph .s-measures { stop-color: var(--muted); }
+.graph .mk { fill: var(--k-fact); }
+.graph .edge .base { fill: none; stroke-width: 1.8; opacity: .9; }
+.graph .edge .flow { fill: none; stroke: var(--ink); stroke-opacity: .55; stroke-width: 2.4; stroke-linecap: round;
+  stroke-dasharray: .1 16; animation: flow 1.5s linear infinite, fadein .8s ease both; animation-delay: 0s, 1s; }
+.graph.dense .edge .flow { stroke-opacity: .3; stroke-width: 2; }
+@keyframes flow { to { stroke-dashoffset: -16.1; } }
+@keyframes fadein { from { opacity: 0; } }
+.graph .edge text { fill: var(--muted); font: 11px var(--mono); paint-order: stroke; stroke: var(--surface); stroke-width: 5px; }
+.graph .edge text.card { font: 700 12.5px system-ui, sans-serif; fill: var(--ink-2); }
+.graph .node, .graph .edge { transition: opacity .25s; }
+.graph .node { cursor: default; }
+.graph .node .in { animation: pop .6s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i) * 45ms);
+  transform-box: fill-box; transform-origin: center; }
+@keyframes pop { from { opacity: 0; transform: translateY(12px) scale(.9); } }
+.graph .k-fact { --kc: var(--k-fact); } .graph .k-dim { --kc: var(--k-dim); } .graph .k-shared { --kc: var(--k-shared); }
+.graph .k-helper { --kc: var(--k-helper); } .graph .k-measures { --kc: var(--muted); }
+.graph .body { fill: var(--surface-2); stroke: color-mix(in srgb, var(--kc) 60%, transparent); stroke-width: 1.3; transition: filter .25s, stroke .25s; }
+.graph .k-fact:not(.copy) .body { filter: drop-shadow(0 0 12px color-mix(in srgb, var(--kc) 40%, transparent)); }
+.graph .copy .body { stroke-dasharray: 5 4; }
+.graph .k-measures .body { stroke-dasharray: 2 3; }
+.graph .band { fill: color-mix(in srgb, var(--kc) 20%, transparent); }
+.graph .kdot, .graph .stripe { fill: var(--kc); }
+.graph .t { fill: var(--ink); font: 700 13.5px var(--mono); }
+.graph.dense .t { font-size: 11.5px; }
+.graph .ln { fill: var(--ink-2); font-size: 11.5px; }
+.graph.dense .ln { font-size: 10.5px; }
+.graph .pill { fill: color-mix(in srgb, var(--kc) 24%, transparent); }
+.graph .pt { fill: var(--ink); font: 650 10.5px var(--mono); }
+.graph .chipr { fill: var(--sunken); stroke: var(--line-2); }
+.graph .ct { fill: var(--ink-2); font: 10.5px var(--mono); }
+.graph .badge { fill: var(--kc); } .graph .bt { fill: #0b0b0b; font: 750 10px var(--mono); }
+.graph.focus .node:not(.lit), .graph.focus .edge:not(.lit) { opacity: .13; }
+.graph.focus .node.lit .body { stroke: var(--kc); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--kc) 75%, transparent)); }
+.graph.focus .edge.lit .base { stroke-width: 2.8; opacity: 1; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--k-fact) 70%, transparent)); }
+.graph .island rect { fill: color-mix(in srgb, var(--p-dbx) 5%, transparent); stroke: color-mix(in srgb, var(--p-dbx) 55%, transparent);
+  stroke-width: 1.3; filter: drop-shadow(0 0 14px color-mix(in srgb, var(--p-dbx) 22%, transparent)); }
+.graph .island .it { fill: var(--ink); font: 750 14px var(--mono); } .graph .island .is { fill: var(--muted); font-size: 11.5px; }
+.graph .gulf line { stroke: var(--crit); stroke-width: 1.5; stroke-dasharray: 4 5; opacity: .8; }
+.graph .gulf circle { fill: var(--surface); stroke: var(--crit); stroke-width: 1.3; }
+.graph .gulf text { fill: var(--crit); font: 800 12px system-ui, sans-serif; }
+.tip { position: absolute; z-index: 5; pointer-events: none; min-width: 180px; max-width: 280px; padding: 10px 12px;
+  border-radius: 10px; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(8px);
+  border: 1px solid var(--line-2); box-shadow: 0 14px 40px -12px rgba(0,0,0,.55); font-size: 12.5px; color: var(--ink-2); display: grid; gap: 3px; }
+.tip[hidden] { display: none; }
+.tip b { font: 700 13px var(--mono); color: var(--ink); }
+.tip i { font-style: normal; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend .k { width: 18px; height: 13px; border-radius: 4px; border: 1.5px solid var(--kc); background: color-mix(in srgb, var(--kc) 20%, transparent); }
+.legend .k.k-fact { --kc: var(--k-fact); } .legend .k.k-dim { --kc: var(--k-dim); } .legend .k.k-shared { --kc: var(--k-shared); }
+.legend .k.k-helper { --kc: var(--k-helper); } .legend .k.k-measures { --kc: var(--muted); border-style: dotted; }
+.legend .k.copy { border-style: dashed; }
+.legend .k.gulf { border: 0; background: none; color: var(--crit); font-weight: 800; text-align: center; line-height: 13px; }
 
 /* the drill-across walkthrough */
 .demo-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.seg { display: inline-flex; background: var(--sunken); border-radius: 8px; padding: 3px; }
+.seg { display: inline-flex; background: var(--sunken); border-radius: 10px; padding: 3px; border: 1px solid var(--line); }
 .seg button { font: inherit; font-size: 13.5px; font-weight: 600; border: 0; background: none; color: var(--ink-2);
-  padding: 6px 14px; border-radius: 6px; cursor: pointer; }
-.seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--ring); }
+  padding: 6px 14px; border-radius: 7px; cursor: pointer; }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line-2), 0 0 18px -6px var(--k-fact); }
 .stepper { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; flex: 1; }
 .stepper button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--surface);
-  color: var(--ink-2); border-radius: 999px; padding: 4px 12px 4px 5px; cursor: pointer; display: inline-flex; gap: 7px;
-  align-items: center; }
-.stepper button b { width: 20px; height: 20px; border-radius: 50%; background: var(--sunken); display: grid;
-  place-items: center; font-size: 11.5px; }
-.stepper button[aria-current="step"] { border-color: var(--ink); color: var(--ink); }
-.stepper button.done b { background: var(--ink); color: var(--surface); }
-.caption { font-size: 16px; min-height: 3em; max-width: 80ch; }
+  color: var(--ink-2); border-radius: 999px; padding: 4px 12px 4px 5px; cursor: pointer; display: inline-flex; gap: 7px; align-items: center; }
+.stepper button b { width: 20px; height: 20px; border-radius: 50%; background: var(--sunken); display: grid; place-items: center; font-size: 11.5px; }
+.stepper button[aria-current="step"] { border-color: var(--k-fact); color: var(--ink); box-shadow: 0 0 16px -6px var(--k-fact); }
+.stepper button.done b { background: var(--k-fact); color: #fff; }
+.caption.big { font-size: 17px; min-height: 3em; color: var(--ink); }
 .stage { display: grid; grid-template-columns: 1fr 24px 1.1fr 24px 1.3fr; gap: 10px; align-items: start; min-height: 400px; }
-.stage .arrow { align-self: center; text-align: center; color: var(--muted); font-size: 20px; }
+.stage .arrow { align-self: center; text-align: center; color: var(--k-fact); font-size: 22px; text-shadow: 0 0 12px var(--k-fact); }
 .col { display: grid; gap: 10px; align-content: start; min-width: 0; }
 .col > h4 { min-height: 18px; }
 .oplabel { font-size: 12.5px; color: var(--ink-2); }
-.oplabel b { font-family: var(--mono); font-weight: 600; color: var(--ink); }
-.src { border: 1px solid var(--line-2); border-radius: 8px; overflow: hidden; background: var(--surface); }
-.src header { padding: 7px 10px; background: var(--sunken); display: flex; justify-content: space-between; gap: 8px;
-  font-size: 12px; color: var(--ink-2); }
+.oplabel b { font-family: var(--mono); font-weight: 650; color: var(--ink); }
+.src { border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.src header { padding: 7px 10px; background: var(--sunken); display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--ink-2); }
 .src header b { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
 .yr { display: flex; justify-content: space-between; gap: 10px; padding: 6px 10px; border-top: 1px solid var(--line);
   font-size: 13px; font-variant-numeric: tabular-nums; }
-.yr.hot { background: var(--note-bg); font-weight: 600; }
+.yr.hot { background: var(--note-bg); font-weight: 650; }
 .yr.none { color: var(--muted); font-style: italic; border-top-style: dashed; }
 .yr.lost { background: var(--crit-bg); }
-.rv { opacity: 0; transform: translateY(10px); transition: opacity .45s ease, transform .45s ease; }
+.rv { opacity: 0; transform: translateY(12px); transition: opacity .5s ease, transform .5s cubic-bezier(.2,.8,.2,1); }
 .rv.on { opacity: 1; transform: none; }
 .rv[hidden] { display: none; }
-.rv tbody tr, .rv .yr, .rv .verdict { opacity: 0; transition: opacity .4s ease; }
-.rv.on tbody tr, .rv.on .yr, .rv.on .verdict { opacity: 1; }
+.rv tbody tr, .rv .yr, .rv .verdict { opacity: 0; transform: translateX(-8px); transition: opacity .4s ease, transform .4s ease; }
+.rv.on tbody tr, .rv.on .yr, .rv.on .verdict { opacity: 1; transform: none; }
 .rv.on tbody tr:nth-child(1), .rv.on .yr:nth-of-type(1) { transition-delay: .15s; }
 .rv.on tbody tr:nth-child(2), .rv.on .yr:nth-of-type(2) { transition-delay: .30s; }
 .rv.on tbody tr:nth-child(3), .rv.on .yr:nth-of-type(3) { transition-delay: .45s; }
 .rv.on tbody tr:nth-child(4), .rv.on .yr:nth-of-type(4) { transition-delay: .60s; }
 .rv.on .verdict { transition-delay: .9s; }
-@media (prefers-reduced-motion: reduce) { .rv, .rv tbody tr, .rv .yr, .rv .verdict { transition: none; } }
-.head { display: grid; gap: 8px; margin-bottom: 20px; }
-.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 18px; }
-.grid2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; }
-.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.stack { display: grid; gap: 12px; align-content: start; }
-.grid2 > *, .grid3 > *, .stack > *, .lane > *, .branch > *, .branches > *, .pair > *, .explorer > * { min-width: 0; }
+.rv.on tr.hot td, .rv.on .yr.hot { animation: pulse 2.2s ease-in-out 1s infinite; }
+.rv.on .yr.lost, .rv.on .verdict.no { animation: pulsered 2.2s ease-in-out 1s infinite; }
+@keyframes pulse { 50% { box-shadow: inset 0 0 0 1px var(--p-fabric), 0 0 18px -4px var(--p-fabric); } }
+@keyframes pulsered { 50% { box-shadow: inset 0 0 0 1px var(--crit), 0 0 18px -4px var(--crit); } }
 
 /* tables */
-.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
-th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }
-th { font-weight: 600; color: var(--ink-2); font-size: 12px; background: var(--sunken); }
+th { font-weight: 650; color: var(--ink-2); font-size: 12px; background: var(--sunken); }
 td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 td.bad { background: var(--crit-bg); box-shadow: inset 2px 0 0 var(--crit); }
 tr.gone td { background: var(--crit-bg); color: var(--ink-2); font-style: italic; }
 tr.hot td { background: var(--note-bg); }
-tr.total td { font-weight: 600; }
+tr.total td { font-weight: 650; }
 .wrapcell td, .wrapcell th { white-space: normal; vertical-align: top; }
 
 /* status */
-.chip { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px 1px 6px; border-radius: 999px;
-  font-size: 12px; font-weight: 600; line-height: 1.6; white-space: nowrap; color: var(--ink); }
-.chip i { font-style: normal; font-weight: 700; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px 1px 7px; border-radius: 999px;
+  font-size: 12px; font-weight: 650; line-height: 1.65; white-space: nowrap; color: var(--ink); }
+.chip i { font-style: normal; font-weight: 800; }
 .chip.match { background: var(--good-bg); } .chip.match i { color: var(--good-ink); }
 .chip.differs, .chip.refused { background: var(--crit-bg); } .chip.differs i, .chip.refused i { color: var(--crit); }
-.chip.partial { background: var(--warn-bg); } .chip.partial i { color: #9a6a00; }
-:root[data-theme="dark"] .chip.partial i { color: var(--warn); }
-@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .chip.partial i { color: var(--warn); } }
-.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; }
-.dot.fabric { background: var(--p-fabric); } .dot.snowflake { background: var(--p-snowflake); }
-.dot.dbx { background: var(--p-dbx); }
+.chip.partial { background: var(--warn-bg); } .chip.partial i { color: var(--warn-ink); }
+.chip.na { background: var(--sunken); color: var(--ink-2); } .chip.na i { color: var(--muted); }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; flex: none; }
+.dot.fabric { background: var(--p-fabric); box-shadow: 0 0 10px var(--p-fabric); }
+.dot.snowflake { background: var(--p-snowflake); box-shadow: 0 0 10px var(--p-snowflake); }
+.dot.dbx { background: var(--p-dbx); box-shadow: 0 0 10px var(--p-dbx); }
 
-/* flow diagrams */
+/* flow diagrams and engine cards */
 .lane { display: grid; gap: 10px; align-content: start; }
-.lane > header { display: grid; gap: 2px; }
 .branches { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .branch { display: grid; gap: 6px; align-content: start; }
-.box { border: 1px solid var(--line-2); border-radius: 8px; padding: 8px 10px; background: var(--surface); }
+.box { border: 1px solid var(--line-2); border-radius: 10px; padding: 8px 10px; background: var(--surface); }
 .box b { font-family: var(--mono); font-size: 12.5px; }
 .box span { display: block; font-size: 12px; color: var(--ink-2); }
-.op { text-align: center; font-size: 12px; color: var(--ink-2); line-height: 1.3; }
-.op::before { content: "↓"; display: block; color: var(--muted); }
-.op b { font-family: var(--mono); font-weight: 600; color: var(--ink); }
-.verdict { border-radius: 8px; padding: 9px 12px; font-size: 13.5px; }
+.verdict { border-radius: 10px; padding: 9px 12px; font-size: 13.5px; }
 .verdict.ok { background: var(--good-bg); } .verdict.no { background: var(--crit-bg); }
-.note { background: var(--note-bg); border-radius: 8px; padding: 12px 14px; font-size: 13.5px; }
-
-/* platform cards */
+.note { background: var(--note-bg); border: 1px solid color-mix(in srgb, var(--p-fabric) 30%, transparent); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; }
+.plat { --pc: var(--p-fabric); border-top: 2px solid color-mix(in srgb, var(--pc) 70%, transparent); }
+.plat.snowflake { --pc: var(--p-snowflake); } .plat.dbx { --pc: var(--p-dbx); }
 .plat > header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.who { font-size: 20px; font-weight: 650; letter-spacing: -.01em; line-height: 1.2; }
+.who { font-size: 22px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2; color: var(--pc); }
 ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 8px; }
 ol.steps li { counter-increment: s; display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 13.5px; }
 ol.steps li::before { content: counter(s); width: 22px; height: 22px; border-radius: 50%; background: var(--sunken);
-  color: var(--ink-2); font-size: 12px; font-weight: 600; display: grid; place-items: center; }
+  color: var(--ink-2); font-size: 12px; font-weight: 650; display: grid; place-items: center; border: 1px solid var(--line-2); }
 details > summary { cursor: pointer; font-size: 13px; color: var(--ink-2); }
 details[open] > summary { margin-bottom: 8px; }
+.why { display: block; margin-top: 4px; color: var(--ink-2); font-size: 12.5px; white-space: normal; }
 
-/* what each platform supports */
-.chip.na { background: var(--sunken); color: var(--ink-2); } .chip.na i { color: var(--muted); }
-#sup-feat td { white-space: normal; vertical-align: top; min-width: 200px; }
-#sup-feat td:first-child { font-weight: 600; min-width: 170px; }
-#sup-feat td .why { display: block; margin-top: 4px; color: var(--ink-2); font-size: 12.5px; }
-.ev pre { font-size: 11.5px; }
-
-/* what it took */
-.tile .big { font-size: 40px; font-weight: 650; letter-spacing: -.02em; line-height: 1.1; }
-.tile .big small { font-size: 18px; font-weight: 500; color: var(--muted); }
+/* tiles */
+.tile .big { font-size: 44px; font-weight: 750; letter-spacing: -.04em; line-height: 1.05; }
+.tile .big small { font-size: 18px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+#grid th { white-space: nowrap; }
 .tile dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13px; }
 .tile dt { color: var(--muted); } .tile dd { margin: 0; }
 .bar { height: 6px; border-radius: 3px; background: var(--sunken); overflow: hidden; }
-.bar span { display: block; height: 100%; border-radius: 3px; background: var(--good); }
+.bar span { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--good), var(--good-ink));
+  box-shadow: 0 0 12px var(--good); }
 #grid td:first-child { white-space: normal; min-width: 200px; }
 #grid td { vertical-align: top; }
-#grid td .why { display: block; margin-top: 4px; color: var(--ink-2); font-size: 12.5px; white-space: normal;
-  min-width: 190px; }
-#grid tbody tr { cursor: pointer; }
+#grid td .why { min-width: 190px; }
+#grid tbody tr { cursor: pointer; transition: background .2s; }
 #grid tbody tr:hover td { background: var(--sunken); }
+#grid tbody tr.sel td { background: color-mix(in srgb, var(--k-fact) 12%, transparent); }
+#grid tbody tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--k-fact); }
+#sup-feat td { white-space: normal; vertical-align: top; min-width: 200px; }
+#sup-feat td:first-child { font-weight: 650; min-width: 170px; }
+.ev pre { font-size: 11.5px; }
 
 /* explorer */
-.explorer { display: grid; grid-template-columns: 270px 1fr; gap: 16px; align-items: start; }
+#qpanel { margin-top: 18px; scroll-margin-top: 80px; }
+.explorer { display: grid; grid-template-columns: 250px 1fr; gap: 18px; align-items: start; }
 .qlist { display: grid; gap: 2px; }
-.qlist button { font: inherit; text-align: left; background: none; border: 0; border-radius: 6px; padding: 7px 10px;
+.qlist button { font: inherit; text-align: left; background: none; border: 0; border-radius: 8px; padding: 7px 10px;
   color: var(--ink-2); cursor: pointer; display: grid; grid-template-columns: 30px 1fr; gap: 6px; font-size: 13.5px; }
 .qlist button:hover { background: var(--sunken); }
-.qlist button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--ring); }
+.qlist button[aria-selected="true"] { background: var(--sunken); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2), inset 3px 0 0 var(--k-fact); }
 .qlist button b { font-family: var(--mono); font-size: 12px; color: var(--muted); padding-top: 2px; }
 .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-.tabs button { font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--line);
+.tabs button { font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line);
   background: var(--surface); color: var(--ink-2); cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
-.tabs button[aria-selected="true"] { border-color: var(--ink); color: var(--ink); }
+.tabs button[aria-selected="true"] { border-color: var(--k-fact); color: var(--ink); box-shadow: 0 0 14px -6px var(--k-fact); }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .rv, .rv tbody tr, .rv .yr, .rv .verdict { opacity: 1; transform: none; }
+}
 @media (max-width: 960px) {
-  .grid2, .grid3, .explorer, .pair, .stage { grid-template-columns: 1fr !important; }
+  .grid2, .grid3, .explorer, .pair, .stage, .plats { grid-template-columns: 1fr !important; }
   .stage { min-height: 0; } .stage .arrow { transform: rotate(90deg); }
   .qlist { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
+@media (max-width: 700px) {
+  .top .wrap { gap: 10px; padding-top: 8px; padding-bottom: 8px; }
+  nav#nav { order: 3; flex: 1 1 100%; margin-right: 0; }
+  nav#nav a { flex: 1; text-align: center; padding: 6px 4px; font-size: 13px; }
+  .brand { margin-right: auto; }
+  .chapnav { top: 104px; }
+  .chapter { scroll-margin-top: 170px; }
+}
 @media (max-width: 560px) {
-  .wrap { padding: 0 16px; } .branches { grid-template-columns: 1fr; } .top strong { display: none; }
+  .wrap { padding: 0 16px; } .branches { grid-template-columns: 1fr; }
   .stepper { flex: 1 1 100%; order: 3; } .stepper button { white-space: nowrap; }
-  h1 { font-size: 22px; }
+  h2 { font-size: 23px; }
+  .chead { grid-template-columns: 1fr; gap: 8px; } .num { justify-self: start; }
+  .pc-big b { font-size: 40px; }
 }
 </style>
 </head>
 <body>
 
 <div class="top"><div class="wrap">
-  <strong>One model, three platforms</strong>
-  <nav>
+  <a class="brand" href="#model"><span class="logo" aria-hidden="true"></span>ossie_bench</a>
+  <nav id="nav">
+    <span class="ind" aria-hidden="true"></span>
     <a href="#model">The model</a>
-    <a href="#ossie">What Ossie supports</a>
-    <a href="#support">Platform support</a>
-    <a href="#drill">Drill across</a>
-    <a href="#platforms">The three engines</a>
-    <a href="#grain">One grain</a>
-    <a href="#results">What it took</a>
-    <a href="#questions">The 13 questions</a>
+    <a href="#answer">How they answer</a>
+    <a href="#ossie">Ossie</a>
+    <a href="#results">Results</a>
   </nav>
-  <button class="btn" id="theme" type="button">Dark</button>
-  <a class="btn" href="https://github.com/djouallah/semantic_models">GitHub</a>
+  <button class="btn" id="theme" type="button">Light</button>
+  <a class="btn" href="https://github.com/djouallah/ossie_bench">GitHub</a>
 </div></div>
 
 <div class="wrap">
 
-<!-- ============================== 0. the model -->
+<!-- ============================== 1. the model -->
 <section id="model" class="view">
-  <div class="card stack">
-    <header class="demo-bar"><h3 style="flex:1">The model, as each platform holds it</h3>
-      <div class="seg" role="tablist" aria-label="Platform" id="platseg">
-        <button type="button" role="tab" data-p="fabric">Power BI</button>
-        <button type="button" role="tab" data-p="snowflake">Snowflake</button>
-        <button type="button" role="tab" data-p="dbx">Databricks</button>
-      </div></header>
-    <p class="caption" id="plat-cap"></p>
-    <div class="graphwrap" id="plat-svgwrap"><svg id="g-plat" class="graph" role="img"></svg></div>
-    <div class="mvgrid" id="g-dbx" hidden></div>
-    <div class="legend" id="leg-plat"></div>
-    <p class="sub" id="plat-src"></p>
-  </div>
-
-</section>
-
-<!-- ============================== 0b. what ossie supports -->
-<section id="ossie" class="view">
-  <div class="head">
-    <h2>What Ossie supports today</h2>
-    <p class="lead">Apache Ossie is the open standard for exchanging semantic models between tools. This is what its
-    development version can write of the 16 measures this model needs.</p>
-  </div>
-  <div class="card stack tile">
-    <div><div class="big" id="ossie-n"></div><div class="sub" id="ossie-sub"></div></div>
-    <div class="bar" id="ossie-bar"><span></span></div>
-  </div>
-  <div class="stack" id="ossie-groups" style="margin-top:16px; gap:16px"></div>
-  <div class="card stack" style="margin-top:16px">
-    <details><summary><code>semantic_model/a_baseline/model.ossie.yaml</code>: the model and the measures it can hold,
-      checked with the validator of apache/ossie</summary><pre><code id="ossie-yaml"></code></pre></details>
+  <div class="plats" id="plats" role="group" aria-label="Platform"></div>
+  <div class="card graphcard">
+    <div class="gc-head"><h3 id="plat-title"></h3><p class="caption" id="plat-cap"></p></div>
+    <div class="graphwrap" id="gwrap"><svg id="g-plat" class="graph" role="img"></svg><div class="tip" id="gtip" hidden></div></div>
+    <div class="gc-foot"><div class="legend" id="leg-plat"></div><p class="sub" id="plat-src"></p></div>
   </div>
 </section>
 
-<!-- ============================== 0c. what each platform supports of ossie -->
-<section id="support" class="view">
-  <div class="head">
-    <h2>What each platform supports of Ossie</h2>
-    <p class="lead">Ossie is meant to carry one semantic model between tools. This is what each platform does when
-    it is handed an Ossie file, and what it gives back, as tried on this model.</p>
+<!-- ============================== 2. how they answer -->
+<section id="answer" class="view">
+  <div class="chapnav" id="chapnav">
+    <button type="button" data-to="ch-drill"><b>01</b>Drill across</button>
+    <button type="button" data-to="ch-engines"><b>02</b>Who drills across</button>
+    <button type="button" data-to="ch-grain"><b>03</b>One grain</button>
   </div>
-  <div class="card stack">
-    <div class="tw"><table id="sup-feat"></table></div>
-    <p class="sub" id="sup-note"></p>
-  </div>
-  <div class="grid3" id="sup-ev" style="margin-top:16px"></div>
-</section>
 
-<!-- ============================== 1. drill across -->
-<section id="drill" class="view">
-  <div class="head">
-    <h2>Drill across</h2>
-    <p class="lead">Kimball's rule for a question that touches more than one table: group each table on its own,
-    down to the dimension they share, then merge the results. Never join the tables first.</p>
-    <p class="lead">The question here: <b>days in the calendar and sales, by year</b>. The calendar runs to 2023.
-    Sales stop at 2022. Follow 2023.</p>
-  </div>
-  <div class="card stack demo">
-    <div class="demo-bar">
-      <div class="seg" role="tablist" aria-label="Route" id="routeseg">
-        <button type="button" role="tab" data-mode="drill">Drill across</button>
-        <button type="button" role="tab" data-mode="single">Join first</button>
-      </div>
-      <div class="stepper" id="stepper"></div>
-      <button class="btn" type="button" id="play">Replay</button>
-    </div>
-    <p class="caption" id="caption" aria-live="polite"></p>
-    <div class="stage" id="stage">
-      <div class="col">
-        <h4>The tables</h4>
-        <div class="src rv" data-from="1">
-          <header><b>dim_calendar</b><span>1,461 rows</span></header>
-          <div class="yr"><span>2020</span><span>366 days</span></div>
-          <div class="yr"><span>2021</span><span>365 days</span></div>
-          <div class="yr"><span>2022</span><span>365 days</span></div>
-          <div class="yr hot"><span>2023</span><span>365 days</span></div>
+  <div class="chapter" id="ch-drill">
+    <div class="chead"><span class="num">01</span><div>
+      <h2>Drill across</h2>
+      <p class="lead">Kimball's rule for a question that touches more than one table: group each table on its own,
+      down to the dimension they share, then merge the results. Never join the tables first.</p>
+      <p class="lead">The question here: <b>days in the calendar and sales, by year</b>. The calendar runs to 2023.
+      Sales stop at 2022. Follow 2023.</p>
+    </div></div>
+    <div class="card stack demo">
+      <div class="demo-bar">
+        <div class="seg" role="tablist" aria-label="Route" id="routeseg">
+          <button type="button" role="tab" data-mode="drill">Drill across</button>
+          <button type="button" role="tab" data-mode="single">Join first</button>
         </div>
-        <div class="src rv" data-from="1">
-          <header><b>fact_sales</b><span>2,411,200 rows</span></header>
-          <div class="yr"><span>2020</span><span>805,200 rows</span></div>
-          <div class="yr"><span>2021</span><span>803,000 rows</span></div>
-          <div class="yr"><span>2022</span><span>803,000 rows</span></div>
-          <div class="yr none"><span>2023</span><span>no rows</span></div>
-        </div>
+        <div class="stepper" id="stepper"></div>
+        <button class="btn" type="button" id="play">Replay</button>
       </div>
-      <div class="arrow" aria-hidden="true">&rarr;</div>
-      <div class="col">
-        <h4 id="c2"></h4>
-        <div class="rv stack" data-mode="drill" data-from="2"><div class="oplabel"><b>dim_calendar</b> GROUP BY year</div><div id="d-cal"></div></div>
-        <div class="rv stack" data-mode="drill" data-from="2"><div class="oplabel"><b>fact_sales</b> GROUP BY year</div><div id="d-sales"></div></div>
-        <div class="rv stack" data-mode="single" data-from="2">
-          <div class="oplabel"><b>fact_sales</b> LEFT JOIN <b>dim_calendar</b></div>
-          <div class="src">
-            <header><b>one rowset</b><span>one row per sale</span></header>
+      <p class="caption big" id="caption" aria-live="polite"></p>
+      <div class="stage" id="stage">
+        <div class="col">
+          <h4>The tables</h4>
+          <div class="src rv" data-from="1">
+            <header><b>dim_calendar</b><span>1,461 rows</span></header>
+            <div class="yr"><span>2020</span><span>366 days</span></div>
+            <div class="yr"><span>2021</span><span>365 days</span></div>
+            <div class="yr"><span>2022</span><span>365 days</span></div>
+            <div class="yr hot"><span>2023</span><span>365 days</span></div>
+          </div>
+          <div class="src rv" data-from="1">
+            <header><b>fact_sales</b><span>2,411,200 rows</span></header>
             <div class="yr"><span>2020</span><span>805,200 rows</span></div>
             <div class="yr"><span>2021</span><span>803,000 rows</span></div>
             <div class="yr"><span>2022</span><span>803,000 rows</span></div>
-            <div class="yr lost"><span>2023</span><span>no sale picks up these 365 days</span></div>
+            <div class="yr none"><span>2023</span><span>no rows</span></div>
           </div>
         </div>
+        <div class="arrow" aria-hidden="true">&rarr;</div>
+        <div class="col">
+          <h4 id="c2"></h4>
+          <div class="rv stack" data-mode="drill" data-from="2"><div class="oplabel"><b>dim_calendar</b> GROUP BY year</div><div id="d-cal"></div></div>
+          <div class="rv stack" data-mode="drill" data-from="2"><div class="oplabel"><b>fact_sales</b> GROUP BY year</div><div id="d-sales"></div></div>
+          <div class="rv stack" data-mode="single" data-from="2">
+            <div class="oplabel"><b>fact_sales</b> LEFT JOIN <b>dim_calendar</b></div>
+            <div class="src">
+              <header><b>one rowset</b><span>one row per sale</span></header>
+              <div class="yr"><span>2020</span><span>805,200 rows</span></div>
+              <div class="yr"><span>2021</span><span>803,000 rows</span></div>
+              <div class="yr"><span>2022</span><span>803,000 rows</span></div>
+              <div class="yr lost"><span>2023</span><span>no sale picks up these 365 days</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="arrow" aria-hidden="true">&rarr;</div>
+        <div class="col">
+          <h4 id="c3"></h4>
+          <div class="rv stack" data-mode="drill" data-from="3"><div class="oplabel">full outer join on <b>year</b></div><div id="d-merged"></div>
+            <div class="verdict ok"><b>4 rows.</b> 2023 is there: 365 days, no sales.</div></div>
+          <div class="rv stack" data-mode="single" data-from="3"><div class="oplabel">one <b>GROUP BY year</b></div><div id="d-single"></div>
+            <div class="verdict no"><b>3 rows.</b> 2023 is gone, and nothing says so.</div></div>
+        </div>
       </div>
-      <div class="arrow" aria-hidden="true">&rarr;</div>
-      <div class="col">
-        <h4 id="c3"></h4>
-        <div class="rv stack" data-mode="drill" data-from="3"><div class="oplabel">full outer join on <b>year</b></div><div id="d-merged"></div>
-          <div class="verdict ok"><b>4 rows.</b> 2023 is there: 365 days, no sales.</div></div>
-        <div class="rv stack" data-mode="single" data-from="3"><div class="oplabel">one <b>GROUP BY year</b></div><div id="d-single"></div>
-          <div class="verdict no"><b>3 rows.</b> 2023 is gone, and nothing says so.</div></div>
+    </div>
+
+    <div class="card stack" style="margin-top:16px">
+      <header class="stack" style="gap:6px"><h3>The same move with two facts</h3>
+        <p class="sub">Actual against budget by category, 2021. Sales are daily by store and product; the budget is
+        monthly by country and category. Each is summed on its own, then merged on category. The percentage is
+        computed after the merge, from the two totals.</p></header>
+      <div class="grid3" style="align-items:start; grid-template-columns: 1fr 1fr 1.7fr">
+        <div class="branch"><div class="box"><b>fact_sales</b><span>grouped by category, through product</span></div><div id="f-sales"></div></div>
+        <div class="branch"><div class="box"><b>fact_budget</b><span>grouped by category, its own column</span></div><div id="f-budget"></div></div>
+        <div class="branch"><div class="box"><b>merged on category</b><span>then (sales - budget) / budget</span></div><div id="f-merged"></div></div>
       </div>
     </div>
   </div>
 
-  <div class="card stack" style="margin-top:16px">
-    <header><h3>The same move with two facts</h3>
-      <p class="sub">Actual against budget by category, 2021. Sales are daily by store and product; the budget is
-      monthly by country and category. Each is summed on its own, then merged on category. The percentage is
-      computed after the merge, from the two totals.</p></header>
-    <div class="grid3" style="align-items:start; grid-template-columns: 1fr 1fr 1.7fr">
-      <div class="branch"><div class="box"><b>fact_sales</b><span>grouped by category, through product</span></div>
-        <div id="f-sales"></div></div>
-      <div class="branch"><div class="box"><b>fact_budget</b><span>grouped by category, its own column</span></div>
-        <div id="f-budget"></div></div>
-      <div class="branch"><div class="box"><b>merged on category</b><span>then (sales - budget) / budget</span></div>
-        <div id="f-merged"></div></div>
+  <div class="chapter" id="ch-engines">
+    <div class="chead"><span class="num">02</span><div>
+      <h2>Who drills across</h2>
+      <p class="lead">The same question, days and sales by year, asked as plainly as each platform allows. The steps
+      under Snowflake and Databricks are read from their own query plans.</p>
+    </div></div>
+    <div class="grid3" style="align-items:start">
+      <div class="card stack plat fabric">
+        <header><h3><span class="dot fabric"></span>Power BI</h3><span class="sub">1 model · 7 tables · 16 measures</span></header>
+        <div><h4>Who drills across</h4><div class="who">The engine</div></div>
+        <ol class="steps">
+          <li><div>The groups come from the column asked for, <code>dim_calendar[year]</code>: four years.</div></li>
+          <li><div>Each expression is evaluated per year against its own table: the day count on the calendar, the
+            sales measure on the fact, filtered through the relationship.</div></li>
+          <li><div>A year is kept when any expression has a value, so 2023 stays with a blank for sales.</div></li>
+        </ol>
+        <p class="sub">From how <code>SUMMARIZECOLUMNS</code> is defined. Power BI shows no SQL plan for this.</p>
+        <div id="p-fabric" class="stack"></div>
+      </div>
+      <div class="card stack plat snowflake">
+        <header><h3><span class="dot snowflake"></span>Snowflake</h3><span class="sub">1 semantic view · 16 logical tables · 19 metrics</span></header>
+        <div><h4>Who drills across</h4><div class="who">The engine</div></div>
+        <ol class="steps">
+          <li><div><code>Aggregate</code> the calendar by year: <code>COUNT(date_key)</code>.</div></li>
+          <li><div><code>Aggregate</code> the sales by date, join them to the calendar, aggregate again by year:
+            <code>SUM(sales_qty)</code>.</div></li>
+          <li><div><code>FullOuterJoin</code> the two results on year.</div></li>
+        </ol>
+        <p class="sub">From <code>EXPLAIN</code> on the query below. The semantic view compiles to drill-across.</p>
+        <div id="p-snowflake" class="stack"></div>
+      </div>
+      <div class="card stack plat dbx">
+        <header><h3><span class="dot dbx"></span>Databricks</h3><span class="sub">5 metric views · one source each · 20 measures</span></header>
+        <div><h4>Who drills across</h4><div class="who">You, in the query</div></div>
+        <ol class="steps">
+          <li><div>Scan <code>fact_sales</code>, the source of the metric view.</div></li>
+          <li><div><code>LeftOuter</code> join the calendar onto it. Still one row per sale.</div></li>
+          <li><div>One <code>GroupingAgg</code> by year over that rowset computes both columns.</div></li>
+        </ol>
+        <p class="sub">From <code>EXPLAIN FORMATTED</code>. The calendar is only reachable through a sale, so a year
+        without sales has no rows.</p>
+        <div id="p-dbx" class="stack"></div>
+      </div>
     </div>
-  </div>
-</section>
-
-<!-- ============================== 2. platforms -->
-<section id="platforms" class="view">
-  <div class="head">
-    <h2>How each platform does it</h2>
-    <p class="lead">The same question, days and sales by year, asked as plainly as each platform allows. The steps
-    under Snowflake and Databricks are read from their own query plans.</p>
-  </div>
-  <div class="grid3" style="align-items:start">
-
-    <div class="card stack plat">
-      <header><h3><span class="dot fabric"></span>Power BI</h3><span class="sub">1 model · 7 tables · 16 measures</span></header>
-      <div><h4>Who drills across</h4><div class="who">The engine</div></div>
-      <ol class="steps">
-        <li><div>The groups come from the column asked for, <code>dim_calendar[year]</code>: four years.</div></li>
-        <li><div>Each expression is evaluated per year against its own table: the day count on the calendar, the
-          sales measure on the fact, filtered through the relationship.</div></li>
-        <li><div>A year is kept when any expression has a value, so 2023 stays with a blank for sales.</div></li>
-      </ol>
-      <p class="sub">From how <code>SUMMARIZECOLUMNS</code> is defined. Power BI shows no SQL plan for this.</p>
-      <div id="p-fabric" class="stack"></div>
+    <div class="card stack" style="margin-top:16px">
+      <header class="stack" style="gap:6px"><h3>Drill-across by hand on Databricks</h3>
+        <p class="sub">The calendar gets its own metric view. The query groups each view on its own and merges the
+        two, which is the plan Snowflake builds for you.</p></header>
+      <div class="pair" id="p-dbx-fix"></div>
     </div>
-
-    <div class="card stack plat">
-      <header><h3><span class="dot snowflake"></span>Snowflake</h3><span class="sub">1 semantic view · 16 logical tables · 19 metrics</span></header>
-      <div><h4>Who drills across</h4><div class="who">The engine</div></div>
-      <ol class="steps">
-        <li><div><code>Aggregate</code> the calendar by year: <code>COUNT(date_key)</code>.</div></li>
-        <li><div><code>Aggregate</code> the sales by date, join them to the calendar, aggregate again by year:
-          <code>SUM(sales_qty)</code>.</div></li>
-        <li><div><code>FullOuterJoin</code> the two results on year.</div></li>
-      </ol>
-      <p class="sub">From <code>EXPLAIN</code> on the query below. The semantic view compiles to drill-across.</p>
-      <div id="p-snowflake" class="stack"></div>
-    </div>
-
-    <div class="card stack plat">
-      <header><h3><span class="dot dbx"></span>Databricks</h3><span class="sub">5 metric views · one source each · 20 measures</span></header>
-      <div><h4>Who drills across</h4><div class="who">You, in the query</div></div>
-      <ol class="steps">
-        <li><div>Scan <code>fact_sales</code>, the source of the metric view.</div></li>
-        <li><div><code>LeftOuter</code> join the calendar onto it. Still one row per sale.</div></li>
-        <li><div>One <code>GroupingAgg</code> by year over that rowset computes both columns.</div></li>
-      </ol>
-      <p class="sub">From <code>EXPLAIN FORMATTED</code>. The calendar is only reachable through a sale, so a year
-      without sales has no rows.</p>
-      <div id="p-dbx" class="stack"></div>
-    </div>
+    <p class="note" style="margin-top:16px">The Apache Ossie draft (0.3.0.dev0) writes drill-across down as the rule
+    for any engine: metrics are evaluated in branches, one per home dataset, and the branches are combined on the
+    dimension keys.
+    <a href="https://github.com/apache/ossie/blob/main/core-spec/wide_table_semantics.md">wide_table_semantics.md, sections 5.4 and 5.5</a>.</p>
   </div>
 
-  <div class="card stack" style="margin-top:16px">
-    <header><h3>Drill-across by hand on Databricks</h3>
-      <p class="sub">The calendar gets its own metric view. The query groups each view on its own and merges the
-      two, which is the plan Snowflake builds for you.</p></header>
-    <div class="pair" id="p-dbx-fix"></div>
-  </div>
-
-  <p class="note" style="margin-top:16px">The Apache Ossie draft (0.3.0.dev0) writes drill-across down as the rule
-  for any engine: metrics are evaluated in branches, one per home dataset, and the branches are combined on the
-  dimension keys.
-  <a href="https://github.com/apache/ossie/blob/main/core-spec/wide_table_semantics.md">wide_table_semantics.md, sections 5.4 and 5.5</a>.</p>
-</section>
-
-<!-- ============================== 3. one grain -->
-<section id="grain" class="view">
-  <div class="head">
-    <h2>A metric view is one grain</h2>
-    <p class="lead">A metric view is one source table with its dimensions joined on, so everything in it lives at
-    the grain of that source. That is why 2023 disappears above, and it is also why "last year" behaves the way
-    it does. Each platform defines it differently:</p>
-  </div>
-  <div class="grid3" style="align-items:start">
-    <div class="card stack"><h3><span class="dot fabric"></span>Power BI: move the filter</h3>
-      <pre><code>CALCULATE (
+  <div class="chapter" id="ch-grain">
+    <div class="chead"><span class="num">03</span><div>
+      <h2>A metric view is one grain</h2>
+      <p class="lead">A metric view is one source table with its dimensions joined on, so everything in it lives at
+      the grain of that source. That is why 2023 disappears above, and it is also why "last year" behaves the way
+      it does. Each platform defines it differently:</p>
+    </div></div>
+    <div class="grid3" style="align-items:start">
+      <div class="card stack plat fabric"><h3><span class="dot fabric"></span>Power BI: move the filter</h3>
+        <pre><code>CALCULATE (
   [sales_quantity],
   SAMEPERIODLASTYEAR ( dim_calendar[date_key] )
 )</code></pre>
-      <p class="sub">The dates in the current group are shifted a year, then the measure is evaluated. It works
-      at any grain because the group decides which dates are shifted.</p></div>
-    <div class="card stack"><h3><span class="dot snowflake"></span>Snowflake: another branch</h3>
-      <pre><code>sales_ly AS FACT_SALES  -- a second logical table
+        <p class="sub">The dates in the current group are shifted a year, then the measure is evaluated. It works
+        at any grain because the group decides which dates are shifted.</p></div>
+      <div class="card stack plat snowflake"><h3><span class="dot snowflake"></span>Snowflake: another branch</h3>
+        <pre><code>sales_ly AS FACT_SALES  -- a second logical table
 sales_ly.sale_date_ly AS DATEADD('year', 1, sale_date)
 sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
-      <p class="sub">A copy of the fact with its date moved a year, related to the calendar through the moved
-      date. "Last year" is one more table to drill across, so it also works at any grain.</p></div>
-    <div class="card stack"><h3><span class="dot dbx"></span>Databricks: a window</h3>
-      <pre><code>- name: sales_qty_ly
+        <p class="sub">A copy of the fact with its date moved a year, related to the calendar through the moved
+        date. "Last year" is one more table to drill across, so it also works at any grain.</p></div>
+      <div class="card stack plat dbx"><h3><span class="dot dbx"></span>Databricks: a window</h3>
+        <pre><code>- name: sales_qty_ly
   expr: SUM(sales_qty)
   window:
   - order: date_key
@@ -502,44 +538,73 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     offset: -1 year
     semiadditive: last
   # then one entry per other calendar column</code></pre>
-      <p class="sub">A window ordered by one column, the date. Asked by date it is right. Asked by month, each
-      month gets one day's value, with no error.</p></div>
-  </div>
-  <div class="card stack" style="margin-top:16px">
-    <header><h3 id="g-title"></h3><p class="sub">Sales last year, as each route returned it. Marked cells differ
-    from the reference.</p></header>
-    <div id="g-table"></div>
-    <p class="sub">A measure per grain fixes the months and still gets the total wrong. The route that matches
-    is a second metric view of the fact with its date moved a year, joined in the query: Snowflake's extra
-    branch, done by hand.</p>
+        <p class="sub">A window ordered by one column, the date. Asked by date it is right. Asked by month, each
+        month gets one day's value, with no error.</p></div>
+    </div>
+    <div class="card stack" style="margin-top:16px">
+      <header class="stack" style="gap:6px"><h3 id="g-title"></h3><p class="sub">Sales last year, as each route returned it. Marked cells differ
+      from the reference.</p></header>
+      <div id="g-table"></div>
+      <p class="sub">A measure per grain fixes the months and still gets the total wrong. The route that matches
+      is a second metric view of the fact with its date moved a year, joined in the query: Snowflake's extra
+      branch, done by hand.</p>
+    </div>
   </div>
 </section>
 
-<!-- ============================== 4. what it took -->
+<!-- ============================== 3. ossie -->
+<section id="ossie" class="view">
+  <div class="chapter" id="os-standard">
+    <div class="chead"><span class="num">01</span><div>
+      <h2>What the standard can write</h2>
+      <p class="lead">Apache Ossie is the open standard for exchanging semantic models between tools. This is what its
+      development version can write of the 16 measures this model needs.</p>
+    </div></div>
+    <div class="card stack tile">
+      <div><div class="big" id="ossie-n"></div><div class="sub" id="ossie-sub"></div></div>
+      <div class="bar" id="ossie-bar"><span></span></div>
+    </div>
+    <div class="stack" id="ossie-groups" style="margin-top:16px; gap:16px"></div>
+    <div class="card stack" style="margin-top:16px">
+      <details><summary><code>semantic_model/a_baseline/model.ossie.yaml</code>: the model and the measures it can hold,
+        checked with the validator of apache/ossie</summary><pre><code id="ossie-yaml"></code></pre></details>
+    </div>
+  </div>
+  <div class="chapter" id="os-platforms">
+    <div class="chead"><span class="num">02</span><div>
+      <h2>What each platform does with it</h2>
+      <p class="lead">Ossie is meant to carry one semantic model between tools. This is what each platform does when
+      it is handed an Ossie file, and what it gives back, as tried on this model.</p>
+    </div></div>
+    <div class="card stack">
+      <div class="tw"><table id="sup-feat"></table></div>
+      <p class="sub" id="sup-note"></p>
+    </div>
+    <div class="grid3" id="sup-ev" style="margin-top:16px; align-items:start"></div>
+  </div>
+</section>
+
+<!-- ============================== 4. results -->
 <section id="results" class="view">
   <div class="head">
-    <h2>What it took</h2>
+    <h2>Results</h2>
     <p class="lead">Each answer is compared with a reference written in raw SQL straight over the tables, with no
-    semantic model and no vendor in between. A platform's native features used as designed count as a plain query. Copies of the fact,
-    helper tables, extra views and logic moved into the query are named.</p>
+    semantic model and no vendor in between. A platform's native features used as designed count as a plain query.
+    Copies of the fact, helper tables, extra views and logic moved into the query are named.</p>
   </div>
   <div class="grid3" id="tiles"></div>
   <div class="tw" style="margin-top:16px"><table id="grid" class="wrapcell"></table></div>
-  <p class="sub" style="margin-top:8px">Select a row to open the question.</p>
-</section>
-
-<!-- ============================== 5. questions -->
-<section id="questions" class="view">
-  <div class="head"><h2>The 13 questions</h2>
-    <p class="lead">Every query as it was run, and every answer beside the reference.</p></div>
-  <div class="explorer">
-    <div class="qlist" id="qlist" role="tablist" aria-label="Questions"></div>
-    <div class="card stack" id="qview"></div>
+  <p class="sub" style="margin-top:8px">Select a row to open the question below: every query as it was run, and every answer beside the reference.</p>
+  <div class="card" id="qpanel">
+    <div class="explorer">
+      <div class="qlist" id="qlist" role="tablist" aria-label="Questions"></div>
+      <div class="stack" id="qview"></div>
+    </div>
   </div>
 </section>
 
 <footer>Built from <code>questions/*/results.csv</code> by <code>tools/build_dashboard.py</code>.
-  Source and models: <a href="https://github.com/djouallah/semantic_models">github.com/djouallah/semantic_models</a>.</footer>
+  Source and models: <a href="https://github.com/djouallah/ossie_bench">github.com/djouallah/ossie_bench</a>.</footer>
 </div>
 
 <script src="data.js"></script>
@@ -548,9 +613,12 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
   "use strict";
   var Q = {}; DATA.questions.forEach(function (q) { Q[q.id] = q; });
   var NAME = { fabric: "Power BI", snowflake: "Snowflake", dbx: "Databricks" };
-  var ICON = { match: "✓", differs: "≠", partial: "◐", refused: "✕" };
+  var ICON = { match: "✓", differs: "≠", partial: "◐", refused: "✕", na: "–" };
   var PLATS = ["fabric", "snowflake", "dbx"];
+  var GH = "https://github.com/djouallah/ossie_bench/blob/main/";
+  var REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
   function $(id) { return document.getElementById(id); }
+  function each(list, f) { Array.prototype.forEach.call(list, f); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function label(l) { var p = l.split(" ")[0]; return NAME[p] + l.slice(p.length); }
   function chip(s) { return s ? '<span class="chip ' + s + '"><i aria-hidden="true">' + ICON[s] + "</i>" + s + "</span>" : ""; }
@@ -564,7 +632,6 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
   function head(cols, measures) {
     return "<thead><tr>" + cols.map(function (c, i) { return '<th class="' + (measures[i] ? "n" : "") + '">' + esc(c) + "</th>"; }).join("") + "</tr></thead>";
   }
-  // rows: arrays; opt: {diff, missing, hot(row) -> bool}
   function table(cols, measures, rows, opt) {
     opt = opt || {};
     var h = '<div class="tw"><table>' + head(cols, measures) + "<tbody>";
@@ -582,19 +649,27 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     });
     return h + "</tbody></table></div>";
   }
-  function pick(q, names) {             // a sub-table of the reference: columns by name
+  function pick(q, names) {
     var idx = names.map(function (n) { return q.columns.indexOf(n); });
     return { cols: names, measures: idx.map(function (i) { return q.measures[i]; }),
              rows: function (rows) { return rows.map(function (r) { return idx.map(function (i) { return r[i]; }); }); } };
   }
   function run(q, l) { return q.runs.filter(function (r) { return r.label === l; })[0]; }
   function runTable(q, r) { return table(q.columns, q.measures, r.rows, { diff: r.diff, missing: r.missing }); }
+  function plainMatches(p) { return DATA.questions.filter(function (q) { return (run(q, p) || {}).status === "match"; }).length; }
 
-  // ---------- 0. the model: graphs of the model, and of the model as each platform holds it
-  // g: {w, h, dense, labels, card, nodes: {id: {x, y, w, h, k, t, l: [lines]}}, edges: [{a: one side, b: many side,
-  // label, as/bs: side of a/b, fa/fb: where on that side}]}. Arrows point the way a filter flows: one -> many.
-  function drawGraph(svg, g) {
-    var NORMAL = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] }, N = g.nodes, ports = {};
+  // ---------- 1. the model: one renderer for the three platforms' graphs
+  // g: {w, h, minw, dense, labels, card, islands, gulfs, nodes: {id: {x, y, w, k, t, rows, l: [lines], c: [columns],
+  // compact, sub, badge, phys, tip}}, edges: [{a: one side, b: many side, label, as/bs, fa/fb}]}.
+  var KIND = { fact: "fact", factcopy: "fact", dim: "dim", copy: "dim", shared: "shared", helper: "helper", measures: "measures" };
+  function kindOf(n) { return KIND[n.k.split(" ").pop()]; }
+  function ttl(n, nid) { return n.t || nid; }
+  function drawGraph(svg, g, tip, wrap) {
+    var NORMAL = { top: [0, -1], bottom: [0, 1], left: [-1, 0], right: [1, 0] }, N = g.nodes, ports = {}, id = svg.id;
+    Object.keys(N).forEach(function (k) {
+      var n = N[k], L = (n.l || []).length;
+      if (!n.h) n.h = n.compact ? (n.sub ? 44 : 34) : 42 + 17 * L + (L ? 4 : 0) + (n.c ? 26 : 0);
+    });
     var edges = g.edges.map(function (e) { var c = {}; for (var k in e) c[k] = e[k]; return c; });
     function pt(n, side, f) {
       return side === "top" ? [n.x + n.w * f, n.y] : side === "bottom" ? [n.x + n.w * f, n.y + n.h] :
@@ -609,19 +684,40 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
         if (e[k[2]] == null) { var key = e[k[0]] + ":" + e[k[1]]; (ports[key] = ports[key] || []).push({ e: e, f: k[2], o: N[e[k[3]]] }); }
       });
     });
-    Object.keys(ports).forEach(function (key) {      // edges sharing a side of a box are spread along it, in order
-      var list = ports[key], side = key.split(":")[1], vert = side === "top" || side === "bottom";
+    Object.keys(ports).forEach(function (key) {
+      var list = ports[key], side = key.split(":").pop(), vert = side === "top" || side === "bottom";
       list.sort(function (p, q) { return vert ? (p.o.x + p.o.w / 2) - (q.o.x + q.o.w / 2) : p.o.y - q.o.y; });
       list.forEach(function (p, i) { p.e[p.f] = (i + 1) / (list.length + 1); });
     });
-    var id = svg.id, paths = "", texts = "", boxes = "";
-    edges.forEach(function (e) {
+    var defs = '<pattern id="dots-' + id + '" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" class="dotp"/></pattern>' +
+      '<radialGradient id="halo-' + id + '"><stop offset="0" class="h0"/><stop offset="1" class="h1"/></radialGradient>' +
+      '<marker id="end-' + id + '" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5"><circle cx="5" cy="5" r="4" class="mk"/></marker>';
+    var under = '<rect x="0" y="0" width="' + g.w + '" height="' + g.h + '" fill="url(#dots-' + id + ')"/>';
+    Object.keys(N).forEach(function (k) {
+      var n = N[k];
+      if (kindOf(n) === "fact" && n.k.indexOf("copy") < 0)
+        under += '<ellipse cx="' + (n.x + n.w / 2) + '" cy="' + (n.y + n.h / 2) + '" rx="' + n.w * .85 + '" ry="' + n.h * 1.5 + '" fill="url(#halo-' + id + ')"/>';
+    });
+    (g.islands || []).forEach(function (s) {
+      under += '<g class="island"><rect x="' + s.x + '" y="' + s.y + '" width="' + s.w + '" height="' + s.h + '" rx="16"/>' +
+        '<text class="it" x="' + (s.x + 16) + '" y="' + (s.y + 26) + '">' + esc(s.t) + '</text><text class="is" x="' + (s.x + 16) + '" y="' + (s.y + 43) + '">' + esc(s.sub) + "</text></g>";
+    });
+    (g.gulfs || []).forEach(function (u) {
+      var mx = (u.x1 + u.x2) / 2, my = (u.y1 + u.y2) / 2;
+      under += '<g class="gulf"><line x1="' + u.x1 + '" y1="' + u.y1 + '" x2="' + u.x2 + '" y2="' + u.y2 + '"/><circle cx="' + mx + '" cy="' + my + '" r="10"/>' +
+        '<text x="' + mx + '" y="' + (my + 4) + '" text-anchor="middle">✕</text></g>';
+    });
+    var paths = "", texts = "", boxes = "";
+    edges.forEach(function (e, i) {
       var p1 = pt(N[e.a], e.as, e.fa), p2 = pt(N[e.b], e.bs, e.fb), n1 = NORMAL[e.as], n2 = NORMAL[e.bs];
       var k = Math.max(28, Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) * 0.4);
       var c1 = [p1[0] + n1[0] * k, p1[1] + n1[1] * k], c2 = [p2[0] + n2[0] * k, p2[1] + n2[1] * k];
+      var d = "M" + r(p1[0]) + "," + r(p1[1]) + " C" + r(c1[0]) + "," + r(c1[1]) + " " + r(c2[0]) + "," + r(c2[1]) + " " + r(p2[0]) + "," + r(p2[1]);
+      var gid = "eg-" + id + "-" + i;
+      defs += '<linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + r(p1[0]) + '" y1="' + r(p1[1]) + '" x2="' + r(p2[0]) + '" y2="' + r(p2[1]) + '">' +
+        '<stop offset="0" class="s-' + kindOf(N[e.a]) + '"/><stop offset="1" class="s-' + kindOf(N[e.b]) + '"/></linearGradient>';
       var tag = '<g class="edge" data-a="' + e.a + '" data-b="' + e.b + '">';
-      paths += tag + '<path d="M' + r(p1[0]) + "," + r(p1[1]) + " C" + r(c1[0]) + "," + r(c1[1]) + " " + r(c2[0]) + "," + r(c2[1]) +
-        " " + r(p2[0]) + "," + r(p2[1]) + '" marker-end="url(#arr-' + id + ')"/></g>';
+      paths += tag + '<path class="base" d="' + d + '" stroke="url(#' + gid + ')" marker-end="url(#end-' + id + ')"/><path class="flow" d="' + d + '"/></g>';
       var t = "";
       if (g.labels !== false && e.label) {
         var mx = (p1[0] + 3 * c1[0] + 3 * c2[0] + p2[0]) / 8, my = (p1[1] + 3 * c1[1] + 3 * c2[1] + p2[1]) / 8;
@@ -629,24 +725,56 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
       }
       if (g.card) {
         [[p1, n1, "1"], [p2, n2, "*"]].forEach(function (c) {
-          var x = c[0][0] + c[1][0] * 13 - c[1][1] * 9, y = c[0][1] + c[1][1] * 13 + c[1][0] * 9;
+          var x = c[0][0] + c[1][0] * 14 - c[1][1] * 10, y = c[0][1] + c[1][1] * 14 + c[1][0] * 10;
           t += '<text class="card" x="' + r(x) + '" y="' + r(y + 4) + '" text-anchor="middle">' + c[2] + "</text>";
         });
       }
       if (t) texts += tag + t + "</g>";
     });
-    var ty = g.dense ? [18, 34, 14] : [24, 43, 17];
-    Object.keys(N).forEach(function (nid) {
-      var n = N[nid];
-      boxes += '<g class="node ' + n.k + '" data-id="' + nid + '"><rect x="' + n.x + '" y="' + n.y + '" width="' + n.w + '" height="' + n.h + '" rx="8"/>' +
-        '<text class="t" x="' + (n.x + 10) + '" y="' + (n.y + ty[0]) + '">' + esc(n.t || nid) + "</text>" +
-        (n.l || []).map(function (line, i) { return '<text x="' + (n.x + 10) + '" y="' + (n.y + ty[1] + i * ty[2]) + '">' + esc(line) + "</text>"; }).join("") + "</g>";
+    Object.keys(N).forEach(function (nid, i) {
+      var n = N[nid], x = n.x, y = n.y, w = n.w, h = n.h, s = '<rect class="body" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="11"/>';
+      if (n.compact) {
+        s += '<rect class="stripe" x="' + (x + 5) + '" y="' + (y + 7) + '" width="3.5" height="' + (h - 14) + '" rx="1.75"/>' +
+          '<text class="t" x="' + (x + 15) + '" y="' + (y + (n.sub ? 19 : 21.5)) + '">' + esc(ttl(n, nid)) + "</text>" +
+          (n.sub ? '<text class="ln" x="' + (x + 15) + '" y="' + (y + 35) + '">' + esc(n.sub) + "</text>" : "");
+      } else {
+        s += '<path class="band" d="M' + x + "," + (y + 28) + "V" + (y + 11) + "a11,11 0 0 1 11,-11H" + (x + w - 11) + "a11,11 0 0 1 11,11V" + (y + 28) + 'Z"/>' +
+          '<circle class="kdot" cx="' + (x + 15) + '" cy="' + (y + 14) + '" r="4"/>' +
+          '<text class="t" x="' + (x + 26) + '" y="' + (y + 19) + '">' + esc(ttl(n, nid)) + "</text>";
+        if (n.rows) {
+          var pw = 16 + n.rows.length * 6.4;
+          s += '<rect class="pill" x="' + (x + w - 8 - pw) + '" y="' + (y + 6) + '" width="' + pw + '" height="16" rx="8"/>' +
+            '<text class="pt" x="' + (x + w - 8 - pw / 2) + '" y="' + (y + 17.5) + '" text-anchor="middle">' + esc(n.rows) + "</text>";
+        }
+        var L = (n.l || []).length;
+        (n.l || []).forEach(function (line, j) { s += '<text class="ln" x="' + (x + 12) + '" y="' + (y + 46 + 17 * j) + '">' + esc(line) + "</text>"; });
+        if (n.c) {
+          var cx = x + 12, cy = y + 36 + 17 * L + (L ? 4 : 0);
+          n.c.forEach(function (c) {
+            var cw = 12 + c.length * 6.4;
+            s += '<rect class="chipr" x="' + cx + '" y="' + cy + '" width="' + cw + '" height="18" rx="5"/><text class="ct" x="' + (cx + 6) + '" y="' + (cy + 12.5) + '">' + esc(c) + "</text>";
+            cx += cw + 5;
+          });
+        }
+      }
+      if (n.badge) {
+        var bw = 12 + n.badge.length * 6.2;
+        s += '<rect class="badge" x="' + (x + w - bw + 6) + '" y="' + (y - 8) + '" width="' + bw + '" height="16" rx="8"/>' +
+          '<text class="bt" x="' + (x + w - bw / 2 + 6) + '" y="' + (y + 3.5) + '" text-anchor="middle">' + esc(n.badge) + "</text>";
+      }
+      boxes += '<g class="node k-' + kindOf(n) + (n.k.indexOf("copy") >= 0 ? " copy" : "") + '" data-id="' + nid + '" style="--i:' + i + '"><g class="in">' + s + "</g></g>";
     });
     svg.setAttribute("viewBox", "0 0 " + g.w + " " + g.h);
+    svg.style.minWidth = g.minw ? g.minw + "px" : "0";
     svg.classList.toggle("dense", !!g.dense);
-    svg.innerHTML = '<defs><marker id="arr-' + id + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker></defs>' +
-      paths + boxes + texts;
-    function reach(start) {                           // what it filters, and what filters it
+    svg.innerHTML = "<defs>" + defs + "</defs>" + under + paths + boxes + texts;
+    if (!REDUCE) each(svg.querySelectorAll(".edge .base"), function (p, i) {
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len; p.style.strokeDashoffset = len; p.getBoundingClientRect();
+      p.style.transition = "stroke-dashoffset .9s cubic-bezier(.4,0,.2,1) " + (0.25 + i * 0.02) + "s";
+      p.style.strokeDashoffset = 0;
+    });
+    function reach(start) {
       var seen = {}; seen[start] = 1;
       [["a", "b"], ["b", "a"]].forEach(function (d) {
         var todo = [start], s2 = {}; s2[start] = 1;
@@ -655,129 +783,189 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
           edges.forEach(function (e) { if (e[d[0]] === x && !s2[e[d[1]]]) { s2[e[d[1]]] = 1; seen[e[d[1]]] = 1; todo.push(e[d[1]]); } });
         }
       });
+      if (N[start].phys) Object.keys(N).forEach(function (k) { if (N[k].phys === N[start].phys) seen[k] = 1; });
       return seen;
+    }
+    function names(list) { return list.map(function (k) { return esc(ttl(N[k], k)); }).join(", "); }
+    function showTip(nid) {
+      var n = N[nid], by = edges.filter(function (e) { return e.b === nid; }).map(function (e) { return e.a; }),
+          to = edges.filter(function (e) { return e.a === nid; }).map(function (e) { return e.b; });
+      tip.innerHTML = "<b>" + esc(ttl(n, nid)) + "</b>" + (n.tip ? "<span>" + n.tip + "</span>" : "") +
+        (n.rows ? "<span>" + esc(n.rows) + " rows</span>" : "") + (n.l || []).map(function (x) { return "<span>" + esc(x) + "</span>"; }).join("") +
+        (n.sub ? "<span>" + esc(n.sub) + "</span>" : "") +
+        (by.length ? "<i>filtered by</i><span>" + names(by) + "</span>" : "") + (to.length ? "<i>filters</i><span>" + names(to) + "</span>" : "") +
+        (!by.length && !to.length ? "<i>no relationships</i>" : "");
+      tip.hidden = false;
+      var b = svg.querySelector('.node[data-id="' + nid + '"] .body').getBoundingClientRect(), w = wrap.getBoundingClientRect();
+      var left = b.left - w.left + wrap.scrollLeft + b.width / 2, top = b.top - w.top - 10, below = top < tip.offsetHeight + 4;
+      left = Math.max(tip.offsetWidth / 2 + 6, Math.min(wrap.scrollWidth - tip.offsetWidth / 2 - 6, left));
+      tip.style.left = left + "px";
+      tip.style.top = (below ? b.bottom - w.top + 10 : top) + "px";
+      tip.style.transform = "translate(-50%," + (below ? "0" : "-100%") + ")";
     }
     function focus(nid) {
       var seen = nid ? reach(nid) : {};
       svg.classList.toggle("focus", !!nid);
-      Array.prototype.forEach.call(svg.querySelectorAll(".node"), function (n) { n.classList.toggle("lit", !!seen[n.dataset.id]); });
-      Array.prototype.forEach.call(svg.querySelectorAll(".edge"), function (e) { e.classList.toggle("lit", !!(seen[e.dataset.a] && seen[e.dataset.b])); });
+      each(svg.querySelectorAll(".node"), function (n) { n.classList.toggle("lit", !!seen[n.dataset.id]); });
+      each(svg.querySelectorAll(".edge"), function (e) { e.classList.toggle("lit", !!(seen[e.dataset.a] && seen[e.dataset.b])); });
+      if (nid) showTip(nid); else tip.hidden = true;
     }
     svg.onmouseover = function (ev) { var n = ev.target.closest(".node"); focus(n ? n.dataset.id : null); };
     svg.onmouseleave = function () { focus(null); };
   }
-  function legend(items) {
-    return items.map(function (x) { return '<span><i class="k ' + x[0] + '"></i>' + x[1] + "</span>"; }).join("");
-  }
 
   (function () {
-    // The model: the 7 tables and 8 relationships of semantic_model/a_baseline/model.ossie.yaml.
-    var BASE = { w: 1100, h: 500, card: true, nodes: {
-      dim_product:  { x: 150, y: 20,  w: 210, h: 66, k: "dim", l: ["40 products", "brand · manufacturer"] },
-      dim_category: { x: 740, y: 20,  w: 210, h: 66, k: "dim shared", l: ["4 categories"] },
-      dim_store:    { x: 270, y: 145, w: 210, h: 66, k: "dim", l: ["55 stores", "customer: a chain in a country"] },
-      dim_country:  { x: 620, y: 145, w: 210, h: 66, k: "dim shared", l: ["3 countries"] },
-      dim_calendar: { x: 445, y: 270, w: 210, h: 66, k: "dim shared", l: ["1,461 days, 2020 to 2023", "year · month · 4-4-5 fiscal period"] },
-      fact_sales:   { x: 40,  y: 395, w: 270, h: 90, k: "fact", l: ["2,411,200 rows", "one row per day, store and product", "sales_qty · net_profit"] },
-      fact_budget:  { x: 790, y: 395, w: 270, h: 90, k: "fact", l: ["432 rows", "one row per month, country and category", "budget_qty"] }
+    // Power BI, read with INFO.VIEW.TABLES / RELATIONSHIPS / MEASURES: the 7 tables of the baseline, 8 relationships, and the measures' table.
+    var PBI = { w: 1180, h: 600, minw: 880, card: true, nodes: {
+      dim_product:  { x: 70,  y: 26,  w: 240, k: "dim", rows: "40", l: ["brand · manufacturer"], c: ["product_id", "category"] },
+      dim_category: { x: 870, y: 26,  w: 240, k: "dim shared", rows: "4", c: ["category"] },
+      dim_store:    { x: 225, y: 170, w: 255, k: "dim", rows: "55", l: ["customer: a chain in a country"], c: ["store_id", "country"] },
+      dim_country:  { x: 700, y: 170, w: 240, k: "dim shared", rows: "3", c: ["country"] },
+      dim_calendar: { x: 462, y: 318, w: 256, k: "dim shared", rows: "1,461", l: ["2020 to 2023 · 4-4-5 fiscal"], c: ["date_key", "month_start"] },
+      fact_sales:   { x: 40,  y: 488, w: 300, k: "fact", rows: "2.4M", l: ["one row per day, store, product"], c: ["sales_qty", "net_profit"] },
+      fact_budget:  { x: 840, y: 488, w: 300, k: "fact", rows: "432", l: ["one row per month, country, category"], c: ["budget_qty"] },
+      Metrics:      { x: 480, y: 500, w: 220, k: "measures", rows: "16", l: ["measures; no relationships"] }
     }, edges: [
       { a: "dim_category", b: "dim_product", label: "category" },
-      { a: "dim_product", b: "fact_sales", label: "product_id", fa: 0.3, fb: 0.63 },
+      { a: "dim_product", b: "fact_sales", label: "product_id" },
       { a: "dim_country", b: "dim_store", label: "country" },
-      { a: "dim_store", b: "fact_sales", label: "store_id", fa: 0.3, fb: 0.93 },
-      { a: "dim_calendar", b: "fact_sales", label: "sale_date", as: "left", bs: "right", fa: 0.5, fb: 0.35 },
-      { a: "dim_calendar", b: "fact_budget", label: "month_start", as: "right", bs: "left", fa: 0.5, fb: 0.35 },
-      { a: "dim_country", b: "fact_budget", label: "country", fa: 0.8, fb: 0.2 },
-      { a: "dim_category", b: "fact_budget", label: "category", fa: 0.8, fb: 0.7 }
+      { a: "dim_store", b: "fact_sales", label: "store_id" },
+      { a: "dim_calendar", b: "fact_sales", label: "sale_date", as: "left", bs: "right" },
+      { a: "dim_calendar", b: "fact_budget", label: "month_start", as: "right", bs: "left" },
+      { a: "dim_country", b: "fact_budget", label: "country" },
+      { a: "dim_category", b: "fact_budget", label: "category" }
     ] };
-    var LEG_BASE = [["fact", "Fact"], ["dim", "Dimension"], ["dim shared", "Dimension shared by both facts"]];
-
-    // Power BI, read with INFO.VIEW.RELATIONSHIPS / TABLES / MEASURES: the same 8 relationships, and the measures' table.
-    var PBI = { w: 1100, h: 500, card: true, nodes: {}, edges: BASE.edges };
-    Object.keys(BASE.nodes).forEach(function (k) { PBI.nodes[k] = BASE.nodes[k]; });
-    PBI.nodes.Metrics = { x: 450, y: 405, w: 200, h: 70, k: "measures", l: ["the 16 measures", "no relationships"] };
 
     // Snowflake, read with DESCRIBE SEMANTIC VIEW: 16 logical tables over 9 physical ones, 32 relationships.
-    var SF = { w: 1100, h: 510, dense: true, labels: false, nodes: {
-      all_members:   { x: 910, y: 20,  w: 170, h: 48, k: "helper", l: ["DIM_ALL_MEMBERS, 1 row"] },
-      category:      { x: 60,  y: 125, w: 170, h: 48, k: "dim", l: ["DIM_CATEGORY"] },
-      brand:         { x: 250, y: 125, w: 170, h: 48, k: "helper", l: ["DIM_BRAND"] },
-      country:       { x: 560, y: 125, w: 170, h: 48, k: "dim", l: ["DIM_COUNTRY"] },
-      product:       { x: 20,  y: 245, w: 160, h: 48, k: "dim", l: ["DIM_PRODUCT"] },
-      product_attrs: { x: 200, y: 245, w: 160, h: 48, k: "copy", l: ["DIM_PRODUCT again"] },
-      calendar:      { x: 380, y: 245, w: 160, h: 48, k: "dim", l: ["DIM_CALENDAR"] },
-      store:         { x: 560, y: 245, w: 160, h: 48, k: "dim", l: ["DIM_STORE"] },
-      store_geo:     { x: 740, y: 245, w: 160, h: 48, k: "copy", l: ["DIM_STORE again"] },
-      sales:              { x: 10,  y: 430, w: 145, h: 62, k: "fact", l: ["FACT_SALES"] },
-      sales_ly:           { x: 165, y: 430, w: 145, h: 62, k: "factcopy", l: ["FACT_SALES", "date + 1 year"] },
-      sales_ly_day:       { x: 320, y: 430, w: 145, h: 62, k: "factcopy", l: ["FACT_SALES", "+ 1 year, no Feb 29"] },
-      sales_fly:          { x: 475, y: 430, w: 145, h: 62, k: "factcopy", l: ["FACT_SALES", "date + 364 days"] },
-      sales_all_cust:     { x: 630, y: 430, w: 145, h: 62, k: "factcopy", l: ["FACT_SALES", "all customers"] },
-      sales_all_cust_cat: { x: 785, y: 430, w: 145, h: 62, k: "factcopy", l: ["FACT_SALES", "all cust. and categories"] },
-      budget:             { x: 940, y: 430, w: 145, h: 62, k: "fact", l: ["FACT_BUDGET"] }
+    function sn(x, y, k, sub, badge, phys, t) { return { x: x, y: y, w: 158, k: k, compact: true, sub: sub, badge: badge, phys: phys, t: t }; }
+    var SF = { w: 1190, h: 570, minw: 900, dense: true, labels: false, nodes: {
+      all_members:   sn(440, 22, "helper", "DIM_ALL_MEMBERS · 1 row"),
+      category:      sn(80, 140, "dim", "DIM_CATEGORY"),
+      brand:         sn(290, 140, "helper", "DIM_BRAND"),
+      country:       sn(620, 140, "dim", "DIM_COUNTRY"),
+      product:       sn(20, 290, "dim", "DIM_PRODUCT", "1/2", "P"),
+      product_attrs: sn(205, 290, "copy", "DIM_PRODUCT again", "2/2", "P"),
+      calendar:      sn(400, 290, "dim", "DIM_CALENDAR"),
+      store:         sn(595, 290, "dim", "DIM_STORE", "1/2", "S"),
+      store_geo:     sn(790, 290, "copy", "DIM_STORE again", "2/2", "S"),
+      sales:              sn(15,  500, "fact", "FACT_SALES", "1/6", "F"),
+      sales_ly:           sn(182, 500, "factcopy", "FACT_SALES · +1 year", "2/6", "F"),
+      sales_ly_day:       sn(349, 500, "factcopy", "FACT_SALES · no Feb 29", "3/6", "F"),
+      sales_fly:          sn(516, 500, "factcopy", "FACT_SALES · +364 days", "4/6", "F"),
+      sales_all_cust:     sn(683, 500, "factcopy", "FACT_SALES · all cust.", "5/6", "F"),
+      sales_all_cust_cat: sn(850, 500, "factcopy", "FACT_SALES · all cust+cat", "6/6", "F"),
+      budget:             sn(1017, 500, "fact", "FACT_BUDGET")
     }, edges: [] };
+    SF.nodes.sales_ly_day.t = "sales_ly_day"; SF.nodes.sales_all_cust_cat.t = "sales_all_cust_cat";
     [["all_members", "category"], ["all_members", "sales_all_cust_cat"], ["category", "product"], ["category", "budget"],
      ["brand", "product_attrs"], ["country", "store"], ["country", "store_geo"], ["country", "budget"]]
       .forEach(function (e) { SF.edges.push({ a: e[0], b: e[1] }); });
     var SALES4 = ["sales", "sales_ly", "sales_ly_day", "sales_fly"];
-    ["sales", "sales_ly", "sales_ly_day", "sales_fly", "sales_all_cust", "sales_all_cust_cat", "budget"].forEach(function (f) { SF.edges.push({ a: "calendar", b: f }); });
+    SALES4.concat(["sales_all_cust", "sales_all_cust_cat", "budget"]).forEach(function (f) { SF.edges.push({ a: "calendar", b: f }); });
     SALES4.concat(["sales_all_cust"]).forEach(function (f) { SF.edges.push({ a: "product", b: f }); });
     SALES4.concat(["sales_all_cust", "sales_all_cust_cat"]).forEach(function (f) { SF.edges.push({ a: "product_attrs", b: f }); });
     SALES4.forEach(function (f) { SF.edges.push({ a: "store", b: f }); });
     ["sales_all_cust", "sales_all_cust_cat"].forEach(function (f) { SF.edges.push({ a: "store_geo", b: f }); });
 
-    // Databricks, read with SHOW VIEWS: 5 metric views, each one source with its joins, and nothing between them.
-    function five(source, line) {
-      return { w: 340, h: 220, dense: true, labels: false, nodes: {
-        dim_category: { x: 120, y: 8, w: 100, h: 40, k: "dim" }, dim_country: { x: 230, y: 8, w: 100, h: 40, k: "dim" },
-        dim_calendar: { x: 10, y: 80, w: 100, h: 40, k: "dim" }, dim_product: { x: 120, y: 80, w: 100, h: 40, k: "dim" },
-        dim_store: { x: 230, y: 80, w: 100, h: 40, k: "dim" },
-        src: { x: 70, y: 162, w: 200, h: 48, k: "fact", t: source, l: [line] }
-      }, edges: [{ a: "dim_category", b: "dim_product" }, { a: "dim_country", b: "dim_store" }, { a: "dim_calendar", b: "src" },
-                 { a: "dim_product", b: "src" }, { a: "dim_store", b: "src" }] };
+    // Databricks, read with SHOW VIEWS: 5 metric views, each one source with its joins, nothing between them.
+    function c(x, y, k, t, sub, w) { return { x: x, y: y, w: w || 106, k: k, t: t, sub: sub, compact: true }; }
+    function dims5(src) {
+      return { nodes: { cat: c(127, 62, "dim", "dim_category"), cty: c(242, 62, "dim", "dim_country"), cal: c(12, 132, "dim", "dim_calendar"),
+        prd: c(127, 132, "dim", "dim_product"), sto: c(242, 132, "dim", "dim_store"), src: c(80, 208, "fact", "fact_sales", src, 200) },
+        edges: [["cat", "prd"], ["cty", "sto"], ["cal", "src"], ["prd", "src"], ["sto", "src"]] };
     }
-    var MV = [
-      ["sales_mv", "14 measures, 9 of them windows", "Sales, with its dimensions left-joined.", five("fact_sales", "source")],
-      ["sales_ly_mv", "2 measures", "The same fact with its date moved a year, for last year at any grain.", five("fact_sales", "source, date + 1 year")],
-      ["budget_mv", "1 measure", "The budget, with its three dimensions.", { w: 340, h: 220, dense: true, labels: false, nodes: {
-        dim_calendar: { x: 10, y: 40, w: 100, h: 40, k: "dim" }, dim_category: { x: 120, y: 40, w: 100, h: 40, k: "dim" },
-        dim_country: { x: 230, y: 40, w: 100, h: 40, k: "dim" }, src: { x: 70, y: 150, w: 200, h: 48, k: "fact", t: "fact_budget", l: ["source"] }
-      }, edges: [{ a: "dim_calendar", b: "src" }, { a: "dim_category", b: "src" }, { a: "dim_country", b: "src" }] }],
-      ["bridge_mv", "3 measures", "Both facts under one source: every date, category and country, each fact joined one-to-many.", { w: 340, h: 220, dense: true, labels: false, nodes: {
-        src: { x: 30, y: 20, w: 280, h: 48, k: "dim", t: "calendar × category × country", l: ["source: a cross join"] },
-        sales: { x: 15, y: 150, w: 150, h: 48, k: "fact", t: "fact_sales", l: ["with product and store"] },
-        budget: { x: 175, y: 150, w: 150, h: 48, k: "fact", t: "fact_budget", l: ["joined"] }
-      }, edges: [{ a: "src", b: "sales" }, { a: "src", b: "budget" }] }],
-      ["calendar_mv", "no measures", "The calendar alone, so its days can be counted.", { w: 340, h: 220, dense: true, labels: false, nodes: {
-        dim_calendar: { x: 95, y: 86, w: 150, h: 48, k: "dim", l: ["source, no joins"] } }, edges: [] }]
+    var VIEWS = [
+      ["sales_mv", "14 measures, 9 of them windows", dims5("source, left-joined below")],
+      ["sales_ly_mv", "2 measures: last year as rows", dims5("source, date + 1 year")],
+      ["budget_mv", "1 measure", { nodes: { cal: c(12, 100, "dim", "dim_calendar"), cat: c(127, 100, "dim", "dim_category"), cty: c(242, 100, "dim", "dim_country"),
+        src: c(80, 196, "fact", "fact_budget", "source", 200) }, edges: [["cal", "src"], ["cat", "src"], ["cty", "src"]] }],
+      ["bridge_mv", "3 measures: both facts under one source", { nodes: { src: c(30, 66, "dim", "calendar × category × country", "source: a cross join", 300),
+        fs: c(12, 190, "fact", "fact_sales", "+ product, store", 160), fb: c(188, 190, "fact", "fact_budget", "joined", 160) }, edges: [["src", "fs"], ["src", "fb"]] }],
+      ["calendar_mv", "no measures: the days alone", { nodes: { cal: c(95, 130, "dim", "dim_calendar", "source, no joins", 170) }, edges: [] }]
     ];
-    $("g-dbx").innerHTML = MV.map(function (m, i) {
-      return '<div class="card stack mv"><header><code>' + m[0] + '</code><span class="sub">' + m[1] + "</span></header>" +
-        '<svg id="g-dbx-' + i + '" class="graph" role="img" aria-label="' + m[0] + '"></svg><p class="sub">' + m[2] + "</p></div>";
-    }).join("");
-    MV.forEach(function (m, i) { drawGraph($("g-dbx-" + i), m[3]); });
+    function DBX(phone) {
+      var pos = phone ? VIEWS.map(function (v, i) { return [10, 10 + i * 300]; }) : [[10, 20], [410, 20], [810, 20], [210, 330], [610, 330]];
+      var g = { w: phone ? 380 : 1180, h: phone ? 1500 : 620, dense: true, labels: false, nodes: {}, edges: [], islands: [],
+        gulfs: phone ? [0, 1, 2, 3].map(function (i) { return { x1: 190, y1: 280 + i * 300, x2: 190, y2: 310 + i * 300 }; }) :
+          [{ x1: 370, y1: 155, x2: 410, y2: 155 }, { x1: 770, y1: 155, x2: 810, y2: 155 }, { x1: 570, y1: 465, x2: 610, y2: 465 },
+           { x1: 290, y1: 290, x2: 290, y2: 330 }, { x1: 490, y1: 290, x2: 490, y2: 330 }, { x1: 890, y1: 290, x2: 890, y2: 330 }] };
+      VIEWS.forEach(function (v, i) {
+        var ox = pos[i][0], oy = pos[i][1];
+        g.islands.push({ x: ox, y: oy, w: 360, h: 270, t: v[0], sub: v[1] });
+        Object.keys(v[2].nodes).forEach(function (k) {
+          var n = v[2].nodes[k], m = {}; for (var f in n) m[f] = n[f];
+          m.x += ox; m.y += oy; m.tip = "in " + v[0]; g.nodes[i + ":" + k] = m;
+        });
+        v[2].edges.forEach(function (e) { g.edges.push({ a: i + ":" + e[0], b: i + ":" + e[1] }); });
+      });
+      return g;
+    }
 
+    var STATS = {
+      fabric: { kind: "1 model", s: [[1, "model"], [7, "tables"], [8, "relation­ships"], [16, "measures"]] },
+      snowflake: { kind: "1 semantic view", s: [[1, "semantic view"], [16, "logical tables"], [32, "relation­ships"], [19, "metrics"]] },
+      dbx: { kind: "5 metric views", s: [[5, "metric views"], [5, "sources"], [0, "relationships between them"], [20, "measures"]] }
+    };
     var PLAT = {
-      fabric: { g: PBI, leg: LEG_BASE.concat([["measures", "Table of measures"]]),
+      fabric: { g: PBI, leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Dimension shared by both facts"], ["k-measures", "Table of measures"]],
         cap: "One model: 7 tables and 8 relationships, two facts at two grains. Dimensions sit on top and facts at the bottom, so every filter flows downhill, from the one side (1) to the many side (*). The budget has no store and no product: it meets sales only through the calendar, the category and the country. The 16 measures sit in one more table, Metrics, which holds nothing else.",
         src: "Read from the service with INFO.VIEW.TABLES, INFO.VIEW.RELATIONSHIPS and INFO.VIEW.MEASURES. Point at a table to see what it filters and what filters it." },
-      snowflake: { g: SF, leg: [["fact", "Fact"], ["factcopy", "FACT_SALES again"], ["dim", "Dimension"], ["copy", "Dimension again"], ["helper", "Table added for the model"]],
+      snowflake: { g: SF, leg: [["k-fact", "Fact"], ["k-fact copy", "FACT_SALES again"], ["k-dim", "Dimension"], ["k-dim copy", "Dimension again"], ["k-helper", "Table added for the model"]],
         cap: "One semantic view, 16 logical tables over 9 physical ones, 32 relationships. FACT_SALES appears six times: the facts themselves, last year, last year by day, last fiscal year, and two denominators that must ignore the customer filter. DIM_PRODUCT and DIM_STORE appear twice, and two tables exist only for the model.",
-        src: "Read from the service with DESCRIBE SEMANTIC VIEW. Point at a table to follow its relationships." },
-      dbx: { leg: [["fact", "Fact, the source of the view"], ["dim", "Dimension, left-joined"]],
+        src: "Read from the service with DESCRIBE SEMANTIC VIEW. Point at a table to follow its relationships; every copy of the same physical table lights up with it." },
+      dbx: { leg: [["k-fact", "Fact, the source of the view"], ["k-dim", "Dimension, left-joined"], ["gulf", "No relationship: a join you write in the query"]],
         cap: "Five metric views and nothing that relates them. Each is one source with its dimensions left-joined, so each answers at the grain of its source. A question that needs two of them is a join you write in the query.",
         src: "Read from the service with SHOW VIEWS: sales_mv, sales_ly_mv, budget_mv, bridge_mv, calendar_mv, all of them metric views." }
     };
-    function showPlat(p) {
-      var x = PLAT[p];
-      Array.prototype.forEach.call($("platseg").children, function (b) { b.setAttribute("aria-selected", b.dataset.p === p); });
-      $("plat-svgwrap").hidden = p === "dbx"; $("g-dbx").hidden = p !== "dbx";
-      if (x.g) drawGraph($("g-plat"), x.g);
-      $("plat-cap").textContent = x.cap; $("plat-src").textContent = x.src; $("leg-plat").innerHTML = legend(x.leg);
-    }
-    $("platseg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) showPlat(b.dataset.p); });
-    showPlat("fabric");
 
+    $("plats").innerHTML = PLATS.map(function (p) {
+      var st = STATS[p];
+      return '<button type="button" class="pcard ' + p + '" data-p="' + p + '" aria-pressed="false">' +
+        '<div class="pc-top"><span><span class="dot ' + p + '"></span>' + NAME[p] + '</span><span class="sub">' + st.kind + "</span></div>" +
+        '<div class="pc-big"><b data-count="' + plainMatches(p) + '">' + plainMatches(p) + "</b><small>/ " + DATA.questions.length + "</small></div>" +
+        '<div class="pc-lbl">questions answered by a plain query, matching the reference</div>' +
+        '<dl class="pc-stats">' + st.s.map(function (x) { return '<div><dd data-count="' + x[0] + '">' + x[0] + "</dd><dt>" + x[1] + "</dt></div>"; }).join("") + "</dl></button>";
+    }).join("");
+
+    var cur = "fabric", phoneLayout = null;
+    function legend(items) {
+      return items.map(function (x) { return '<span><i class="k ' + x[0] + '">' + (x[0] === "gulf" ? "✕" : "") + "</i>" + x[1] + "</span>"; }).join("");
+    }
+    window.__showPlat = function (p) {
+      cur = p;
+      var x = PLAT[p], phone = $("gwrap").clientWidth < 640;
+      each($("plats").children, function (b) { b.setAttribute("aria-pressed", b.dataset.p === p); });
+      phoneLayout = phone;
+      drawGraph($("g-plat"), p === "dbx" ? DBX(phone) : x.g, $("gtip"), $("gwrap"));
+      $("plat-title").innerHTML = '<span class="dot ' + p + '"></span>' + NAME[p] + ": the model as it holds it";
+      $("plat-cap").textContent = x.cap; $("plat-src").textContent = x.src; $("leg-plat").innerHTML = legend(x.leg);
+    };
+    $("plats").addEventListener("click", function (e) {
+      var b = e.target.closest(".pcard"); if (!b) return;
+      window.__showPlat(b.dataset.p);
+      if (innerWidth < 960) document.querySelector(".graphcard").scrollIntoView({ behavior: REDUCE ? "auto" : "smooth" });
+    });
+    window.__replot = function () { window.__showPlat(cur); };
+    var rt;
+    window.addEventListener("resize", function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () { if (cur === "dbx" && $("model").classList.contains("on") && ($("gwrap").clientWidth < 640) !== phoneLayout) window.__showPlat("dbx"); }, 150);
+    });
+  })();
+
+  var counted = false;
+  function countUp() {
+    if (counted || REDUCE) return; counted = true;
+    var els = document.querySelectorAll("#plats [data-count]"), t0 = performance.now();
+    (function tick(t) {
+      var k = Math.min(1, (t - t0) / 1100), e = 1 - Math.pow(1 - k, 3);
+      each(els, function (el) { el.textContent = Math.round(+el.dataset.count * e); });
+      if (k < 1) requestAnimationFrame(tick);
+    })(t0);
+  }
+
+  // ---------- 3. ossie: what the standard can write
+  (function () {
     var SPEC = "https://github.com/apache/ossie/blob/main/core-spec/";
     var GROUPS = [
       { test: function (m) { return /^yes/.test(m.standard); }, title: "In the standard now", chip: "match",
@@ -801,7 +989,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     function md(t) { return esc(t).replace(/`(.+?)`/g, "<code>$1</code>"); }
     $("ossie-groups").innerHTML = GROUPS.map(function (g, gi) {
       var rows = DATA.measures.filter(g.test);
-      var head = "<tr><th>Measure</th><th>Meaning</th>" + (gi === 0 ? "<th>In Ossie</th><th>Declared on</th>" : "") + "</tr>";
+      var hd = "<tr><th>Measure</th><th>Meaning</th>" + (gi === 0 ? "<th>In Ossie</th><th>Declared on</th>" : "") + "</tr>";
       var body = rows.map(function (m) {
         var x = O.expr[m.name] || {};
         return "<tr><td><code>" + esc(m.name) + "</code></td><td>" + md(m.meaning) + "</td>" +
@@ -810,50 +998,35 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
       return '<div class="card stack"><header class="demo-bar"><h3 style="flex:1">' + g.title + "</h3>" +
         '<span class="chip ' + g.chip + '"><i aria-hidden="true">' + ICON[g.chip] + "</i>" + rows.length + " measures</span></header>" +
         '<p class="sub">' + g.note + " " + g.links.map(function (l) { return '<a href="' + l[1] + '">' + l[0] + "</a>"; }).join(" · ") + "</p>" +
-        '<div class="tw"><table class="wrapcell"><thead>' + head + "</thead><tbody>" + body + "</tbody></table></div></div>";
+        '<div class="tw"><table class="wrapcell"><thead>' + hd + "</thead><tbody>" + body + "</tbody></table></div></div>";
     }).join("");
     $("ossie-yaml").textContent = O.yaml;
   })();
 
-  // ---------- 0c. what each platform supports of ossie: a grid, then what each platform answered
+  // ---------- 3. ossie: what each platform does with it
   (function () {
-    var P = ["fabric", "snowflake", "dbx"], E = DATA.evidence;
-    var GH = "https://github.com/djouallah/semantic_models/blob/main/";
-    ICON.na = "–";
+    var E = DATA.evidence;
     var W = { yes: ["match", "yes"], part: ["partial", "partly"], no: ["refused", "no"], na: ["na", "n/a"], untested: ["na", "not tried"] };
     var fv = E.fabric_version.split(":")[1].trim(), sv = E.sf_export_version.split(":")[1].trim();
-    // [what, [status, how] for Power BI, Snowflake, Databricks]
     var F = [
       ["Imports an Ossie file",
         ["yes", "Written to the lakehouse as a semantic view; Fabric's Publish compiles it into a Direct Lake semantic model"],
         ["yes", "<code>SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML</code> creates a semantic view from it"],
         ["no", "No Ossie import at all. Metric views are written in Databricks' own YAML"]],
-      ["Ossie version it reads",
-        ["yes", "<code>" + fv + "</code>"],
-        ["part", "<code>0.1.1</code> only"],
-        ["na", ""]],
+      ["Ossie version it reads", ["yes", "<code>" + fv + "</code>"], ["part", "<code>0.1.1</code> only"], ["na", ""]],
       ["Measures in its own dialect, inside the Ossie file",
         ["yes", "The <code>DAX</code> dialect: all 16 measures, 0 errors, 0 warnings"],
         ["no", "The <code>SNOWFLAKE</code> dialect is refused: its own LOD syntax, <code>FIXED</code> / <code>EXCLUDE DIMENSIONS</code>, fails with <em>unexpected 'FIXED'</em>"],
         ["na", ""]],
-      ["Vendor extensions",
-        ["part", "<code>POWER_BI</code> format strings are accepted, then dropped by Publish without a warning"],
-        ["untested", ""],
-        ["na", ""]],
-      ["Exports its model as Ossie",
-        ["untested", ""],
-        ["yes", "<code>SYSTEM$READ_OSSIE_YAML_FROM_SEMANTIC_VIEW</code>, as <code>" + sv + "</code>"],
-        ["untested", ""]],
-      ["Re-imports its own export",
-        ["na", ""],
-        ["no", "Its own export is refused: <em>invalid identifier 'SALES.SALES_QUANTITY'</em>"],
-        ["na", ""]],
+      ["Vendor extensions", ["part", "<code>POWER_BI</code> format strings are accepted, then dropped by Publish without a warning"], ["untested", ""], ["na", ""]],
+      ["Exports its model as Ossie", ["untested", ""], ["yes", "<code>SYSTEM$READ_OSSIE_YAML_FROM_SEMANTIC_VIEW</code>, as <code>" + sv + "</code>"], ["untested", ""]],
+      ["Re-imports its own export", ["na", ""], ["no", "Its own export is refused: <em>invalid identifier 'SALES.SALES_QUANTITY'</em>"], ["na", ""]],
       ["How the model in this repo is written",
-        ["yes", "In Ossie: the baseline plus the 16 measures in DAX, <a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">oss_dax_dialect.ossie.yaml</a>"],
+        ["yes", "In Ossie with the DAX dialect: the baseline plus the 16 measures, <a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">oss_dax_dialect.ossie.yaml</a>"],
         ["no", "Not in Ossie: <code>CREATE SEMANTIC VIEW</code> DDL, <a href=\"" + GH + "semantic_model/snowflake/semantic_view.sql\">semantic_view.sql</a>"],
         ["no", "Not in Ossie: 5 metric views in Databricks' YAML, <a href=\"" + GH + "semantic_model/dbx/\">semantic_model/dbx/</a>"]]
     ];
-    $("sup-feat").innerHTML = "<thead><tr><th></th>" + P.map(function (p) { return '<th><span class="dot ' + p + '"></span>' + NAME[p] + "</th>"; }).join("") +
+    $("sup-feat").innerHTML = "<thead><tr><th></th>" + PLATS.map(function (p) { return '<th><span class="dot ' + p + '"></span>' + NAME[p] + "</th>"; }).join("") +
       "</tr></thead><tbody>" + F.map(function (f) {
         return "<tr><td>" + f[0] + "</td>" + [1, 2, 3].map(function (j) {
           var w = W[f[j][0]];
@@ -861,9 +1034,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
             (f[j][1] ? '<span class="why">' + f[j][1] + "</span>" : "") + "</td>";
         }).join("") + "</tr>";
       }).join("") + "</tbody>";
-    $("sup-note").innerHTML = "The standard itself is at <code>" + esc(DATA.ossie.version) + "</code> on apache/ossie main, unreleased. " +
-      "No platform reads that version yet: Power BI reads <code>" + fv + "</code>, Snowflake <code>0.1.1</code>. See <a href=\"#ossie\">What Ossie supports</a> for what the standard itself can write.";
-
+    $("sup-note").innerHTML = "No platform reads <code>" + esc(DATA.ossie.version) + "</code> yet: Power BI reads <code>" + fv + "</code>, Snowflake <code>0.1.1</code>.";
     var EV = [
       ["fabric", [["Publish of the Ossie file with the DAX dialect", E.fabric_publish, "semantic_model/fabric/publish_response.json"]]],
       ["snowflake", [
@@ -876,11 +1047,11 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
       var body = e[1].length ? e[1].map(function (x) {
         return '<div class="stack" style="gap:6px"><h4>' + x[0] + '</h4><pre><code>' + esc(x[1]) + '</code></pre><p class="sub"><a href="' + GH + x[2] + '">' + x[2].split("/").pop() + "</a></p></div>";
       }).join("") : '<p class="sub">Nothing to hand it: Databricks has no Ossie import, so the model is written as metric views directly.</p>';
-      return '<div class="card stack ev"><h3><span class="dot ' + e[0] + '"></span>' + NAME[e[0]] + ": what it answered</h3>" + body + "</div>";
+      return '<div class="card stack ev plat ' + e[0] + '"><h3><span class="dot ' + e[0] + '"></span>' + NAME[e[0]] + ": what it answered</h3>" + body + "</div>";
     }).join("");
   })();
 
-  // ---------- 1. drill across (q13, q12): a walkthrough in three steps, two routes
+  // ---------- 2. how they answer: the drill-across walkthrough (q13), two facts (q12)
   var demo = { mode: "drill", step: 1, timer: null, played: false };
   var STEPS = { drill: ["Two tables", "Group each on its own", "Merge on year"], single: ["Two tables", "Join first", "Group once"] };
   var CAPTION = {
@@ -892,11 +1063,11 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
              "One group-by over the joined rows. 2023 was never in them, so it is not in the answer."]
   };
   function paintDemo() {
-    Array.prototype.forEach.call($("stage").querySelectorAll("[data-from]"), function (el) {
+    each($("stage").querySelectorAll("[data-from]"), function (el) {
       el.hidden = !!el.dataset.mode && el.dataset.mode !== demo.mode;
       el.classList.toggle("on", +el.dataset.from <= demo.step);
     });
-    Array.prototype.forEach.call(document.querySelectorAll("#routeseg button"), function (b) { b.setAttribute("aria-selected", b.dataset.mode === demo.mode); });
+    each(document.querySelectorAll("#routeseg button"), function (b) { b.setAttribute("aria-selected", b.dataset.mode === demo.mode); });
     $("stepper").innerHTML = STEPS[demo.mode].map(function (t, i) {
       return '<button type="button" data-step="' + (i + 1) + '"' + (i + 1 === demo.step ? ' aria-current="step"' : "") +
         ' class="' + (i + 1 < demo.step ? "done" : "") + '"><b>' + (i + 1) + "</b>" + t + "</button>";
@@ -928,9 +1099,13 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     $("f-sales").innerHTML = table(a.cols, a.measures, a.rows(rows));
     $("f-budget").innerHTML = table(b.cols, b.measures, b.rows(rows));
     $("f-merged").innerHTML = table(m.cols, m.measures, m.rows(rows));
+
+    $("chapnav").addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (b) $(b.dataset.to).scrollIntoView({ behavior: REDUCE ? "auto" : "smooth" });
+    });
   })();
 
-  // ---------- 2. platforms (q13)
+  // ---------- 2. who drills across (q13)
   (function () {
     var q = Q.q13;
     PLATS.forEach(function (p) {
@@ -943,10 +1118,10 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
       '<div class="stack"><div>' + chip(w.status) + ' <span class="sub">' + w.rows.length + " rows returned</span></div>" + runTable(q, w) + "</div>";
   })();
 
-  // ---------- 3. one grain (q04): one measure across every route
+  // ---------- 2. one grain (q04): one measure across every route
   (function () {
-    var q = Q.q04, ci = q.columns.indexOf("sales_qty_ly"), cols = ["month_start", "reference"], meas = [false, true];
-    q.runs.forEach(function (r) { cols.push(label(r.label)); meas.push(true); });
+    var q = Q.q04, ci = q.columns.indexOf("sales_qty_ly"), meas = [false, true];
+    q.runs.forEach(function () { meas.push(true); });
     var rows = q.expected.rows.map(function (e, i) { return [e[0], e[ci]].concat(q.runs.map(function (r) { return r.rows[i] ? r.rows[i][ci] : ""; })); });
     var diff = q.expected.rows.map(function (e, i) { return [false, false].concat(q.runs.map(function (r) { return !!(r.diff[i] && r.diff[i][ci]); })); });
     $("g-title").textContent = q.id + ": " + q.title;
@@ -960,7 +1135,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     $("g-table").innerHTML = h + "</tbody></table></div>";
   })();
 
-  // ---------- 4. what it took
+  // ---------- 4. results: tiles, the grid, and the question panel under it
   (function () {
     var facts = {
       fabric: [["Models", "1"], ["Tables", "7"], ["Measures", "16"], ["Queries", "one per question"]],
@@ -969,46 +1144,44 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     };
     var n = DATA.questions.length;
     $("tiles").innerHTML = PLATS.map(function (p) {
-      var plain = 0, any = 0;
-      DATA.questions.forEach(function (q) {
-        if ((run(q, p) || {}).status === "match") plain++;
-        if (q.runs.some(function (r) { return r.platform === p && r.status === "match"; })) any++;
-      });
-      return '<div class="card stack tile"><h3><span class="dot ' + p + '"></span>' + NAME[p] + "</h3>" +
+      var plain = plainMatches(p), any = 0;
+      DATA.questions.forEach(function (q) { if (q.runs.some(function (r) { return r.platform === p && r.status === "match"; })) any++; });
+      return '<div class="card stack tile plat ' + p + '"><h3><span class="dot ' + p + '"></span>' + NAME[p] + "</h3>" +
         '<div><div class="big">' + plain + " <small>of " + n + "</small></div>" +
         '<div class="sub">plain queries match the reference</div></div>' +
         '<div class="bar" role="img" aria-label="' + plain + " of " + n + '"><span style="width:' + (100 * plain / n) + '%"></span></div>' +
         '<div class="sub"><b>' + any + " of " + n + "</b> after more model or query logic</div>" +
         "<dl>" + facts[p].map(function (f) { return "<dt>" + f[0] + "</dt><dd>" + f[1] + "</dd>"; }).join("") + "</dl></div>";
     }).join("");
-
     function why(s) {
       s = s.replace(/^\**(match|differs|partial|refused)\**\s*[:,;.]?\s*/, "").replace(/^\((.*)\)$/, "$1");
       s = esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<code>$1</code>");
       return s ? '<span class="why">' + s.charAt(0).toUpperCase() + s.slice(1) + "</span>" : "";
     }
-    $("grid").innerHTML = "<thead><tr><th>Question</th>" + PLATS.map(function (p) { return "<th>" + NAME[p] + "</th>"; }).join("") + "</tr></thead><tbody>" +
+    $("grid").innerHTML = "<thead><tr><th>Question</th>" + PLATS.map(function (p) { return '<th><span class="dot ' + p + '"></span>' + NAME[p] + "</th>"; }).join("") + "</tr></thead><tbody>" +
       DATA.questions.map(function (q) {
         return '<tr data-q="' + q.id + '"><td><a href="#' + q.id + '"><b>' + q.id + "</b> " + esc(q.title) + "</a></td>" +
           PLATS.map(function (p) { return "<td>" + chip((run(q, p) || {}).status) + why(q.notes[p] || "") + "</td>"; }).join("") + "</tr>";
       }).join("") + "</tbody>";
     $("grid").addEventListener("click", function (e) {
-      var tr = e.target.closest("tr[data-q]"); if (tr) { location.hash = tr.dataset.q; }
+      var tr = e.target.closest("tr[data-q]"); if (!tr) return;
+      e.preventDefault();
+      if (location.hash === "#" + tr.dataset.q) route(); else location.hash = tr.dataset.q;
     });
   })();
 
-  // ---------- 5. explorer
   var cur = { q: "q13", tab: "fabric" };
   function show(id, tab) {
     var q = Q[id]; if (!q) return;
     cur.q = id; cur.tab = tab && (tab === "expected" || run(q, tab)) ? tab : q.runs[0].label;
-    Array.prototype.forEach.call($("qlist").children, function (b) { b.setAttribute("aria-selected", b.dataset.q === id); });
+    each($("qlist").children, function (b) { b.setAttribute("aria-selected", b.dataset.q === id); });
+    each(document.querySelectorAll("#grid tr[data-q]"), function (tr) { tr.classList.toggle("sel", tr.dataset.q === id); });
     var r = cur.tab === "expected" ? null : run(q, cur.tab);
     var tabs = '<button type="button" data-tab="expected" aria-selected="' + (cur.tab === "expected") + '">Reference (raw SQL)</button>' +
       q.runs.map(function (x) { return '<button type="button" data-tab="' + esc(x.label) + '" aria-selected="' + (x.label === cur.tab) + '">' + esc(label(x.label)) + " " + chip(x.status) + "</button>"; }).join("");
     var body;
     if (!r) {
-      body = '<pre><code>' + esc(q.expected.code) + "</code></pre>" + table(q.columns, q.measures, q.expected.rows);
+      body = "<pre><code>" + esc(q.expected.code) + "</code></pre>" + table(q.columns, q.measures, q.expected.rows);
     } else {
       body = '<p class="sub"><code>questions/' + q.folder + "/" + r.file + "</code></p><pre><code>" + esc(r.code) + "</code></pre>" +
         '<div class="pair"><div class="stack"><h4>' + esc(label(r.label)) + " returned</h4>" +
@@ -1023,27 +1196,52 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
   }).join("");
   $("qlist").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { history.replaceState(null, "", "#" + b.dataset.q); show(b.dataset.q); } });
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
-  var VIEWS = ["model", "ossie", "support", "drill", "platforms", "grain", "results", "questions"];
+
+  // ---------- routing: 4 tabs; the old tab names still land where their content went
+  var VIEWS = ["model", "answer", "ossie", "results"];
+  var ALIAS = { drill: ["answer", "ch-drill"], platforms: ["answer", "ch-engines"], grain: ["answer", "ch-grain"],
+                support: ["ossie", "os-platforms"], questions: ["results", "qpanel"] };
+  var nav = $("nav"), ind = nav.querySelector(".ind");
+  function moveInd() {
+    var a = nav.querySelector('a[aria-current="page"]'); if (!a) return;
+    ind.style.width = a.offsetWidth + "px"; ind.style.transform = "translateX(" + a.offsetLeft + "px)";
+  }
+  var shown = null;
   function route() {
-    var h = location.hash.slice(1), v = Q[h] ? "questions" : (VIEWS.indexOf(h) >= 0 ? h : "model");
+    var h = location.hash.slice(1), v, target = null;
+    if (Q[h]) { v = "results"; target = "qpanel"; show(h); }
+    else if (ALIAS[h]) { v = ALIAS[h][0]; target = ALIAS[h][1]; }
+    else v = VIEWS.indexOf(h) >= 0 ? h : "model";
     VIEWS.forEach(function (x) { $(x).classList.toggle("on", x === v); });
-    Array.prototype.forEach.call(document.querySelectorAll(".top nav a"), function (a) {
+    each(nav.querySelectorAll("a"), function (a) {
       if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
-    if (Q[h]) show(h);
-    window.scrollTo(0, 0);
-    if (v === "drill" && !demo.played) playDemo();
-    if (v !== "drill") stopDemo();
+    moveInd();
+    if (target) {
+      var go = function (b) { $(target).scrollIntoView({ behavior: b }); };
+      setTimeout(function () { go(shown === v && !REDUCE ? "smooth" : "auto"); }, 30);
+      if (shown !== v) setTimeout(function () { go("auto"); }, 450);   // again once the walkthrough has laid out
+    }
+    else window.scrollTo(0, 0);
+    if (v === "model" && shown !== "model") { window.__replot(); countUp(); }
+    if (v === "answer" && !demo.played) playDemo();
+    if (v !== "answer") stopDemo();
+    shown = v;
   }
   window.addEventListener("hashchange", route);
-  show("q13"); route();
+  window.addEventListener("resize", moveInd);
+  show("q13");
+  window.__showPlat("fabric");
+  route();
 
-  // ---------- theme
+  // ---------- theme: dark by default
   var root = document.documentElement, btn = $("theme");
-  function dark() { return root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; }
-  function paint() { btn.textContent = dark() ? "Light" : "Dark"; }
-  try { var t = localStorage.getItem("theme"); if (t) root.dataset.theme = t; } catch (e) {}
-  btn.addEventListener("click", function () { root.dataset.theme = dark() ? "light" : "dark"; try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {} paint(); });
+  function paint() { btn.textContent = root.dataset.theme === "light" ? "Dark" : "Light"; }
+  btn.addEventListener("click", function () {
+    root.dataset.theme = root.dataset.theme === "light" ? "dark" : "light";
+    try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+    paint();
+  });
   paint();
 })();
 </script>

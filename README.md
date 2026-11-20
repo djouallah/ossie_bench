@@ -1,4 +1,4 @@
-# One semantic model, three platforms
+# ossie_bench: one semantic model, three platforms
 
 One model, with two facts at two grains (daily sales, monthly budget), built natively on Power BI / Fabric, Snowflake
 and Databricks, then asked the same 13 questions on each ([questions/](questions/)).
@@ -6,8 +6,9 @@ and Databricks, then asked the same 13 questions on each ([questions/](questions
 Every platform can reach every answer. What differs is how much has to be added to the model, or moved into the
 query, to get there.
 
-**[The dashboard](https://djouallah.github.io/semantic_models/)** explains how each model works, through
-drill-across (group each table on its own, then merge), and shows every query and answer beside the reference.
+**[The dashboard](https://djouallah.github.io/ossie_bench/)** shows each model as its platform holds it, explains
+how each answers through drill-across (group each table on its own, then merge), what Ossie can carry between them,
+and every query and answer beside the reference.
 
 ## The model ([semantic_model/](semantic_model/))
 
