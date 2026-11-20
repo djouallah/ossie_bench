@@ -14,7 +14,7 @@ drill-across (group each table on its own, then merge), and shows every query an
 | | Format | |
 |---|---|---|
 | [a_baseline](semantic_model/a_baseline/) | Standard Ossie (portable SQL) + definitions | The model without a vendor: [model.ossie.yaml](semantic_model/a_baseline/model.ossie.yaml) has 7 tables, 8 relationships and the 4 measures the standard can express (three sums over one table, and one ratio across the two facts). It follows the unreleased development version, `0.3.0.dev0`. [measures.md](semantic_model/a_baseline/measures.md) defines all 16 in words; the other 12 have no standard syntax yet. |
-| [fabric](semantic_model/fabric/) | Ossie + DAX dialect | The baseline with the 16 measures in DAX. Fabric's Publish compiles the file into a Direct Lake model: 0 errors, 0 warnings. One extension, the measures' format strings (`POWER_BI`), which Publish drops without a warning. |
+| [fabric](semantic_model/fabric/) | Ossie with the DAX dialect | The baseline with the 16 measures in DAX. Fabric's Publish compiles the file into a Direct Lake model: 0 errors, 0 warnings. One extension, the measures' format strings (`POWER_BI`), which Publish drops without a warning. |
 | [snowflake](semantic_model/snowflake/) | SQL (semantic view DDL) | Its Ossie import takes only 0.1.1 and doesn't accept Snowflake's own dialect (`FIXED` / `EXCLUDE DIMENSIONS`), so the view is written as DDL. It can't re-import its own Ossie export ([tests/](semantic_model/snowflake/tests/)). |
 | [dbx](semantic_model/dbx/) | Metric view YAML | Databricks has no Ossie import. A metric view has one source, so the model is a set of views. |
 
@@ -46,7 +46,7 @@ numbers or rows), `partial` or `refused`.
 ## Rebuild
 ```
 python tools/sf.py setup export          # Snowflake data (Iceberg) + semantic view; data/*.parquet for the others
-python tools/fabric.py load publish      # Fabric: the Ossie + DAX file, published by Fabric
+python tools/fabric.py load publish      # Fabric: the Ossie file with the DAX dialect, published by Fabric
 python tools/dbx.py load deploy
 python tools/run_questions.py            # every question: the reference (raw SQL), then every platform
 python tools/build_dashboard.py          # questions/ -> docs/data.js, the data of the dashboard (docs/index.html)

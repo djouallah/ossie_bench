@@ -1,4 +1,4 @@
-"""Fabric plumbing: OneLake data, the Ossie + DAX semantic view, DAX queries.
+"""Fabric plumbing: OneLake data, the Ossie semantic view with the DAX dialect, DAX queries.
 
     python tools/fabric.py load       # data/*.parquet -> Delta tables in lakehouse `ossie` (workspace `app`)
     python tools/fabric.py publish    # semantic_model/fabric/oss_dax_dialect.ossie.yaml -> Context/Semantic Views/, then

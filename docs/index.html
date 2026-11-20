@@ -865,7 +865,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
       "No platform reads that version yet: Power BI reads <code>" + fv + "</code>, Snowflake <code>0.1.1</code>. See <a href=\"#ossie\">What Ossie supports</a> for what the standard itself can write.";
 
     var EV = [
-      ["fabric", [["Publish of the Ossie + DAX file", E.fabric_publish, "semantic_model/fabric/publish_response.json"]]],
+      ["fabric", [["Publish of the Ossie file with the DAX dialect", E.fabric_publish, "semantic_model/fabric/publish_response.json"]]],
       ["snowflake", [
         ["Import of a 0.1.1 file", E.sf_import, "semantic_model/snowflake/tests/import_response.txt"],
         ["Import with its own dialect (LOD)", E.sf_dialect, "semantic_model/snowflake/tests/lod_via_ossie_response.txt"],
