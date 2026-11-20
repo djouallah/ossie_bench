@@ -31,6 +31,7 @@
   --glow-a: rgba(98,80,214,.07); --glow-b: rgba(20,153,106,.05);
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; color: var(--ink); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
   background: radial-gradient(1100px 600px at 8% -12%, var(--glow-a), transparent 60%),
               radial-gradient(900px 520px at 100% -8%, var(--glow-b), transparent 60%), var(--page);
@@ -250,6 +251,15 @@ ul.facts li::before { content: ""; position: absolute; left: 2px; top: .62em; wi
   background: var(--pc); box-shadow: 0 0 8px var(--pc); }
 ul.facts .src { font-size: 12px; color: var(--muted); margin-left: 6px; white-space: nowrap; }
 ul.facts .tag { font-size: 11px; color: var(--muted); border: 1px solid var(--line-2); border-radius: 999px; padding: 0 7px; margin-left: 6px; white-space: nowrap; }
+.lanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: start; }
+.lane { border: 1px solid var(--line-2); border-radius: 12px; padding: 12px; background: var(--surface); display: grid; gap: 8px; }
+.lane h4 { color: var(--ink); text-transform: none; letter-spacing: 0; font: 700 13px var(--mono); }
+.lane .route { font-size: 13px; color: var(--ink-2); }
+.lane pre { font-size: 11.5px; padding: 9px 11px; }
+.sees { display: flex; gap: 6px; flex-wrap: wrap; }
+.merge { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; }
+.merge .arrow { color: var(--k-fact); font-size: 22px; text-shadow: 0 0 12px var(--k-fact); }
+@media (max-width: 960px) { .lanes, .merge { grid-template-columns: 1fr; } .merge .arrow { display: none; } }
 .plist { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13.5px; color: var(--ink-2); }
 .plist > span { display: inline-flex; align-items: center; }
 .who { font-size: 22px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2; color: var(--pc); }
@@ -353,6 +363,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   </div>
   <div class="card stack demo">
     <div id="how" class="how"></div>
+    <div id="lod" class="stack" hidden></div>
+    <div id="walk" class="stack">
     <p class="sub">The example: days in the calendar and sales, by year. The calendar runs to 2023; sales stop at 2022. Follow 2023.</p>
     <div class="demo-bar">
       <div class="stepper" id="stepper"></div>
@@ -402,6 +414,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
             <div class="verdict no"><b>3 rows.</b> 2023 is gone, and nothing says so.</div></div>
         </div>
       </div>
+    </div>
     </div>
 
 </section>
@@ -866,6 +879,39 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       "A second fact is a second view joined in the query, or a <code>one_to_many</code> join from a dimension source (Runtime 18.1+), which aggregates each fact on its own and blends them: <code>bridge_mv</code> here." + src("Databricks docs", DBXD + "uc-semantics/metric-views/joins")
     ] }
   };
+  // The Snowflake example: q09, three metrics, three routes to the same rows, merged on country.
+  (function () {
+    var q = Q.q09, r = run(q, "snowflake"), rows = r.rows.filter(function (x) { return x[0] !== ""; });
+    var isUK = function (x) { return x[0] === "UK"; };
+    function sub(name) { var t = pick(q, ["country", name]); return table(t.cols, t.measures, t.rows(rows), { hot: isUK }); }
+    function sees(m, c) {
+      return '<div class="sees">' + [["month filter", m], ["customer filter", c]].map(function (x) {
+        return '<span class="chip ' + (x[1] ? "match" : "na") + '"><i aria-hidden="true">' + (x[1] ? "✓" : "–") + "</i>" + x[0] + (x[1] ? " applies" : " ignored") + "</span>";
+      }).join("") + "</div>";
+    }
+    var LANES = [
+      ["sales_quantity", "The logical table SALES, as asked.", "sales.sales_quantity AS SUM(sales.sales_qty)", true, true],
+      ["country_qty_all_customers", "SALES_ALL_CUST, FACT_SALES again, reaches the country through STORE_GEO, DIM_STORE again. The customer filter is on STORE, so it has no path here.",
+        "sales_all_cust AS FACT_SALES   -- again\nstore_geo AS DIM_STORE         -- again\nsales_all_cust (store_id) REFERENCES store_geo\nSUM(sales_all_cust.sales_qty)", true, false],
+      ["country_total_fixed", "An LOD on SALES. FIXED is computed at country × year before any filter, so the whole of 2021 counts.",
+        "country_qty_fixed AS SUM(sales.sales_qty)\n  FIXED DIMENSIONS (country.country, calendar.year)\ncountry_total_fixed AS SUM(DISTINCT country_qty_fixed)", false, false]
+    ];
+    $("lod").innerHTML = '<p class="sub">The example: q09, February 2021 without Tesco, a UK chain. One query, three metrics, each on its own route.</p>' +
+      "<pre><code>SELECT country, AGG(sales_quantity), AGG(country_qty_all_customers), AGG(country_total_fixed)\nFROM DAX_DEMO.MODEL.SEMANTIC_VIEW\nWHERE month_start = DATE '2021-02-01' AND customer &lt;&gt; 'Tesco'\nGROUP BY ALL</code></pre>" +
+      '<div class="lanes">' + LANES.map(function (l, i) {
+        return '<div class="lane rv" data-i="' + i + '"><h4>' + l[0] + '</h4><p class="route">' + l[1] + "</p><pre><code>" + esc(l[2]) + "</code></pre>" + sees(l[3], l[4]) + sub(l[0]) + "</div>";
+      }).join("") + "</div>" +
+      '<div class="merge rv" data-i="3"><div class="arrow" aria-hidden="true">↳</div><div class="stack"><div class="oplabel">merged on <b>country</b>: three aggregates, one row each</div>' +
+      table(q.columns, q.measures, rows, { hot: isUK }) +
+      '<div class="verdict ok">Only the UK differs, by Tesco. Each number took its own route: a plain metric, a copy of the fact, an LOD. In DAX each is one <code>CALCULATE</code>.</div></div></div>';
+  })();
+  var lodTimers = [];
+  function playLod() {
+    lodTimers.forEach(clearTimeout); lodTimers = [];
+    var els = $("lod").querySelectorAll(".rv");
+    each(els, function (e) { e.classList.remove("on"); });
+    each(els, function (e) { lodTimers.push(setTimeout(function () { e.classList.add("on"); }, 150 + 650 * +e.dataset.i)); });
+  }
   function paintHow() {
     var h = HOW[demo.plat];
     $("how").className = "how " + demo.plat;
@@ -899,7 +945,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     $("d-single").innerHTML = runTable(q, run(q, "dbx"));
     var selAnswer = subtabs("st-answer", function (k) {
       var again = k !== demo.plat; demo.plat = k; demo.mode = MODE[k]; paintHow();
-      if (again) playDemo();
+      $("lod").hidden = k !== "snowflake"; $("walk").hidden = k === "snowflake";
+      if (k === "snowflake") { stopDemo(); playLod(); } else if (again) playDemo();
     });
     selAnswer("fabric");
     $("stepper").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { stopDemo(); demo.step = +b.dataset.step; paintDemo(); } });
