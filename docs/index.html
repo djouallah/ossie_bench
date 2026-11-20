@@ -258,6 +258,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   <strong>One model, three platforms</strong>
   <nav>
     <a href="#model">The model</a>
+    <a href="#ossie">What Ossie supports</a>
     <a href="#drill">Drill across</a>
     <a href="#platforms">The three engines</a>
     <a href="#grain">One grain</a>
@@ -286,10 +287,23 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     <p class="sub" id="plat-src"></p>
   </div>
 
+</section>
+
+<!-- ============================== 0b. what ossie supports -->
+<section id="ossie" class="view">
+  <div class="head">
+    <h2>What Ossie supports today</h2>
+    <p class="lead">Apache Ossie is the open standard for exchanging semantic models between tools. This is what its
+    development version can write of the 16 measures this model needs.</p>
+  </div>
+  <div class="card stack tile">
+    <div><div class="big" id="ossie-n"></div><div class="sub" id="ossie-sub"></div></div>
+    <div class="bar" id="ossie-bar"><span></span></div>
+  </div>
+  <div class="stack" id="ossie-groups" style="margin-top:16px; gap:16px"></div>
   <div class="card stack" style="margin-top:16px">
-    <header><h3>The 16 measures</h3><p class="sub">What each one means, in business words. The last column says
-    whether the open standard (Apache Ossie, development version) can express it yet.</p></header>
-    <div class="tw"><table id="measures" class="wrapcell"></table></div>
+    <details><summary><code>semantic_model/a_baseline/model.ossie.yaml</code>: the model and the measures it can hold,
+      checked with the validator of apache/ossie</summary><pre><code id="ossie-yaml"></code></pre></details>
   </div>
 </section>
 
@@ -742,11 +756,41 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     $("platseg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) showPlat(b.dataset.p); });
     showPlat("fabric");
 
-    $("measures").innerHTML = "<thead><tr><th>Measure</th><th>Meaning</th><th>In the open standard</th></tr></thead><tbody>" +
-      DATA.measures.map(function (m) {
-        return "<tr><td><code>" + esc(m.name) + "</code></td><td>" + esc(m.meaning).replace(/`(.+?)`/g, "<code>$1</code>") +
-          "</td><td>" + esc(m.standard).replace(/`(.+?)`/g, "<code>$1</code>") + "</td></tr>";
-      }).join("") + "</tbody>";
+    var SPEC = "https://github.com/apache/ossie/blob/main/core-spec/";
+    var GROUPS = [
+      { test: function (m) { return /^yes/.test(m.standard); }, title: "In the standard now", chip: "match",
+        note: "Three sums, each declared on its own table, and one measure at model level that reads two of them with " +
+          "<code>AGG()</code>. Each <code>AGG()</code> is computed over its own table before the arithmetic: drill-across, written into the standard.",
+        links: [["Metric scoping", SPEC + "spec.md#metric-scoping"]] },
+      { test: function (m) { return /period over period/.test(m.standard); }, title: "Period over period: not yet", chip: "refused",
+        note: "The specification lists &ldquo;windowing (cumulative, trailing, period-over-period)&rdquo; among the evaluation controls it " +
+          "leaves out of this version. A model-level measure that contains a window function is rejected, with <code>E_DEFERRED_WINDOWED_METRIC</code>.",
+        links: [["Evaluation controls", SPEC + "relational_semantics.md#53-evaluation-controls"], ["Metric components", SPEC + "wide_table_semantics.md#52-metric-components"]] },
+      { test: function (m) { return !/^yes/.test(m.standard) && !/period over period/.test(m.standard); }, title: "Grouping controls: not yet", chip: "refused",
+        note: "The same evaluation controls cover &ldquo;including or excluding fields from the grouping a measure responds to&rdquo;. " +
+          "Of what they enable, &ldquo;such as percent of total and period over period&rdquo;, the specification says: &ldquo;we strongly recommend it as a follow-up extension&rdquo;.",
+        links: [["Evaluation controls", SPEC + "relational_semantics.md#53-evaluation-controls"], ["Appendix D", SPEC + "relational_semantics.md#appendix-d-relationship-to-measures-in-sql"]] }
+    ];
+    var O = DATA.ossie, total = DATA.measures.length, yes = DATA.measures.filter(GROUPS[0].test).length;
+    $("ossie-n").innerHTML = yes + " <small>of " + total + "</small>";
+    $("ossie-sub").innerHTML = "measures the open standard can write today, in <code>" + esc(O.version) + "</code>, its unreleased development version on apache/ossie main";
+    $("ossie-bar").firstChild.style.width = (100 * yes / total) + "%";
+    $("ossie-bar").setAttribute("role", "img"); $("ossie-bar").setAttribute("aria-label", yes + " of " + total);
+    function md(t) { return esc(t).replace(/`(.+?)`/g, "<code>$1</code>"); }
+    $("ossie-groups").innerHTML = GROUPS.map(function (g, gi) {
+      var rows = DATA.measures.filter(g.test);
+      var head = "<tr><th>Measure</th><th>Meaning</th>" + (gi === 0 ? "<th>In Ossie</th><th>Declared on</th>" : "") + "</tr>";
+      var body = rows.map(function (m) {
+        var x = O.expr[m.name] || {};
+        return "<tr><td><code>" + esc(m.name) + "</code></td><td>" + md(m.meaning) + "</td>" +
+          (gi === 0 ? "<td><code>" + esc(x.sql || "") + "</code></td><td>" + esc(x.home === "model" ? "the model, across both facts" : (x.home || "")) + "</td>" : "") + "</tr>";
+      }).join("");
+      return '<div class="card stack"><header class="demo-bar"><h3 style="flex:1">' + g.title + "</h3>" +
+        '<span class="chip ' + g.chip + '"><i aria-hidden="true">' + ICON[g.chip] + "</i>" + rows.length + " measures</span></header>" +
+        '<p class="sub">' + g.note + " " + g.links.map(function (l) { return '<a href="' + l[1] + '">' + l[0] + "</a>"; }).join(" · ") + "</p>" +
+        '<div class="tw"><table class="wrapcell"><thead>' + head + "</thead><tbody>" + body + "</tbody></table></div></div>";
+    }).join("");
+    $("ossie-yaml").textContent = O.yaml;
   })();
 
   // ---------- 1. drill across (q13, q12): a walkthrough in three steps, two routes
@@ -892,7 +936,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
   }).join("");
   $("qlist").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { history.replaceState(null, "", "#" + b.dataset.q); show(b.dataset.q); } });
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
-  var VIEWS = ["model", "drill", "platforms", "grain", "results", "questions"];
+  var VIEWS = ["model", "ossie", "drill", "platforms", "grain", "results", "questions"];
   function route() {
     var h = location.hash.slice(1), v = Q[h] ? "questions" : (VIEWS.indexOf(h) >= 0 ? h : "model");
     VIEWS.forEach(function (x) { $(x).classList.toggle("on", x === v); });

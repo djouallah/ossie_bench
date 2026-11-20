@@ -45,6 +45,18 @@ def measures():
     return out
 
 
+def ossie():
+    """The baseline Ossie file, and each measure it holds: {yaml, expr: {name: {sql, home}}}."""
+    import yaml
+    path = ROOT / "semantic_model" / "a_baseline" / "model.ossie.yaml"
+    text = path.read_text(encoding="utf-8")
+    doc = yaml.safe_load(text)
+    expr = {m["name"]: {"sql": m["expression"]["sql"], "home": d["name"]}
+            for d in doc["datasets"] for m in d.get("metrics", [])}
+    expr.update({m["name"]: {"sql": m["expression"]["sql"], "home": "model"} for m in doc.get("metrics", [])})
+    return {"version": doc["version"], "yaml": text.strip(), "expr": expr}
+
+
 def question(qdir, notes):
     lines = (qdir / "README.md").read_text(encoding="utf-8").strip().splitlines()
     rows = list(csv.DictReader((qdir / "results.csv").open(encoding="utf-8")))
@@ -89,7 +101,7 @@ def main():
     qs = [question(d, notes) for d in sorted((ROOT / "questions").glob("q*/")) if (d / "results.csv").exists()]
     out = ROOT / "docs" / "data.js"
     out.parent.mkdir(exist_ok=True)
-    out.write_text("window.DATA = " + json.dumps({"measures": measures(), "questions": qs}, ensure_ascii=False, indent=1) + ";\n",
+    out.write_text("window.DATA = " + json.dumps({"measures": measures(), "ossie": ossie(), "questions": qs}, ensure_ascii=False, indent=1) + ";\n",
                    encoding="utf-8", newline="\n")
     plain = {p: sum(1 for q in qs for r in q["runs"] if r["label"] == p and r["status"] == "match") for p in PLATFORMS}
     print(f"{out.relative_to(ROOT)}: {len(qs)} questions; plain matches {plain}")
