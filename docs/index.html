@@ -260,6 +260,12 @@ ul.facts .tag { font-size: 11px; color: var(--muted); border: 1px solid var(--li
 .merge { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; }
 .merge .arrow { color: var(--k-fact); font-size: 22px; text-shadow: 0 0 12px var(--k-fact); }
 @media (max-width: 960px) { .lanes, .merge { grid-template-columns: 1fr; } .merge .arrow { display: none; } }
+.fc { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.fchip { font: 600 12px var(--mono); padding: 3px 9px; border-radius: 7px; border: 1px solid var(--line-2); background: var(--sunken); color: var(--ink); }
+.fchip.off { text-decoration: line-through; color: var(--muted); opacity: .6; border-style: dashed; }
+.fchip.add { border-color: var(--good); background: var(--good-bg); }
+.cellval { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding-top: 6px; border-top: 1px solid var(--line); }
+.cellval b { font-size: 24px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .plist { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13.5px; color: var(--ink-2); }
 .plist > span { display: inline-flex; align-items: center; }
 .who { font-size: 22px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2; color: var(--pc); }
@@ -363,6 +369,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   </div>
   <div class="card stack demo">
     <div id="how" class="how"></div>
+    <div id="ctx" class="stack" hidden></div>
     <div id="lod" class="stack" hidden></div>
     <div id="walk" class="stack">
     <p class="sub">The example: days in the calendar and sales, by year. The calendar runs to 2023; sales stop at 2022. Follow 2023.</p>
@@ -905,10 +912,34 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       table(q.columns, q.measures, rows, { hot: isUK }) +
       '<div class="verdict ok">Only the UK differs, by Tesco. Each number took its own route: a plain metric, a copy of the fact, an LOD. In DAX each is one <code>CALCULATE</code>.</div></div></div>';
   })();
+  // The Power BI example: the same q09, as filter contexts. One cell, the UK, and how each CALCULATE edits its filters.
+  (function () {
+    var q = Q.q09, r = run(q, "fabric"), rows = r.rows.filter(function (x) { return x[0] !== ""; });
+    var uk = rows.filter(function (x) { return x[0] === "UK"; })[0], col = function (n) { return uk[q.columns.indexOf(n)]; };
+    function f(t, k) { return '<span class="fchip' + (k ? " " + k : "") + '">' + t + "</span>"; }
+    var START = [f("country = UK"), f("month = Feb 2021"), f("customer ≠ Tesco")];
+    var LANES = [
+      ["sales_quantity", "No change: the cell's filters, as they are.", "SUM ( fact_sales[sales_qty] )", START],
+      ["country_qty_all_customers", "ALL removes the customer filter. Country and month stay.",
+        "CALCULATE (\n  [sales_quantity],\n  ALL ( dim_store[customer] )\n)", [f("country = UK"), f("month = Feb 2021"), f("customer ≠ Tesco", "off")]],
+      ["country_total_fixed", "REMOVEFILTERS clears everything, then the country and the year shown are put back.",
+        "CALCULATE (\n  [sales_quantity],\n  REMOVEFILTERS (),\n  VALUES ( dim_country[country] ),\n  VALUES ( dim_calendar[year] )\n)",
+        [f("country = UK", "off"), f("month = Feb 2021", "off"), f("customer ≠ Tesco", "off"), f("country = UK", "add"), f("year = 2021", "add")]]
+    ];
+    $("ctx").innerHTML = '<p class="sub">The example: q09 again, February 2021 without Tesco. Follow one cell, the UK. It starts with the filters of its row and of the query:</p>' +
+      '<div class="fc">' + START.join("") + "</div>" +
+      '<div class="lanes">' + LANES.map(function (l, i) {
+        return '<div class="lane rv" data-i="' + i + '"><h4>' + l[0] + '</h4><p class="route">' + l[1] + "</p><pre><code>" + esc(l[2]) + "</code></pre>" +
+          '<div class="fc">' + l[3].join("") + '</div><div class="cellval"><span class="sub">UK, through fact_sales</span><b>' + fmt(l[0], col(l[0]), true) + "</b></div></div>";
+      }).join("") + "</div>" +
+      '<div class="merge rv" data-i="3"><div class="arrow" aria-hidden="true">↳</div><div class="stack"><div class="oplabel">every cell, the same way: one fact table, three filter contexts</div>' +
+      table(q.columns, q.measures, rows, { hot: function (x) { return x[0] === "UK"; } }) +
+      '<div class="verdict ok">No copies of the fact and no extra tables: each measure edits the filter context of its cell, then reads <code>fact_sales</code> through the relationships.</div></div></div>';
+  })();
   var lodTimers = [];
-  function playLod() {
+  function playLod(box) {
     lodTimers.forEach(clearTimeout); lodTimers = [];
-    var els = $("lod").querySelectorAll(".rv");
+    var els = $(box).querySelectorAll(".rv");
     each(els, function (e) { e.classList.remove("on"); });
     each(els, function (e) { lodTimers.push(setTimeout(function () { e.classList.add("on"); }, 150 + 650 * +e.dataset.i)); });
   }
@@ -945,10 +976,11 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     $("d-single").innerHTML = runTable(q, run(q, "dbx"));
     var selAnswer = subtabs("st-answer", function (k) {
       var again = k !== demo.plat; demo.plat = k; demo.mode = MODE[k]; paintHow();
-      $("lod").hidden = k !== "snowflake"; $("walk").hidden = k === "snowflake";
-      if (k === "snowflake") { stopDemo(); playLod(); } else if (again) playDemo();
+      var box = { fabric: "ctx", snowflake: "lod" }[k];
+      $("ctx").hidden = k !== "fabric"; $("lod").hidden = k !== "snowflake"; $("walk").hidden = !!box;
+      if (box) { stopDemo(); playLod(box); } else if (again) playDemo();
     });
-    selAnswer("fabric");
+    demo.plat = null; selAnswer("fabric");
     $("stepper").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { stopDemo(); demo.step = +b.dataset.step; paintDemo(); } });
     $("play").addEventListener("click", playDemo);
     paintDemo();
