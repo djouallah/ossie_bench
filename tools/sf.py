@@ -9,6 +9,8 @@
     python tools/sf.py ossie-in    # SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML(semantic_model/snowflake/tests/dax_context.ossie.yaml)
     python tools/sf.py ossie-ext   # the same import with vendor extensions, on a scratch view that is then dropped
                                           #   -> semantic_model/snowflake/tests/extensions_response.txt
+    python tools/sf.py ossie-sql   # the import of Ossie in its own SQL (0.1.1 ANSI_SQL, 0.3.0.dev0 expression.sql)
+                                          #   -> semantic_model/snowflake/tests/ossie_sql_response.txt
 
 Connection: the default connection of ~/.snowflake/config.toml. Commands chain: `setup export`.
 """
@@ -200,13 +202,43 @@ def ossie_ext(conn):
     print(p.read_text(encoding="utf-8"))
 
 
+def ossie_sql(conn):
+    """Does the import take Ossie's own SQL? The 0.1.1 test file (every expression in ANSI_SQL) and the baseline in
+    0.3.0.dev0 (expression.sql), each imported into a scratch view, queried, then dropped. -> tests/ossie_sql_response.txt"""
+    import yaml
+    name, cur, out = "OSSIE_SQL_TEST", conn.cursor(), []
+    t011 = yaml.safe_load((ROOT / "semantic_model" / "snowflake" / "tests" / "dax_context.ossie.yaml").read_text(encoding="utf-8"))
+    for d in t011["datasets"]:
+        d["source"] = d["source"].replace("DAX_CONTEXT_DEMO", SCHEMA)
+    base = yaml.safe_load((ROOT / "semantic_model" / "a_baseline" / "model.ossie.yaml").read_text(encoding="utf-8"))
+    for d in base["datasets"]:
+        d["source"] = f"{FQ}.{d['source'].upper()}"
+    for label, doc in [(f"{t011['version']}, every expression in the ANSI_SQL dialect", t011),
+                       (f"{base['version']}, the baseline as it is (expression.sql)", base)]:
+        doc["name"] = name
+        line = f"{label}:\n  import: "
+        try:
+            line += cur.execute("CALL SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML(%s, %s)", (FQ, yaml.safe_dump(doc, sort_keys=False))).fetchone()[0]
+            q = cur.execute(f"SELECT * FROM SEMANTIC_VIEW({FQ}.{name} METRICS sales_quantity)").fetchall()
+            line += f"\n  query sales_quantity: {q}"
+        except snowflake.connector.errors.ProgrammingError as e:
+            line += "ERROR " + " ".join(str(e).split())[:800]
+        finally:
+            cur.execute(f"DROP SEMANTIC VIEW IF EXISTS {FQ}.{name}")
+        out.append(line)
+    p = ROOT / "semantic_model" / "snowflake" / "tests" / "ossie_sql_response.txt"
+    p.write_text("SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML of Ossie in its own SQL (scratch view, dropped after):\n\n" +
+                 "\n\n".join(out) + "\n", encoding="utf-8")
+    print(p.read_text(encoding="utf-8"))
+
+
 def main(argv):
     if not argv:
         print(__doc__)
         return
     conn = connect()
     for cmd in argv:
-        {"setup": setup, "view": view, "export": export, "ossie-out": ossie_out, "ossie-in": ossie_in, "ossie-ext": ossie_ext}[cmd](conn)
+        {"setup": setup, "view": view, "export": export, "ossie-out": ossie_out, "ossie-in": ossie_in, "ossie-ext": ossie_ext, "ossie-sql": ossie_sql}[cmd](conn)
 
 
 if __name__ == "__main__":

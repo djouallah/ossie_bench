@@ -4,6 +4,7 @@
     python tools/fabric.py publish    # semantic_model/fabric/oss_dax_dialect.ossie.yaml -> Context/Semantic Views/, then
                                       #   Fabric's Publish -> Direct Lake semantic model `dax_context`
     python tools/fabric.py ossie-out  # the semantic views API, read back -> semantic_model/fabric/export_response.txt
+    python tools/fabric.py ossie-sql  # Publish of Ossie in its own SQL, no DAX -> semantic_model/fabric/ossie_sql_response.txt
 
 Auth: `az login` (tenant fabriccat.net). Commands chain: `load publish`.
 """
@@ -150,6 +151,57 @@ def ossie_out():
                  "\n\nThe API publishes a view into a semantic model; it has no call that writes a model back out as Ossie.\n", encoding="utf-8")
     print(p.read_text(encoding="utf-8"))
 
+def ossie_sql():
+    """Does Publish take Ossie's own SQL instead of the DAX dialect? Two scratch views, each published, queried, then
+    deleted (the model and the YAML): the Fabric file with its 4 standard measures in ANSI_SQL (0.2.0.dev0), and the
+    baseline in 0.3.0.dev0 (expression.sql). -> semantic_model/fabric/ossie_sql_response.txt"""
+    import yaml
+    ws = workspace_id()
+    lh = lakehouse_id(ws)
+    fab = yaml.safe_load((ROOT / "semantic_model" / "fabric" / "oss_dax_dialect.ossie.yaml").read_text(encoding="utf-8"))
+    sql = {"sales_quantity": "SUM(fact_sales.sales_qty)", "net_profit_total": "SUM(fact_sales.net_profit)",
+           "budget_quantity": "SUM(fact_budget.budget_qty)",
+           "sales_vs_budget_pct": "(SUM(fact_sales.sales_qty) - SUM(fact_budget.budget_qty)) / SUM(fact_budget.budget_qty)"}
+    fab["metrics"] = [{"name": k, "expression": {"dialects": [{"dialect": "ANSI_SQL", "expression": v}]}} for k, v in sql.items()]
+    base = yaml.safe_load((ROOT / "semantic_model" / "a_baseline" / "model.ossie.yaml").read_text(encoding="utf-8"))
+    for d in base["datasets"]:
+        d["source"] = "dbo." + d["source"]
+    out = []
+    for view, label, doc in [("ossie_sql_test", f"{fab['version']}, the 4 standard measures in the ANSI_SQL dialect", fab),
+                             ("ossie_v03_test", f"{base['version']}, the baseline as it is (expression.sql)", base)]:
+        y = yaml.safe_dump(doc, sort_keys=False).encode()
+        upload(ws, lh, f"Context/Semantic Views/{view}/{view}.yaml", y)
+        line = f"{label}:\n  publish: "
+        try:
+            status, body, headers = http("POST", f"{API}/workspaces/{ws}/lakehouses/{lh}/semanticViews/{view}/publish?beta=true", raw=b"")
+            res = wait_operation(headers) if status == 202 else body
+            line += json.dumps(res.get("summary", res))
+            for w in res.get("warnings", []) or res.get("diagnostics", []):
+                line += f"\n  warning: {w.get('code', '')}: {w.get('message', w)}" if isinstance(w, dict) else f"\n  warning: {w}"
+            try:
+                cols, rows = dax('EVALUATE ROW("sales_quantity", [sales_quantity])', model=view)
+                line += f"\n  query [sales_quantity]: {rows}"
+            except Exception as e:  # noqa: BLE001
+                line += f"\n  query [sales_quantity]: {' '.join(str(e).split())[:500]}"
+        except urllib.error.HTTPError as e:
+            line += f"HTTP {e.code} {' '.join(e.read().decode(errors='replace').split())[:1500]}"
+        except SystemExit as e:
+            line += " ".join(str(e).split())[:1500]
+        out.append(line)
+        # clean up: the published model, then the view's folder
+        _, items, _ = http("GET", f"{API}/workspaces/{ws}/semanticModels")
+        for m in items.get("value", []):
+            if m["displayName"] == view:
+                http("DELETE", f"{API}/workspaces/{ws}/semanticModels/{m['id']}")
+        try:
+            http("DELETE", f"{DFS}/{ws}/{lh}/{urllib.parse.quote(f'Context/Semantic Views/{view}')}?recursive=true",
+                 resource="https://storage.azure.com", headers={"x-ms-version": "2023-11-03"})
+        except urllib.error.HTTPError:
+            pass
+    p = ROOT / "semantic_model" / "fabric" / "ossie_sql_response.txt"
+    p.write_text("Fabric Publish of Ossie written in its own SQL, no DAX (scratch views, deleted after):\n\n" + "\n\n".join(out) + "\n", encoding="utf-8")
+    print(p.read_text(encoding="utf-8"))
+
 
 # --- DAX ------------------------------------------------------------------------------------------------------------
 def dataset_id(ws, name):
@@ -186,4 +238,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(__doc__)
     for cmd in sys.argv[1:]:
-        {"load": load, "publish": publish, "ossie-out": ossie_out}[cmd]()
+        {"load": load, "publish": publish, "ossie-out": ossie_out, "ossie-sql": ossie_sql}[cmd]()
