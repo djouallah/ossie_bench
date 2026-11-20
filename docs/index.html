@@ -337,27 +337,23 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 <!-- ============================== 2. how they work -->
 <section id="answer" class="view">
-  <div class="grid2" style="grid-template-columns: 1fr 1fr">
-    <div class="card stack plat fabric">
-      <h4>Approach 1</h4><div class="who">Drill across</div>
-      <div class="plist"><span><span class="dot fabric"></span>Power BI</span><span><span class="dot snowflake"></span>Snowflake</span></div>
-      <p>Group each table on its own, then merge the results on the dimensions they share. Nothing is lost: a year
-      with no sales still shows, with a blank.</p>
-    </div>
-    <div class="card stack plat dbx">
-      <h4>Approach 2</h4><div class="who">One base table</div>
-      <div class="plist"><span><span class="dot dbx"></span>Databricks metric views</span><span>Malloy, and the like</span></div>
-      <p>Start from one table, join its dimensions on, group once. What the base table has no rows for is gone.
-      Another fact, or another grain, is a join you write in the query.</p>
-    </div>
+  <div class="subtabs" id="st-answer">
+    <button type="button" data-k="drill">Drill across</button>
+    <button type="button" data-k="single">One base table</button>
   </div>
-  <div class="card stack demo" style="margin-top:16px">
-    <p class="sub">Days in the calendar and sales, by year. The calendar runs to 2023; sales stop at 2022. Follow 2023.</p>
+  <div class="card stack demo">
+    <div class="stack" style="gap:6px" data-pane-of="st-answer" data-k="drill">
+      <div class="plist"><span><span class="dot fabric"></span>Power BI</span><span><span class="dot snowflake"></span>Snowflake</span></div>
+      <p class="lead">Group each table on its own, then merge the results on the dimensions they share. Nothing is
+      lost: a year with no sales still shows, with a blank.</p>
+    </div>
+    <div class="stack" style="gap:6px" data-pane-of="st-answer" data-k="single">
+      <div class="plist"><span><span class="dot dbx"></span>Databricks metric views</span><span>Malloy, and the like</span></div>
+      <p class="lead">Start from one table, join its dimensions on, group once. What the base table has no rows for
+      is gone. Another fact, or another grain, is a join you write in the query.</p>
+    </div>
+    <p class="sub">The example: days in the calendar and sales, by year. The calendar runs to 2023; sales stop at 2022. Follow 2023.</p>
     <div class="demo-bar">
-      <div class="seg" role="tablist" aria-label="Approach" id="routeseg">
-        <button type="button" role="tab" data-mode="drill">Drill across</button>
-        <button type="button" role="tab" data-mode="single">One base table</button>
-      </div>
       <div class="stepper" id="stepper"></div>
       <button class="btn" type="button" id="play">Replay</button>
     </div>
@@ -429,15 +425,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 <!-- ============================== 4. results -->
 <section id="results" class="view">
   <div class="subtabs" id="st-results">
-    <button type="button" data-k="sum">Summary</button>
-    <button type="button" data-k="grid">By question</button>
     <button type="button" data-k="q">Queries and answers</button>
-  </div>
-  <div class="stack" data-pane-of="st-results" data-k="sum">
-    <p class="lead">Each answer is compared with a reference written in raw SQL straight over the tables, with no
-    semantic model and no vendor in between. A platform's native features used as designed count as a plain query.
-    Copies of the fact, helper tables, extra views and logic moved into the query are named.</p>
-    <div class="grid3" id="tiles"></div>
+    <button type="button" data-k="grid">By question</button>
   </div>
   <div data-pane-of="st-results" data-k="grid">
     <div class="tw"><table id="grid" class="wrapcell"></table></div>
@@ -516,7 +505,6 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     select.current = function () { return cur; };
     return select;
   }
-  function plainMatches(p) { return DATA.questions.filter(function (q) { return (run(q, p) || {}).status === "match"; }).length; }
 
   // ---------- 1. the model: one renderer for the three platforms' graphs
   // g: {w, h, minw, dense, labels, card, islands, gulfs, nodes: {id: {x, y, w, k, t, rows, l: [lines], c: [columns],
@@ -849,7 +837,6 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       el.hidden = !!el.dataset.mode && el.dataset.mode !== demo.mode;
       el.classList.toggle("on", +el.dataset.from <= demo.step);
     });
-    each(document.querySelectorAll("#routeseg button"), function (b) { b.setAttribute("aria-selected", b.dataset.mode === demo.mode); });
     $("stepper").innerHTML = STEPS[demo.mode].map(function (t, i) {
       return '<button type="button" data-step="' + (i + 1) + '"' + (i + 1 === demo.step ? ' aria-current="step"' : "") +
         ' class="' + (i + 1 < demo.step ? "done" : "") + '"><b>' + (i + 1) + "</b>" + t + "</button>";
@@ -870,31 +857,16 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     $("d-sales").innerHTML = table(sal.cols, sal.measures, sal.rows(ref).filter(function (r) { return r[1] !== ""; }));
     $("d-merged").innerHTML = table(q.columns, q.measures, ref, { hot: is2023 });
     $("d-single").innerHTML = runTable(q, run(q, "dbx"));
-    $("routeseg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { demo.mode = b.dataset.mode; playDemo(); } });
+    var selAnswer = subtabs("st-answer", function (k) { if (k !== demo.mode) { demo.mode = k; playDemo(); } });
+    selAnswer("drill");
     $("stepper").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { stopDemo(); demo.step = +b.dataset.step; paintDemo(); } });
     $("play").addEventListener("click", playDemo);
     paintDemo();
 
   })();
 
-  // ---------- 4. results: tiles, the grid, and the question panel under it
+  // ---------- 4. results: every question's queries and answers, and the grid
   (function () {
-    var facts = {
-      fabric: [["Models", "1"], ["Tables", "7"], ["Measures", "16"], ["Queries", "one per question"]],
-      snowflake: [["Models", "1 semantic view"], ["Tables", "16 logical over 9 physical"], ["Measures", "19 (6 over LOD facts)"], ["Queries", "plus a second query for totals"]],
-      dbx: [["Models", "5 metric views"], ["Tables", "one source per view"], ["Measures", "20 across 4 views (9 with windows)"], ["Queries", "plus joins between views"]]
-    };
-    var n = DATA.questions.length;
-    $("tiles").innerHTML = PLATS.map(function (p) {
-      var plain = plainMatches(p), any = 0;
-      DATA.questions.forEach(function (q) { if (q.runs.some(function (r) { return r.platform === p && r.status === "match"; })) any++; });
-      return '<div class="card stack tile plat ' + p + '"><h3><span class="dot ' + p + '"></span>' + NAME[p] + "</h3>" +
-        '<div><div class="big">' + plain + " <small>of " + n + "</small></div>" +
-        '<div class="sub">plain queries match the reference</div></div>' +
-        '<div class="bar" role="img" aria-label="' + plain + " of " + n + '"><span style="width:' + (100 * plain / n) + '%"></span></div>' +
-        '<div class="sub"><b>' + any + " of " + n + "</b> after more model or query logic</div>" +
-        "<dl>" + facts[p].map(function (f) { return "<dt>" + f[0] + "</dt><dd>" + f[1] + "</dd>"; }).join("") + "</dl></div>";
-    }).join("");
     function why(s) {
       s = s.replace(/^\**(match|differs|partial|refused)\**\s*[:,;.]?\s*/, "").replace(/^\((.*)\)$/, "$1");
       s = esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<code>$1</code>");
@@ -937,7 +909,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   }).join("");
   $("qlist").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) show(b.dataset.q); });
   var selResults = subtabs("st-results"), selOssie = subtabs("st-ossie");
-  selResults("sum"); selOssie("std");
+  selResults("q"); selOssie("std");
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
 
   // ---------- routing: the 4 tabs
@@ -963,7 +935,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   }
   window.addEventListener("hashchange", route);
   window.addEventListener("resize", moveInd);
-  show("q13");
+  show(DATA.questions[0].id);
   route();
 
   // ---------- theme: dark by default
