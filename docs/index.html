@@ -83,45 +83,7 @@ nav#nav .ind { position: absolute; top: 4px; bottom: 4px; left: 0; border-radius
 .grid2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; }
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .stack { display: grid; gap: 12px; align-content: start; }
-.grid2 > *, .grid3 > *, .stack > *, .lane > *, .branch > *, .branches > *, .pair > *, .explorer > *, .plats > * { min-width: 0; }
-
-/* chapters */
-.chapter { padding-top: 8px; margin-bottom: 44px; scroll-margin-top: 130px; }
-.chead { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; margin-bottom: 20px; }
-.chead > div { display: grid; gap: 10px; }
-.num { font: 700 13px var(--mono); padding: 5px 9px; border-radius: 8px; margin-top: 4px; color: var(--ink);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--k-fact) 35%, transparent), color-mix(in srgb, var(--p-dbx) 25%, transparent));
-  border: 1px solid color-mix(in srgb, var(--k-fact) 45%, transparent); }
-.chapnav { position: sticky; top: 61px; z-index: 10; display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 0; margin: -10px 0 18px;
-  background: color-mix(in srgb, var(--page) 85%, transparent); backdrop-filter: blur(10px); }
-.chapnav button { font: inherit; font-size: 13px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line);
-  border-radius: 999px; padding: 5px 13px 5px 6px; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
-.chapnav button b { font: 700 11px var(--mono); padding: 2px 6px; border-radius: 999px; background: var(--sunken); }
-.chapnav button:hover { color: var(--ink); border-color: var(--line-2); }
-
-/* platform cards */
-.plats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 18px; }
-.pcard { --pc: var(--p-fabric); font: inherit; color: inherit; text-align: left; cursor: pointer; position: relative; overflow: hidden;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--pc) 7%, var(--surface-2)), var(--surface));
-  border: 1px solid var(--line); border-radius: 16px; padding: 18px 18px 16px; display: grid; gap: 12px; align-content: start;
-  transition: border-color .25s, box-shadow .25s, transform .25s; }
-.pcard::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--pc), transparent); opacity: .5; transition: opacity .25s; }
-.pcard:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--pc) 45%, var(--line)); }
-.pcard[aria-pressed="true"] { border-color: color-mix(in srgb, var(--pc) 75%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--pc) 50%, transparent), 0 18px 50px -18px color-mix(in srgb, var(--pc) 60%, transparent); }
-.pcard[aria-pressed="true"]::before { opacity: 1; }
-.pcard.snowflake { --pc: var(--p-snowflake); } .pcard.dbx { --pc: var(--p-dbx); }
-.pc-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 650; font-size: 15px; }
-.pc-top span.sub { font-weight: 400; font-size: 12.5px; }
-.pc-big { display: flex; align-items: baseline; gap: 6px; }
-.pc-big b { font-size: 46px; line-height: 1; font-weight: 750; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
-.pc-big small { font-size: 18px; color: var(--muted); font-weight: 600; }
-.pc-lbl { font-size: 12.5px; color: var(--ink-2); margin-top: -6px; }
-.pc-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0; padding-top: 12px; border-top: 1px solid var(--line); }
-.pc-stats div { min-width: 0; }
-.pc-stats dd { margin: 0; font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
-.pc-stats dt { font-size: 11px; color: var(--muted); line-height: 1.25; }
+.grid2 > *, .grid3 > *, .stack > *, .lane > *, .branch > *, .branches > *, .pair > *, .explorer > * { min-width: 0; }
 
 /* the graph */
 .graphcard { padding: 0; overflow: hidden; }
@@ -270,6 +232,8 @@ tr.total td { font-weight: 650; }
 .plat { --pc: var(--p-fabric); border-top: 2px solid color-mix(in srgb, var(--pc) 70%, transparent); }
 .plat.snowflake { --pc: var(--p-snowflake); } .plat.dbx { --pc: var(--p-dbx); }
 .plat > header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.plist { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13.5px; color: var(--ink-2); }
+.plist > span { display: inline-flex; align-items: center; }
 .who { font-size: 22px; font-weight: 750; letter-spacing: -.02em; line-height: 1.2; color: var(--pc); }
 ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 8px; }
 ol.steps li { counter-increment: s; display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 13.5px; }
@@ -283,6 +247,7 @@ details[open] > summary { margin-bottom: 8px; }
 .tile .big { font-size: 44px; font-weight: 750; letter-spacing: -.04em; line-height: 1.05; }
 .tile .big small { font-size: 18px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
 #grid th { white-space: nowrap; }
+#os-std td:first-child, #os-std td:first-child code { white-space: nowrap; overflow-wrap: normal; }
 .tile dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13px; }
 .tile dt { color: var(--muted); } .tile dd { margin: 0; }
 .bar { height: 6px; border-radius: 3px; background: var(--sunken); overflow: hidden; }
@@ -320,7 +285,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   .rv, .rv tbody tr, .rv .yr, .rv .verdict { opacity: 1; transform: none; }
 }
 @media (max-width: 960px) {
-  .grid2, .grid3, .explorer, .pair, .stage, .plats { grid-template-columns: 1fr !important; }
+  .grid2, .grid3, .explorer, .pair, .stage { grid-template-columns: 1fr !important; }
   .stage { min-height: 0; } .stage .arrow { transform: rotate(90deg); }
   .qlist { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
@@ -329,15 +294,11 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   nav#nav { order: 3; flex: 1 1 100%; margin-right: 0; }
   nav#nav a { flex: 1; text-align: center; padding: 6px 4px; font-size: 13px; }
   .brand { margin-right: auto; }
-  .chapnav { top: 104px; }
-  .chapter { scroll-margin-top: 170px; }
 }
 @media (max-width: 560px) {
   .wrap { padding: 0 16px; } .branches { grid-template-columns: 1fr; }
   .stepper { flex: 1 1 100%; order: 3; } .stepper button { white-space: nowrap; }
   h2 { font-size: 23px; }
-  .chead { grid-template-columns: 1fr; gap: 8px; } .num { justify-self: start; }
-  .pc-big b { font-size: 40px; }
 }
 </style>
 </head>
@@ -348,7 +309,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   <nav id="nav">
     <span class="ind" aria-hidden="true"></span>
     <a href="#model">The model</a>
-    <a href="#answer">How they answer</a>
+    <a href="#answer">How they work</a>
     <a href="#ossie">Ossie</a>
     <a href="#results">Results</a>
   </nav>
@@ -360,41 +321,37 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 <!-- ============================== 1. the model -->
 <section id="model" class="view">
-  <div class="plats" id="plats" role="group" aria-label="Platform"></div>
-  <div class="card graphcard">
-    <div class="gc-head"><h3 id="plat-title"></h3><p class="caption" id="plat-cap"></p></div>
-    <div class="graphwrap" id="gwrap"><svg id="g-plat" class="graph" role="img"></svg><div class="tip" id="gtip" hidden></div></div>
-    <div class="gc-foot"><div class="legend" id="leg-plat"></div><p class="sub" id="plat-src"></p></div>
-  </div>
+  <div class="stack" style="gap:18px" id="graphs"></div>
 </section>
 
-<!-- ============================== 2. how they answer -->
+<!-- ============================== 2. how they work -->
 <section id="answer" class="view">
-  <div class="chapnav" id="chapnav">
-    <button type="button" data-to="ch-drill"><b>01</b>Drill across</button>
-    <button type="button" data-to="ch-engines"><b>02</b>Who drills across</button>
-    <button type="button" data-to="ch-grain"><b>03</b>One grain</button>
+  <div class="grid2" style="grid-template-columns: 1fr 1fr">
+    <div class="card stack plat fabric">
+      <h4>Approach 1</h4><div class="who">Drill across</div>
+      <div class="plist"><span><span class="dot fabric"></span>Power BI</span><span><span class="dot snowflake"></span>Snowflake</span></div>
+      <p>Group each table on its own, then merge the results on the dimensions they share. Nothing is lost: a year
+      with no sales still shows, with a blank.</p>
+    </div>
+    <div class="card stack plat dbx">
+      <h4>Approach 2</h4><div class="who">One base table</div>
+      <div class="plist"><span><span class="dot dbx"></span>Databricks metric views</span><span>Malloy, and the like</span></div>
+      <p>Start from one table, join its dimensions on, group once. What the base table has no rows for is gone.
+      Another fact, or another grain, is a join you write in the query.</p>
+    </div>
   </div>
-
-  <div class="chapter" id="ch-drill">
-    <div class="chead"><span class="num">01</span><div>
-      <h2>Drill across</h2>
-      <p class="lead">Kimball's rule for a question that touches more than one table: group each table on its own,
-      down to the dimension they share, then merge the results. Never join the tables first.</p>
-      <p class="lead">The question here: <b>days in the calendar and sales, by year</b>. The calendar runs to 2023.
-      Sales stop at 2022. Follow 2023.</p>
-    </div></div>
-    <div class="card stack demo">
-      <div class="demo-bar">
-        <div class="seg" role="tablist" aria-label="Route" id="routeseg">
-          <button type="button" role="tab" data-mode="drill">Drill across</button>
-          <button type="button" role="tab" data-mode="single">Join first</button>
-        </div>
-        <div class="stepper" id="stepper"></div>
-        <button class="btn" type="button" id="play">Replay</button>
+  <div class="card stack demo" style="margin-top:16px">
+    <p class="sub">Days in the calendar and sales, by year. The calendar runs to 2023; sales stop at 2022. Follow 2023.</p>
+    <div class="demo-bar">
+      <div class="seg" role="tablist" aria-label="Approach" id="routeseg">
+        <button type="button" role="tab" data-mode="drill">Drill across</button>
+        <button type="button" role="tab" data-mode="single">One base table</button>
       </div>
-      <p class="caption big" id="caption" aria-live="polite"></p>
-      <div class="stage" id="stage">
+      <div class="stepper" id="stepper"></div>
+      <button class="btn" type="button" id="play">Replay</button>
+    </div>
+    <p class="caption big" id="caption" aria-live="polite"></p>
+    <div class="stage" id="stage">
         <div class="col">
           <h4>The tables</h4>
           <div class="src rv" data-from="1">
@@ -439,148 +396,18 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       </div>
     </div>
 
-    <div class="card stack" style="margin-top:16px">
-      <header class="stack" style="gap:6px"><h3>The same move with two facts</h3>
-        <p class="sub">Actual against budget by category, 2021. Sales are daily by store and product; the budget is
-        monthly by country and category. Each is summed on its own, then merged on category. The percentage is
-        computed after the merge, from the two totals.</p></header>
-      <div class="grid3" style="align-items:start; grid-template-columns: 1fr 1fr 1.7fr">
-        <div class="branch"><div class="box"><b>fact_sales</b><span>grouped by category, through product</span></div><div id="f-sales"></div></div>
-        <div class="branch"><div class="box"><b>fact_budget</b><span>grouped by category, its own column</span></div><div id="f-budget"></div></div>
-        <div class="branch"><div class="box"><b>merged on category</b><span>then (sales - budget) / budget</span></div><div id="f-merged"></div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="chapter" id="ch-engines">
-    <div class="chead"><span class="num">02</span><div>
-      <h2>Who drills across</h2>
-      <p class="lead">The same question, days and sales by year, asked as plainly as each platform allows. The steps
-      under Snowflake and Databricks are read from their own query plans.</p>
-    </div></div>
-    <div class="grid3" style="align-items:start">
-      <div class="card stack plat fabric">
-        <header><h3><span class="dot fabric"></span>Power BI</h3><span class="sub">1 model · 7 tables · 16 measures</span></header>
-        <div><h4>Who drills across</h4><div class="who">The engine</div></div>
-        <ol class="steps">
-          <li><div>The groups come from the column asked for, <code>dim_calendar[year]</code>: four years.</div></li>
-          <li><div>Each expression is evaluated per year against its own table: the day count on the calendar, the
-            sales measure on the fact, filtered through the relationship.</div></li>
-          <li><div>A year is kept when any expression has a value, so 2023 stays with a blank for sales.</div></li>
-        </ol>
-        <p class="sub">From how <code>SUMMARIZECOLUMNS</code> is defined. Power BI shows no SQL plan for this.</p>
-        <div id="p-fabric" class="stack"></div>
-      </div>
-      <div class="card stack plat snowflake">
-        <header><h3><span class="dot snowflake"></span>Snowflake</h3><span class="sub">1 semantic view · 16 logical tables · 19 metrics</span></header>
-        <div><h4>Who drills across</h4><div class="who">The engine</div></div>
-        <ol class="steps">
-          <li><div><code>Aggregate</code> the calendar by year: <code>COUNT(date_key)</code>.</div></li>
-          <li><div><code>Aggregate</code> the sales by date, join them to the calendar, aggregate again by year:
-            <code>SUM(sales_qty)</code>.</div></li>
-          <li><div><code>FullOuterJoin</code> the two results on year.</div></li>
-        </ol>
-        <p class="sub">From <code>EXPLAIN</code> on the query below. The semantic view compiles to drill-across.</p>
-        <div id="p-snowflake" class="stack"></div>
-      </div>
-      <div class="card stack plat dbx">
-        <header><h3><span class="dot dbx"></span>Databricks</h3><span class="sub">5 metric views · one source each · 20 measures</span></header>
-        <div><h4>Who drills across</h4><div class="who">You, in the query</div></div>
-        <ol class="steps">
-          <li><div>Scan <code>fact_sales</code>, the source of the metric view.</div></li>
-          <li><div><code>LeftOuter</code> join the calendar onto it. Still one row per sale.</div></li>
-          <li><div>One <code>GroupingAgg</code> by year over that rowset computes both columns.</div></li>
-        </ol>
-        <p class="sub">From <code>EXPLAIN FORMATTED</code>. The calendar is only reachable through a sale, so a year
-        without sales has no rows.</p>
-        <div id="p-dbx" class="stack"></div>
-      </div>
-    </div>
-    <div class="card stack" style="margin-top:16px">
-      <header class="stack" style="gap:6px"><h3>Drill-across by hand on Databricks</h3>
-        <p class="sub">The calendar gets its own metric view. The query groups each view on its own and merges the
-        two, which is the plan Snowflake builds for you.</p></header>
-      <div class="pair" id="p-dbx-fix"></div>
-    </div>
-    <p class="note" style="margin-top:16px">The Apache Ossie draft (0.3.0.dev0) writes drill-across down as the rule
-    for any engine: metrics are evaluated in branches, one per home dataset, and the branches are combined on the
-    dimension keys.
-    <a href="https://github.com/apache/ossie/blob/main/core-spec/wide_table_semantics.md">wide_table_semantics.md, sections 5.4 and 5.5</a>.</p>
-  </div>
-
-  <div class="chapter" id="ch-grain">
-    <div class="chead"><span class="num">03</span><div>
-      <h2>A metric view is one grain</h2>
-      <p class="lead">A metric view is one source table with its dimensions joined on, so everything in it lives at
-      the grain of that source. That is why 2023 disappears above, and it is also why "last year" behaves the way
-      it does. Each platform defines it differently:</p>
-    </div></div>
-    <div class="grid3" style="align-items:start">
-      <div class="card stack plat fabric"><h3><span class="dot fabric"></span>Power BI: move the filter</h3>
-        <pre><code>CALCULATE (
-  [sales_quantity],
-  SAMEPERIODLASTYEAR ( dim_calendar[date_key] )
-)</code></pre>
-        <p class="sub">The dates in the current group are shifted a year, then the measure is evaluated. It works
-        at any grain because the group decides which dates are shifted.</p></div>
-      <div class="card stack plat snowflake"><h3><span class="dot snowflake"></span>Snowflake: another branch</h3>
-        <pre><code>sales_ly AS FACT_SALES  -- a second logical table
-sales_ly.sale_date_ly AS DATEADD('year', 1, sale_date)
-sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
-        <p class="sub">A copy of the fact with its date moved a year, related to the calendar through the moved
-        date. "Last year" is one more table to drill across, so it also works at any grain.</p></div>
-      <div class="card stack plat dbx"><h3><span class="dot dbx"></span>Databricks: a window</h3>
-        <pre><code>- name: sales_qty_ly
-  expr: SUM(sales_qty)
-  window:
-  - order: date_key
-    range: current
-    offset: -1 year
-    semiadditive: last
-  # then one entry per other calendar column</code></pre>
-        <p class="sub">A window ordered by one column, the date. Asked by date it is right. Asked by month, each
-        month gets one day's value, with no error.</p></div>
-    </div>
-    <div class="card stack" style="margin-top:16px">
-      <header class="stack" style="gap:6px"><h3 id="g-title"></h3><p class="sub">Sales last year, as each route returned it. Marked cells differ
-      from the reference.</p></header>
-      <div id="g-table"></div>
-      <p class="sub">A measure per grain fixes the months and still gets the total wrong. The route that matches
-      is a second metric view of the fact with its date moved a year, joined in the query: Snowflake's extra
-      branch, done by hand.</p>
-    </div>
-  </div>
 </section>
 
 <!-- ============================== 3. ossie -->
 <section id="ossie" class="view">
-  <div class="chapter" id="os-standard">
-    <div class="chead"><span class="num">01</span><div>
-      <h2>What the standard can write</h2>
-      <p class="lead">Apache Ossie is the open standard for exchanging semantic models between tools. This is what its
-      development version can write of the 16 measures this model needs.</p>
-    </div></div>
-    <div class="card stack tile">
-      <div><div class="big" id="ossie-n"></div><div class="sub" id="ossie-sub"></div></div>
-      <div class="bar" id="ossie-bar"><span></span></div>
-    </div>
-    <div class="stack" id="ossie-groups" style="margin-top:16px; gap:16px"></div>
-    <div class="card stack" style="margin-top:16px">
-      <details><summary><code>semantic_model/a_baseline/model.ossie.yaml</code>: the model and the measures it can hold,
-        checked with the validator of apache/ossie</summary><pre><code id="ossie-yaml"></code></pre></details>
-    </div>
+  <div class="card stack">
+    <header class="stack" style="gap:6px"><h3>What Ossie supports</h3><p class="sub" id="os-std-sub"></p></header>
+    <div class="tw"><table id="os-std" class="wrapcell"></table></div>
   </div>
-  <div class="chapter" id="os-platforms">
-    <div class="chead"><span class="num">02</span><div>
-      <h2>What each platform does with it</h2>
-      <p class="lead">Ossie is meant to carry one semantic model between tools. This is what each platform does when
-      it is handed an Ossie file, and what it gives back, as tried on this model.</p>
-    </div></div>
-    <div class="card stack">
-      <div class="tw"><table id="sup-feat"></table></div>
-      <p class="sub" id="sup-note"></p>
-    </div>
-    <div class="grid3" id="sup-ev" style="margin-top:16px; align-items:start"></div>
+  <div class="card stack" style="margin-top:16px">
+    <header class="stack" style="gap:6px"><h3>What each platform supports</h3>
+      <p class="sub">What each platform does with an Ossie file, as tried on this model.</p></header>
+    <div class="tw"><table id="sup-feat"></table></div>
   </div>
 </section>
 
@@ -901,159 +728,79 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
       return g;
     }
 
-    var STATS = {
-      fabric: { kind: "1 model", s: [[1, "model"], [7, "tables"], [8, "relation­ships"], [16, "measures"]] },
-      snowflake: { kind: "1 semantic view", s: [[1, "semantic view"], [16, "logical tables"], [32, "relation­ships"], [19, "metrics"]] },
-      dbx: { kind: "5 metric views", s: [[5, "metric views"], [5, "sources"], [0, "relationships between them"], [20, "measures"]] }
-    };
     var PLAT = {
-      fabric: { g: PBI, leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Dimension shared by both facts"], ["k-measures", "Table of measures"]],
-        cap: "One model: 7 tables and 8 relationships, two facts at two grains. Dimensions sit on top and facts at the bottom, so every filter flows downhill, from the one side (1) to the many side (*). The budget has no store and no product: it meets sales only through the calendar, the category and the country. The 16 measures sit in one more table, Metrics, which holds nothing else.",
-        src: "Read from the service with INFO.VIEW.TABLES, INFO.VIEW.RELATIONSHIPS and INFO.VIEW.MEASURES. Point at a table to see what it filters and what filters it." },
-      snowflake: { g: SF, leg: [["k-fact", "Fact"], ["k-fact copy", "FACT_SALES again"], ["k-dim", "Dimension"], ["k-dim copy", "Dimension again"], ["k-helper", "Table added for the model"]],
-        cap: "One semantic view, 16 logical tables over 9 physical ones, 32 relationships. FACT_SALES appears six times: the facts themselves, last year, last year by day, last fiscal year, and two denominators that must ignore the customer filter. DIM_PRODUCT and DIM_STORE appear twice, and two tables exist only for the model.",
-        src: "Read from the service with DESCRIBE SEMANTIC VIEW. Point at a table to follow its relationships; every copy of the same physical table lights up with it." },
-      dbx: { leg: [["k-fact", "Fact, the source of the view"], ["k-dim", "Dimension, left-joined"], ["gulf", "No relationship: a join you write in the query"]],
-        cap: "Five metric views and nothing that relates them. Each is one source with its dimensions left-joined, so each answers at the grain of its source. A question that needs two of them is a join you write in the query.",
-        src: "Read from the service with SHOW VIEWS: sales_mv, sales_ly_mv, budget_mv, bridge_mv, calendar_mv, all of them metric views." }
+      fabric: { g: PBI, cap: "One model: 7 tables, 8 relationships, 16 measures.",
+        leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Shared by both facts"], ["k-measures", "Measures"]] },
+      snowflake: { g: SF, cap: "One semantic view: 16 logical tables over 9 physical ones, 32 relationships. FACT_SALES is in it six times.",
+        leg: [["k-fact", "Fact"], ["k-fact copy", "FACT_SALES again"], ["k-dim", "Dimension"], ["k-dim copy", "Dimension again"], ["k-helper", "Added for the model"]] },
+      dbx: { cap: "Five metric views, each one table with its dimensions joined on. Nothing relates them.",
+        leg: [["k-fact", "Base table"], ["k-dim", "Dimension"], ["gulf", "No relationship"]] }
     };
-
-    $("plats").innerHTML = PLATS.map(function (p) {
-      var st = STATS[p];
-      return '<button type="button" class="pcard ' + p + '" data-p="' + p + '" aria-pressed="false">' +
-        '<div class="pc-top"><span><span class="dot ' + p + '"></span>' + NAME[p] + '</span><span class="sub">' + st.kind + "</span></div>" +
-        '<div class="pc-big"><b data-count="' + plainMatches(p) + '">' + plainMatches(p) + "</b><small>/ " + DATA.questions.length + "</small></div>" +
-        '<div class="pc-lbl">questions answered by a plain query, matching the reference</div>' +
-        '<dl class="pc-stats">' + st.s.map(function (x) { return '<div><dd data-count="' + x[0] + '">' + x[0] + "</dd><dt>" + x[1] + "</dt></div>"; }).join("") + "</dl></button>";
-    }).join("");
-
-    var cur = "fabric", phoneLayout = null;
     function legend(items) {
       return items.map(function (x) { return '<span><i class="k ' + x[0] + '">' + (x[0] === "gulf" ? "✕" : "") + "</i>" + x[1] + "</span>"; }).join("");
     }
-    window.__showPlat = function (p) {
-      cur = p;
-      var x = PLAT[p], phone = $("gwrap").clientWidth < 640;
-      each($("plats").children, function (b) { b.setAttribute("aria-pressed", b.dataset.p === p); });
-      phoneLayout = phone;
-      drawGraph($("g-plat"), p === "dbx" ? DBX(phone) : x.g, $("gtip"), $("gwrap"));
-      $("plat-title").innerHTML = '<span class="dot ' + p + '"></span>' + NAME[p] + ": the model as it holds it";
-      $("plat-cap").textContent = x.cap; $("plat-src").textContent = x.src; $("leg-plat").innerHTML = legend(x.leg);
-    };
-    $("plats").addEventListener("click", function (e) {
-      var b = e.target.closest(".pcard"); if (!b) return;
-      window.__showPlat(b.dataset.p);
-      if (innerWidth < 960) document.querySelector(".graphcard").scrollIntoView({ behavior: REDUCE ? "auto" : "smooth" });
-    });
-    window.__replot = function () { window.__showPlat(cur); };
+    $("graphs").innerHTML = PLATS.map(function (p) {
+      return '<div class="card graphcard"><div class="gc-head"><h3><span class="dot ' + p + '"></span>' + NAME[p] + '</h3><p class="caption">' + PLAT[p].cap + "</p></div>" +
+        '<div class="graphwrap" id="gw-' + p + '"><svg id="g-' + p + '" class="graph" role="img" aria-label="The model on ' + NAME[p] + '"></svg><div class="tip" id="tip-' + p + '" hidden></div></div>' +
+        '<div class="gc-foot"><div class="legend">' + legend(PLAT[p].leg) + "</div></div></div>";
+    }).join("");
+    var phoneLayout = null;
+    function plot(p) {
+      var wrap = $("gw-" + p), phone = wrap.clientWidth < 640;
+      if (p === "dbx") phoneLayout = phone;
+      drawGraph($("g-" + p), p === "dbx" ? DBX(phone) : PLAT[p].g, $("tip-" + p), wrap);
+    }
+    window.__replot = function () { PLATS.forEach(plot); };
     var rt;
     window.addEventListener("resize", function () {
       clearTimeout(rt);
-      rt = setTimeout(function () { if (cur === "dbx" && $("model").classList.contains("on") && ($("gwrap").clientWidth < 640) !== phoneLayout) window.__showPlat("dbx"); }, 150);
+      rt = setTimeout(function () { if ($("model").classList.contains("on") && ($("gw-dbx").clientWidth < 640) !== phoneLayout) plot("dbx"); }, 150);
     });
   })();
 
-  var counted = false;
-  function countUp() {
-    if (counted || REDUCE) return; counted = true;
-    var els = document.querySelectorAll("#plats [data-count]"), t0 = performance.now();
-    (function tick(t) {
-      var k = Math.min(1, (t - t0) / 1100), e = 1 - Math.pow(1 - k, 3);
-      each(els, function (el) { el.textContent = Math.round(+el.dataset.count * e); });
-      if (k < 1) requestAnimationFrame(tick);
-    })(t0);
-  }
-
-  // ---------- 3. ossie: what the standard can write
+  // ---------- 3. ossie: what the standard supports, then what each platform supports
   (function () {
-    var SPEC = "https://github.com/apache/ossie/blob/main/core-spec/";
-    var GROUPS = [
-      { test: function (m) { return /^yes/.test(m.standard); }, title: "In the standard now", chip: "match",
-        note: "Three sums, each declared on its own table, and one measure at model level that reads two of them with " +
-          "<code>AGG()</code>. Each <code>AGG()</code> is computed over its own table before the arithmetic: drill-across, written into the standard.",
-        links: [["Metric scoping", SPEC + "spec.md#metric-scoping"]] },
-      { test: function (m) { return /period over period/.test(m.standard); }, title: "Period over period: not yet", chip: "refused",
-        note: "The specification lists &ldquo;windowing (cumulative, trailing, period-over-period)&rdquo; among the evaluation controls it " +
-          "leaves out of this version. A model-level measure that contains a window function is rejected, with <code>E_DEFERRED_WINDOWED_METRIC</code>.",
-        links: [["Evaluation controls", SPEC + "relational_semantics.md#53-evaluation-controls"], ["Metric components", SPEC + "wide_table_semantics.md#52-metric-components"]] },
-      { test: function (m) { return !/^yes/.test(m.standard) && !/period over period/.test(m.standard); }, title: "Grouping controls: not yet", chip: "refused",
-        note: "The same evaluation controls cover &ldquo;including or excluding fields from the grouping a measure responds to&rdquo;. " +
-          "Of what they enable, &ldquo;such as percent of total and period over period&rdquo;, the specification says: &ldquo;we strongly recommend it as a follow-up extension&rdquo;.",
-        links: [["Evaluation controls", SPEC + "relational_semantics.md#53-evaluation-controls"], ["Appendix D", SPEC + "relational_semantics.md#appendix-d-relationship-to-measures-in-sql"]] }
-    ];
-    var O = DATA.ossie, total = DATA.measures.length, yes = DATA.measures.filter(GROUPS[0].test).length;
-    $("ossie-n").innerHTML = yes + " <small>of " + total + "</small>";
-    $("ossie-sub").innerHTML = "measures the open standard can write today, in <code>" + esc(O.version) + "</code>, its unreleased development version on apache/ossie main";
-    $("ossie-bar").firstChild.style.width = (100 * yes / total) + "%";
-    $("ossie-bar").setAttribute("role", "img"); $("ossie-bar").setAttribute("aria-label", yes + " of " + total);
+    var SPEC = "https://github.com/apache/ossie/blob/main/core-spec/", O = DATA.ossie, M = DATA.measures;
+    var yes = M.filter(function (m) { return /^yes/.test(m.standard); }).length;
+    $("os-std-sub").innerHTML = "<code>" + esc(O.version) + "</code>, unreleased, on apache/ossie main: <b>" + yes + " of " + M.length +
+      "</b> measures. The others need evaluation controls, which the specification defers (<a href=\"" + SPEC +
+      "relational_semantics.md#53-evaluation-controls\">section 5.3</a>, <a href=\"" + SPEC + "relational_semantics.md#appendix-d-relationship-to-measures-in-sql\">Appendix D</a>).";
     function md(t) { return esc(t).replace(/`(.+?)`/g, "<code>$1</code>"); }
-    $("ossie-groups").innerHTML = GROUPS.map(function (g, gi) {
-      var rows = DATA.measures.filter(g.test);
-      var hd = "<tr><th>Measure</th><th>Meaning</th>" + (gi === 0 ? "<th>In Ossie</th><th>Declared on</th>" : "") + "</tr>";
-      var body = rows.map(function (m) {
-        var x = O.expr[m.name] || {};
-        return "<tr><td><code>" + esc(m.name) + "</code></td><td>" + md(m.meaning) + "</td>" +
-          (gi === 0 ? "<td><code>" + esc(x.sql || "") + "</code></td><td>" + esc(x.home === "model" ? "the model, across both facts" : (x.home || "")) + "</td>" : "") + "</tr>";
-      }).join("");
-      return '<div class="card stack"><header class="demo-bar"><h3 style="flex:1">' + g.title + "</h3>" +
-        '<span class="chip ' + g.chip + '"><i aria-hidden="true">' + ICON[g.chip] + "</i>" + rows.length + " measures</span></header>" +
-        '<p class="sub">' + g.note + " " + g.links.map(function (l) { return '<a href="' + l[1] + '">' + l[0] + "</a>"; }).join(" · ") + "</p>" +
-        '<div class="tw"><table class="wrapcell"><thead>' + hd + "</thead><tbody>" + body + "</tbody></table></div></div>";
-    }).join("");
-    $("ossie-yaml").textContent = O.yaml;
-  })();
+    function c(k, w) { return '<span class="chip ' + k + '"><i aria-hidden="true">' + ICON[k] + "</i>" + w + "</span>"; }
+    $("os-std").innerHTML = "<thead><tr><th>Measure</th><th>Meaning</th><th>Ossie</th></tr></thead><tbody>" + M.map(function (m) {
+      var x = O.expr[m.name], cell = x ? c("match", "yes") + '<span class="why"><code>' + esc(x.sql) + "</code> on " + esc(x.home === "model" ? "the model" : x.home) + "</span>" :
+        c("refused", "no") + '<span class="why">' + (/period over period/.test(m.standard) ? "period over period" : "fields included in or excluded from the grouping") + "</span>";
+      return "<tr><td><code>" + esc(m.name) + "</code></td><td>" + md(m.meaning) + "</td><td>" + cell + "</td></tr>";
+    }).join("") + "</tbody>";
 
-  // ---------- 3. ossie: what each platform does with it
-  (function () {
     var E = DATA.evidence;
     var W = { yes: ["match", "yes"], part: ["partial", "partly"], no: ["refused", "no"], na: ["na", "n/a"], untested: ["na", "not tried"] };
     var fv = E.fabric_version.split(":")[1].trim(), sv = E.sf_export_version.split(":")[1].trim();
+    function ev(path) { return ' <a href="' + GH + path + '">response</a>'; }
     var F = [
-      ["Imports an Ossie file",
-        ["yes", "Written to the lakehouse as a semantic view; Fabric's Publish compiles it into a Direct Lake semantic model"],
-        ["yes", "<code>SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML</code> creates a semantic view from it"],
-        ["no", "No Ossie import at all. Metric views are written in Databricks' own YAML"]],
+      ["Imports an Ossie file", ["yes", "Publish compiles it into a Direct Lake model." + ev("semantic_model/fabric/publish_response.json")],
+        ["yes", "<code>SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML</code>" + ev("semantic_model/snowflake/tests/import_response.txt")], ["no", "No Ossie import."]],
       ["Ossie version it reads", ["yes", "<code>" + fv + "</code>"], ["part", "<code>0.1.1</code> only"], ["na", ""]],
-      ["Measures in its own dialect, inside the Ossie file",
-        ["yes", "The <code>DAX</code> dialect: all 16 measures, 0 errors, 0 warnings"],
-        ["no", "The <code>SNOWFLAKE</code> dialect is refused: its own LOD syntax, <code>FIXED</code> / <code>EXCLUDE DIMENSIONS</code>, fails with <em>unexpected 'FIXED'</em>"],
-        ["na", ""]],
-      ["Vendor extensions", ["part", "<code>POWER_BI</code> format strings are accepted, then dropped by Publish without a warning"], ["untested", ""], ["na", ""]],
-      ["Exports its model as Ossie", ["untested", ""], ["yes", "<code>SYSTEM$READ_OSSIE_YAML_FROM_SEMANTIC_VIEW</code>, as <code>" + sv + "</code>"], ["untested", ""]],
-      ["Re-imports its own export", ["na", ""], ["no", "Its own export is refused: <em>invalid identifier 'SALES.SALES_QUANTITY'</em>"], ["na", ""]],
-      ["How the model in this repo is written",
-        ["yes", "In Ossie with the DAX dialect: the baseline plus the 16 measures, <a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">oss_dax_dialect.ossie.yaml</a>"],
-        ["no", "Not in Ossie: <code>CREATE SEMANTIC VIEW</code> DDL, <a href=\"" + GH + "semantic_model/snowflake/semantic_view.sql\">semantic_view.sql</a>"],
-        ["no", "Not in Ossie: 5 metric views in Databricks' YAML, <a href=\"" + GH + "semantic_model/dbx/\">semantic_model/dbx/</a>"]]
+      ["Its own dialect inside the file", ["yes", "DAX: all 16 measures, 0 errors."],
+        ["no", "The SNOWFLAKE dialect is refused: <code>FIXED</code>, <code>EXCLUDE DIMENSIONS</code>." + ev("semantic_model/snowflake/tests/lod_via_ossie_response.txt")], ["na", ""]],
+      ["Vendor extensions", ["part", "Format strings dropped without a warning."], ["untested", ""], ["na", ""]],
+      ["Exports Ossie", ["untested", ""], ["yes", "As <code>" + sv + "</code>."], ["untested", ""]],
+      ["Re-imports its own export", ["na", ""], ["no", "<em>invalid identifier 'SALES.SALES_QUANTITY'</em>" + ev("semantic_model/snowflake/tests/export_reimport_response.txt")], ["na", ""]],
+      ["This repo's model is in Ossie",["yes", "<a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">Ossie with the DAX dialect</a>"],
+        ["no", "<a href=\"" + GH + "semantic_model/snowflake/semantic_view.sql\">Semantic view DDL</a>"], ["no", "<a href=\"" + GH + "semantic_model/dbx/\">Metric view YAML</a>"]]
     ];
     $("sup-feat").innerHTML = "<thead><tr><th></th>" + PLATS.map(function (p) { return '<th><span class="dot ' + p + '"></span>' + NAME[p] + "</th>"; }).join("") +
       "</tr></thead><tbody>" + F.map(function (f) {
         return "<tr><td>" + f[0] + "</td>" + [1, 2, 3].map(function (j) {
           var w = W[f[j][0]];
-          return '<td><span class="chip ' + w[0] + '"><i aria-hidden="true">' + ICON[w[0]] + "</i>" + w[1] + "</span>" +
-            (f[j][1] ? '<span class="why">' + f[j][1] + "</span>" : "") + "</td>";
+          return "<td>" + c(w[0], w[1]) + (f[j][1] ? '<span class="why">' + f[j][1] + "</span>" : "") + "</td>";
         }).join("") + "</tr>";
       }).join("") + "</tbody>";
-    $("sup-note").innerHTML = "No platform reads <code>" + esc(DATA.ossie.version) + "</code> yet: Power BI reads <code>" + fv + "</code>, Snowflake <code>0.1.1</code>.";
-    var EV = [
-      ["fabric", [["Publish of the Ossie file with the DAX dialect", E.fabric_publish, "semantic_model/fabric/publish_response.json"]]],
-      ["snowflake", [
-        ["Import of a 0.1.1 file", E.sf_import, "semantic_model/snowflake/tests/import_response.txt"],
-        ["Import with its own dialect (LOD)", E.sf_dialect, "semantic_model/snowflake/tests/lod_via_ossie_response.txt"],
-        ["Re-import of its own export", E.sf_reimport, "semantic_model/snowflake/tests/export_reimport_response.txt"]]],
-      ["dbx", []]
-    ];
-    $("sup-ev").innerHTML = EV.map(function (e) {
-      var body = e[1].length ? e[1].map(function (x) {
-        return '<div class="stack" style="gap:6px"><h4>' + x[0] + '</h4><pre><code>' + esc(x[1]) + '</code></pre><p class="sub"><a href="' + GH + x[2] + '">' + x[2].split("/").pop() + "</a></p></div>";
-      }).join("") : '<p class="sub">Nothing to hand it: Databricks has no Ossie import, so the model is written as metric views directly.</p>';
-      return '<div class="card stack ev plat ' + e[0] + '"><h3><span class="dot ' + e[0] + '"></span>' + NAME[e[0]] + ": what it answered</h3>" + body + "</div>";
-    }).join("");
   })();
 
   // ---------- 2. how they answer: the drill-across walkthrough (q13), two facts (q12)
   var demo = { mode: "drill", step: 1, timer: null, played: false };
-  var STEPS = { drill: ["Two tables", "Group each on its own", "Merge on year"], single: ["Two tables", "Join first", "Group once"] };
+  var STEPS = { drill: ["Two tables", "Group each on its own", "Merge on year"], single: ["Two tables", "Join to the base table", "Group once"] };
   var CAPTION = {
     drill: ["The calendar has four years. The sales fact has three: nothing was sold in 2023.",
             "Each table is grouped by year on its own. The calendar keeps its four years; sales have three.",
@@ -1093,46 +840,6 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     $("play").addEventListener("click", playDemo);
     paintDemo();
 
-    var f = Q.q12, rows = f.expected.rows.filter(function (r) { return r[0] !== ""; });
-    var a = pick(f, ["category", "sales_quantity"]), b = pick(f, ["category", "budget_quantity"]),
-        m = pick(f, ["category", "sales_quantity", "budget_quantity", "sales_vs_budget_pct"]);
-    $("f-sales").innerHTML = table(a.cols, a.measures, a.rows(rows));
-    $("f-budget").innerHTML = table(b.cols, b.measures, b.rows(rows));
-    $("f-merged").innerHTML = table(m.cols, m.measures, m.rows(rows));
-
-    $("chapnav").addEventListener("click", function (e) {
-      var b = e.target.closest("button"); if (b) $(b.dataset.to).scrollIntoView({ behavior: REDUCE ? "auto" : "smooth" });
-    });
-  })();
-
-  // ---------- 2. who drills across (q13)
-  (function () {
-    var q = Q.q13;
-    PLATS.forEach(function (p) {
-      var r = run(q, p);
-      $("p-" + p).innerHTML = "<pre><code>" + esc(r.code) + "</code></pre>" +
-        "<div>" + chip(r.status) + ' <span class="sub">' + r.rows.length + " rows returned</span></div>" + runTable(q, r);
-    });
-    var w = run(q, "dbx (workaround)");
-    $("p-dbx-fix").innerHTML = "<pre><code>" + esc(w.code) + "</code></pre>" +
-      '<div class="stack"><div>' + chip(w.status) + ' <span class="sub">' + w.rows.length + " rows returned</span></div>" + runTable(q, w) + "</div>";
-  })();
-
-  // ---------- 2. one grain (q04): one measure across every route
-  (function () {
-    var q = Q.q04, ci = q.columns.indexOf("sales_qty_ly"), meas = [false, true];
-    q.runs.forEach(function () { meas.push(true); });
-    var rows = q.expected.rows.map(function (e, i) { return [e[0], e[ci]].concat(q.runs.map(function (r) { return r.rows[i] ? r.rows[i][ci] : ""; })); });
-    var diff = q.expected.rows.map(function (e, i) { return [false, false].concat(q.runs.map(function (r) { return !!(r.diff[i] && r.diff[i][ci]); })); });
-    $("g-title").textContent = q.id + ": " + q.title;
-    var h = '<div class="tw"><table><thead><tr><th>month</th><th class="n">Reference</th>' +
-      q.runs.map(function (r) { return '<th class="n">' + esc(label(r.label)) + "<br>" + chip(r.status) + "</th>"; }).join("") + "</tr></thead><tbody>";
-    rows.forEach(function (r, ri) {
-      h += '<tr class="' + (r[0] === "" ? "total" : "") + '">' + r.map(function (v, i) {
-        return '<td class="' + (meas[i] ? "n" : "") + (diff[ri][i] ? " bad" : "") + '">' + fmt("x", v, meas[i]) + "</td>";
-      }).join("") + "</tr>";
-    });
-    $("g-table").innerHTML = h + "</tbody></table></div>";
   })();
 
   // ---------- 4. results: tiles, the grid, and the question panel under it
@@ -1199,8 +906,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
 
   // ---------- routing: 4 tabs; the old tab names still land where their content went
   var VIEWS = ["model", "answer", "ossie", "results"];
-  var ALIAS = { drill: ["answer", "ch-drill"], platforms: ["answer", "ch-engines"], grain: ["answer", "ch-grain"],
-                support: ["ossie", "os-platforms"], questions: ["results", "qpanel"] };
+  var ALIAS = { drill: ["answer"], platforms: ["answer"], grain: ["answer"], support: ["ossie"], questions: ["results", "qpanel"] };
   var nav = $("nav"), ind = nav.querySelector(".ind");
   function moveInd() {
     var a = nav.querySelector('a[aria-current="page"]'); if (!a) return;
@@ -1210,7 +916,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
   function route() {
     var h = location.hash.slice(1), v, target = null;
     if (Q[h]) { v = "results"; target = "qpanel"; show(h); }
-    else if (ALIAS[h]) { v = ALIAS[h][0]; target = ALIAS[h][1]; }
+    else if (ALIAS[h]) { v = ALIAS[h][0]; target = ALIAS[h][1] || null; }
     else v = VIEWS.indexOf(h) >= 0 ? h : "model";
     VIEWS.forEach(function (x) { $(x).classList.toggle("on", x === v); });
     each(nav.querySelectorAll("a"), function (a) {
@@ -1223,7 +929,7 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
       if (shown !== v) setTimeout(function () { go("auto"); }, 450);   // again once the walkthrough has laid out
     }
     else window.scrollTo(0, 0);
-    if (v === "model" && shown !== "model") { window.__replot(); countUp(); }
+    if (v === "model" && shown !== "model") window.__replot();
     if (v === "answer" && !demo.played) playDemo();
     if (v !== "answer") stopDemo();
     shown = v;
@@ -1231,7 +937,6 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
   window.addEventListener("hashchange", route);
   window.addEventListener("resize", moveInd);
   show("q13");
-  window.__showPlat("fabric");
   route();
 
   // ---------- theme: dark by default
