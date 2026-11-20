@@ -57,44 +57,20 @@ def ossie():
     return {"version": doc["version"], "yaml": text.strip(), "expr": expr}
 
 
-def window(w):
-    """A metric view window spec in one line: the ordered column and its offset, then the columns it spans."""
-    cur = [x for x in w if x.get("range") == "current"]
-    rest = [x["order"] for x in w if x.get("range") == "all"]
-    parts = [f"{x['order']} current" + (f", offset {x['offset']}" if "offset" in x else "") for x in cur]
-    if rest:
-        parts.append("range all over " + (", ".join(rest) if len(rest) <= 3 else f"{len(rest)} other columns"))
-    return "window: " + "; ".join(parts)
-
-
-def models():
-    """Each measure as each platform's model writes it: {fabric|snowflake: {name: code}, dbx: {name: [{view, code}]}}."""
-    import yaml
+def evidence():
+    """What each platform answered when given Ossie: {name: text} of the response files in semantic_model/."""
     sm = ROOT / "semantic_model"
-    doc = yaml.safe_load((sm / "fabric" / "oss_dax_dialect.ossie.yaml").read_text(encoding="utf-8"))
-    fabric = {m["name"]: m["expression"]["dialects"][0]["expression"] for m in doc["metrics"]}
-
-    sql = (sm / "snowflake" / "semantic_view.sql").read_text(encoding="utf-8")
-    sec = lambda k: sql.split(f"\n  {k} (", 1)[1].split("\n  )", 1)[0]  # noqa: E731
-    pat = re.compile(r"^\s*(?:(\w+)\.)?(\w+)\s+AS\s+(.+?),?\s*$")
-    facts = [m.groups() for m in map(pat.match, sec("FACTS").splitlines()) if m]
-    snowflake = {}
-    for line in sec("METRICS").splitlines():
-        m = pat.match(line)
-        if m and not line.strip().startswith("--"):
-            code = (f"{m.group(1)}." if m.group(1) else "") + f"{m.group(2)} AS {m.group(3)}"
-            # The facts it stands on: an LOD fact it reads, or the moved date of the copy of the fact it sums.
-            pre = [f"{k} AS {v}" for t, k, v in facts if not t and re.search(rf"\b{k}\b", m.group(3))]
-            pre += [f"{t}.{k} AS {v}" for t, k, v in facts if t and t == m.group(1) and k.startswith("sale_date")]
-            snowflake[m.group(2)] = "\n".join(["-- fact: " + x for x in pre] + [code])
-
-    dbx = {}
-    for f in sorted((sm / "dbx").glob("*.metric_view.yaml")):
-        view = f.name.split(".")[0] + "_mv"
-        for m in yaml.safe_load(f.read_text(encoding="utf-8")).get("measures", []):
-            code = m["expr"] + ("\n" + window(m["window"]) if m.get("window") else "")
-            dbx.setdefault(m["name"], []).append({"view": view, "code": code})
-    return {"fabric": fabric, "snowflake": snowflake, "dbx": dbx}
+    files = {
+        "fabric_publish": sm / "fabric" / "publish_response.json",
+        "sf_import": sm / "snowflake" / "tests" / "import_response.txt",
+        "sf_reimport": sm / "snowflake" / "tests" / "export_reimport_response.txt",
+        "sf_dialect": sm / "snowflake" / "tests" / "lod_via_ossie_response.txt",
+    }
+    out = {k: p.read_text(encoding="utf-8").strip() for k, p in files.items()}
+    head = lambda p: next(x for x in p.read_text(encoding="utf-8").splitlines() if x.startswith("version:"))  # noqa: E731
+    out["fabric_version"] = head(sm / "fabric" / "oss_dax_dialect.ossie.yaml")
+    out["sf_export_version"] = head(sm / "snowflake" / "tests" / "export_from_semantic_view.ossie.yaml")
+    return out
 
 
 def question(qdir, notes):
@@ -141,7 +117,7 @@ def main():
     qs = [question(d, notes) for d in sorted((ROOT / "questions").glob("q*/")) if (d / "results.csv").exists()]
     out = ROOT / "docs" / "data.js"
     out.parent.mkdir(exist_ok=True)
-    out.write_text("window.DATA = " + json.dumps({"measures": measures(), "ossie": ossie(), "models": models(), "questions": qs}, ensure_ascii=False, indent=1) + ";\n",
+    out.write_text("window.DATA = " + json.dumps({"measures": measures(), "ossie": ossie(), "evidence": evidence(), "questions": qs}, ensure_ascii=False, indent=1) + ";\n",
                    encoding="utf-8", newline="\n")
     plain = {p: sum(1 for q in qs for r in q["runs"] if r["label"] == p and r["status"] == "match") for p in PLATFORMS}
     print(f"{out.relative_to(ROOT)}: {len(qs)} questions; plain matches {plain}")

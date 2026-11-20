@@ -212,22 +212,11 @@ details > summary { cursor: pointer; font-size: 13px; color: var(--ink-2); }
 details[open] > summary { margin-bottom: 8px; }
 
 /* what each platform supports */
-#sup-matrix td { white-space: normal; vertical-align: top; min-width: 190px; }
-#sup-matrix td:first-child { min-width: 170px; white-space: nowrap; }
-#sup-matrix td .why { display: block; margin-top: 4px; color: var(--ink-2); font-size: 12.5px; }
-#sup-matrix tr.grp td { background: var(--sunken); font-size: 12px; font-weight: 600; color: var(--ink-2);
-  text-transform: uppercase; letter-spacing: .05em; }
-#sup-matrix tr.m { cursor: pointer; }
-#sup-matrix tr.m:hover td { background: var(--sunken); }
-#sup-matrix tr.m td:first-child code::before { content: "▸ "; color: var(--muted); }
-#sup-matrix tr.m[aria-expanded="true"] td:first-child code::before { content: "▾ "; }
-#sup-matrix tr.code td { background: var(--page); }
-#sup-feat td { white-space: normal; vertical-align: top; min-width: 190px; }
+.chip.na { background: var(--sunken); color: var(--ink-2); } .chip.na i { color: var(--muted); }
+#sup-feat td { white-space: normal; vertical-align: top; min-width: 200px; }
 #sup-feat td:first-child { font-weight: 600; min-width: 170px; }
 #sup-feat td .why { display: block; margin-top: 4px; color: var(--ink-2); font-size: 12.5px; }
-.tally { display: grid; gap: 4px; font-size: 13px; }
-.tally div { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
-.tally b { font-variant-numeric: tabular-nums; }
+.ev pre { font-size: 11.5px; }
 
 /* what it took */
 .tile .big { font-size: 40px; font-weight: 650; letter-spacing: -.02em; line-height: 1.1; }
@@ -326,26 +315,18 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   </div>
 </section>
 
-<!-- ============================== 0c. what each platform supports -->
+<!-- ============================== 0c. what each platform supports of ossie -->
 <section id="support" class="view">
   <div class="head">
-    <h2>What each platform supports</h2>
-    <p class="lead">The 16 measures, and the features they stand on, as each platform's model holds them. Every
-    platform reaches every answer in the end; this is where the model can say it, and where the work moves to
-    copies of the fact, extra views or the query.</p>
+    <h2>What each platform supports of Ossie</h2>
+    <p class="lead">Ossie is meant to carry one semantic model between tools. This is what each platform does when
+    it is handed an Ossie file, and what it gives back, as tried on this model.</p>
   </div>
-  <div class="grid3" id="sup-tiles"></div>
-  <div class="card stack" style="margin-top:16px">
-    <header><h3>Measure by measure</h3>
-      <p class="sub">Click a measure for the code each model holds.</p></header>
-    <div class="legend" id="sup-legend"></div>
-    <div class="tw"><table id="sup-matrix"></table></div>
-  </div>
-  <div class="card stack" style="margin-top:16px">
-    <header><h3>Feature by feature</h3>
-      <p class="sub">What the model does on its own, as the 13 questions found it.</p></header>
+  <div class="card stack">
     <div class="tw"><table id="sup-feat"></table></div>
+    <p class="sub" id="sup-note"></p>
   </div>
+  <div class="grid3" id="sup-ev" style="margin-top:16px"></div>
 </section>
 
 <!-- ============================== 1. drill across -->
@@ -834,134 +815,69 @@ sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
     $("ossie-yaml").textContent = O.yaml;
   })();
 
-  // ---------- 0c. what each platform supports: the 16 measures, then the features
+  // ---------- 0c. what each platform supports of ossie: a grid, then what each platform answered
   (function () {
-    var P = ["fabric", "snowflake", "dbx"];
-    var ST = {
-      in: { chip: "match", word: "In the model", long: "a measure in the model, the platform's own feature used as designed" },
-      extra: { chip: "partial", word: "Extra structure", long: "in the model, over a copy of the fact, a helper table or another view" },
-      grain: { chip: "differs", word: "One grain", long: "in the model, right at one grain only; another grain gives another number, with no error" },
-      out: { chip: "refused", word: "Not in the model", long: "written in the query, or not declared" }
-    };
-    // [measure, group, [status, how] for Power BI, Snowflake, Databricks]
-    var M = [
-      ["sales_quantity", 0, ["in", "<code>SUM</code> on fact_sales"], ["in", "<code>SUM</code> on the logical table sales"], ["in", "<code>SUM</code> in sales_mv"]],
-      ["net_profit_total", 0, ["in", "<code>SUM</code> on fact_sales"], ["in", "<code>SUM</code> on sales"], ["in", "<code>SUM</code> in sales_mv"]],
-      ["budget_quantity", 0, ["in", "<code>SUM</code> on fact_budget, in the same model"], ["in", "<code>SUM</code> on budget, in the same view"],
-        ["extra", "<code>SUM</code> in budget_mv, a second view (and again in bridge_mv)"]],
-      ["sales_vs_budget_pct", 0, ["in", "Each side evaluated against its own fact, then divided"], ["in", "Each metric aggregated over its own table, then merged"],
-        ["extra", "In bridge_mv, a view over both facts on a cross join of their shared keys; or two views joined in the query"]],
-      ["sales_qty_ly", 1, ["in", "<code>SAMEPERIODLASTYEAR</code>, at any grain"],
-        ["extra", "<code>SUM</code> over sales_ly, a copy of the fact with its date moved a year; by day, a third copy without Feb 29 (sales_ly_day)"],
-        ["grain", "A window on date_key: right by day, one day's value by month or year. Right at any grain with sales_ly_mv, a view of the moved fact, joined in the query"]],
-      ["net_profit_ly", 1, ["in", "<code>SAMEPERIODLASTYEAR</code>, at any grain"], ["extra", "<code>SUM</code> over the copy sales_ly"],
-        ["grain", "The same window as sales_qty_ly; or sales_ly_mv joined in the query"]],
-      ["sales_qty_fly", 1, ["in", "<code>DATEADD</code> 364 days back"], ["extra", "<code>SUM</code> over sales_fly, a copy of the fact with its date moved 364 days"],
-        ["grain", "A window on date_key, 364 days back; for fiscal periods, a second measure ordered by period (sales_qty_fly_period)"]],
-      ["sales_qty_yoy_pct", 1, ["in", "<code>DIVIDE</code> over the two measures"], ["extra", "Over sales and its copy sales_ly"],
-        ["grain", "Over the window measure, so it is right by day only"]],
-      ["country_qty_all_customers", 2, ["in", "<code>ALL(customer)</code>"],
-        ["extra", "<code>SUM</code> over sales_all_cust, a copy of the fact joined through store_geo, a copy of the store table without customer"],
-        ["in", "A window, <code>range: all</code> over customer"]],
-      ["customer_share_all", 2, ["in", "<code>DIVIDE</code> by the measure above"], ["extra", "Over the copy sales_all_cust"], ["in", "Over the window measure"]],
-      ["country_total_allselected", 2, ["in", "<code>ALLSELECTED(customer)</code>"], ["in", "LOD: <code>EXCLUDE DIMENSIONS (customer)</code>, in Public Preview"],
-        ["out", "No metric-view form: a window function over the result, in the query"]],
-      ["customer_share_allselected", 2, ["in", "<code>DIVIDE</code> by the measure above"], ["in", "Over the LOD fact"], ["out", "The same: in the query"]],
-      ["country_total_allexcept", 2, ["in", "<code>ALLEXCEPT(country, year)</code>"], ["in", "LOD: <code>FIXED DIMENSIONS (country, year)</code>"],
-        ["out", "Not declared in this model"]],
-      ["country_total_fixed", 2, ["in", "<code>REMOVEFILTERS()</code>, then the countries and years shown put back"],
-        ["in", "LOD <code>FIXED (country, year)</code>, totalled with <code>SUM(DISTINCT)</code>: it assumes no two country-years have the same total"],
-        ["in", "A window: <code>current</code> on year, <code>range: all</code> over 12 other columns"]],
-      ["country_qty_all_cust_cat", 2, ["in", "<code>REMOVEFILTERS</code> on customer and category"],
-        ["extra", "<code>SUM</code> over sales_all_cust_cat, a copy of the fact joined through all_members, a one-row helper table"],
-        ["in", "A window, <code>range: all</code> over customer and category"]],
-      ["cust_cat_share_all", 2, ["in", "<code>DIVIDE</code> by the measure above"], ["extra", "Over the copy sales_all_cust_cat"], ["in", "Over the window measure"]]
-    ];
-    var GROUP = ["Sums, and a ratio across the two facts", "Last year", "Changing the filters a measure sees"];
-    var DBX_QUERY = "-- not in the model; the query computes it (q08, dbx_workaround.sql):\n" +
-      "sales_quantity / SUM(sales_quantity) OVER (PARTITION BY country) AS customer_share_allselected";
-    var MD = DATA.models, total = M.length;
-
-    function cell(x) {
-      var st = ST[x[0]];
-      return '<span class="chip ' + st.chip + '"><i aria-hidden="true">' + ICON[st.chip] + "</i>" + st.word + '</span><span class="why">' + x[1] + "</span>";
-    }
-    function code(p, name) {
-      if (p === "fabric") return MD.fabric[name] || "";
-      if (p === "snowflake") {
-        var c = MD.snowflake[name] || "";
-        if (name === "sales_qty_ly") c += "\n\n" + MD.snowflake.sales_qty_ly_day;
-        return c;
-      }
-      var l = MD.dbx[name];
-      if (!l) return /allselected/.test(name) ? DBX_QUERY : "-- not declared in the metric views";
-      if (name === "sales_qty_fly") l = l.concat(MD.dbx.sales_qty_fly_period);
-      return l.map(function (x) { return "-- " + x.view + "\n" + x.code; }).join("\n\n");
-    }
-
-    $("sup-tiles").innerHTML = P.map(function (p, i) {
-      var n = {}; M.forEach(function (m) { n[m[i + 2][0]] = (n[m[i + 2][0]] || 0) + 1; });
-      var models = { fabric: "1 model, 7 tables", snowflake: "1 semantic view, 16 logical tables over 9", dbx: "5 metric views" }[p];
-      return '<div class="card stack tile"><h3><span class="dot ' + p + '"></span>' + NAME[p] + "</h3>" +
-        '<div><div class="big">' + (n.in || 0) + " <small>of " + total + '</small></div><div class="sub">measures in the model as designed; ' + models + "</div></div>" +
-        '<div class="bar" role="img" aria-label="' + (n.in || 0) + " of " + total + '"><span style="width:' + (100 * (n.in || 0) / total) + '%"></span></div>' +
-        '<div class="tally">' + ["extra", "grain", "out"].map(function (k) {
-          return "<div><span>" + ST[k].word + "</span><b>" + (n[k] || 0) + "</b></div>";
-        }).join("") + "</div></div>";
-    }).join("");
-
-    $("sup-legend").innerHTML = Object.keys(ST).map(function (k) {
-      return '<span><span class="chip ' + ST[k].chip + '"><i aria-hidden="true">' + ICON[ST[k].chip] + "</i>" + ST[k].word + "</span>" + ST[k].long + "</span>";
-    }).join("");
-
-    var head = "<thead><tr><th>Measure</th>" + P.map(function (p) { return '<th><span class="dot ' + p + '"></span>' + NAME[p] + "</th>"; }).join("") + "</tr></thead>";
-    var rows = "", g = -1;
-    M.forEach(function (m, k) {
-      if (m[1] !== g) { g = m[1]; rows += '<tr class="grp"><td colspan="4">' + GROUP[g] + "</td></tr>"; }
-      rows += '<tr class="m" data-k="' + k + '" tabindex="0" aria-expanded="false"><td><code>' + m[0] + "</code></td>" +
-        [2, 3, 4].map(function (j) { return "<td>" + cell(m[j]) + "</td>"; }).join("") + "</tr>";
-      rows += '<tr class="code" hidden><td></td>' + P.map(function (p) { return "<td><pre><code>" + esc(code(p, m[0])) + "</code></pre></td>"; }).join("") + "</tr>";
-    });
-    $("sup-matrix").innerHTML = head + "<tbody>" + rows + "</tbody>";
-    function toggle(tr) {
-      var open = tr.getAttribute("aria-expanded") !== "true";
-      tr.setAttribute("aria-expanded", open); tr.nextElementSibling.hidden = !open;
-    }
-    $("sup-matrix").addEventListener("click", function (e) { var tr = e.target.closest("tr.m"); if (tr) toggle(tr); });
-    $("sup-matrix").addEventListener("keydown", function (e) {
-      var tr = e.target.closest("tr.m"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggle(tr); }
-    });
-
-    // [feature, [status, how] per platform]: in = yes, extra = with more model or query, out = no
+    var P = ["fabric", "snowflake", "dbx"], E = DATA.evidence;
+    var GH = "https://github.com/djouallah/semantic_models/blob/main/";
+    ICON.na = "–";
+    var W = { yes: ["match", "yes"], part: ["partial", "partly"], no: ["refused", "no"], na: ["na", "n/a"], untested: ["na", "not tried"] };
+    var fv = E.fabric_version.split(":")[1].trim(), sv = E.sf_export_version.split(":")[1].trim();
+    // [what, [status, how] for Power BI, Snowflake, Databricks]
     var F = [
-      ["Both facts in one model", ["in", "One model, 7 tables"], ["in", "One semantic view"],
-        ["out", "One source per view: a bridge view over both facts, or two views joined in the query (q11, q12)"]],
-      ["Rows with no fact data kept (drill-across)", ["in", "Each measure is evaluated per group; a row stays when any measure has a value"],
-        ["in", "Each table is aggregated on its own, then merged on the dimensions"],
-        ["out", "One GROUP BY over the fact left-joined to its dimensions: 2023 is missing in q13. A calendar view, joined in the query"]],
-      ["Last year at any grain", ["in", "Time intelligence on the calendar"],
-        ["extra", "A copy of the fact per definition of last year (<code>time_shift</code> is in Private Preview, not on this account)"],
-        ["extra", "A window is tied to one grain; a view of the moved fact, joined in the query (q04 to q07)"]],
-      ["Ignore a filter (ALL)", ["in", "<code>CALCULATE</code> with <code>ALL</code> or <code>REMOVEFILTERS</code>"],
-        ["extra", "A copy of the fact through a copy of the dimension, or a one-row helper table"], ["in", "A window, <code>range: all</code>"]],
-      ["Total of what is shown (ALLSELECTED)", ["in", "<code>ALLSELECTED</code>"], ["in", "LOD <code>EXCLUDE DIMENSIONS</code> (Public Preview)"],
-        ["out", "A window function in the query (q08)"]],
-      ["Fixed at a grain (FIXED, ALLEXCEPT)", ["in", "<code>ALLEXCEPT</code>, or <code>REMOVEFILTERS</code> and <code>VALUES</code>"], ["in", "LOD <code>FIXED DIMENSIONS</code>"],
-        ["in", "A window over every column but the grain, listed one by one"]],
-      ["Total row in the same query", ["in", "<code>ROLLUPADDISSUBTOTAL</code>"], ["out", "No ROLLUP in a semantic query: a second query, unioned"],
-        ["in", "<code>GROUP BY ROLLUP</code>"]],
-      ["Reads an Ossie file", ["in", "Publish compiles Ossie with the DAX dialect into a Direct Lake model; the format strings are dropped"],
-        ["out", "Imports only 0.1.1, without its own dialect (FIXED, EXCLUDE DIMENSIONS); can't re-import its own export"],
-        ["out", "No Ossie import"]]
+      ["Imports an Ossie file",
+        ["yes", "Written to the lakehouse as a semantic view; Fabric's Publish compiles it into a Direct Lake semantic model"],
+        ["yes", "<code>SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML</code> creates a semantic view from it"],
+        ["no", "No Ossie import at all. Metric views are written in Databricks' own YAML"]],
+      ["Ossie version it reads",
+        ["yes", "<code>" + fv + "</code>"],
+        ["part", "<code>0.1.1</code> only"],
+        ["na", ""]],
+      ["Measures in its own dialect, inside the Ossie file",
+        ["yes", "The <code>DAX</code> dialect: all 16 measures, 0 errors, 0 warnings"],
+        ["no", "The <code>SNOWFLAKE</code> dialect is refused: its own LOD syntax, <code>FIXED</code> / <code>EXCLUDE DIMENSIONS</code>, fails with <em>unexpected 'FIXED'</em>"],
+        ["na", ""]],
+      ["Vendor extensions",
+        ["part", "<code>POWER_BI</code> format strings are accepted, then dropped by Publish without a warning"],
+        ["untested", ""],
+        ["na", ""]],
+      ["Exports its model as Ossie",
+        ["untested", ""],
+        ["yes", "<code>SYSTEM$READ_OSSIE_YAML_FROM_SEMANTIC_VIEW</code>, as <code>" + sv + "</code>"],
+        ["untested", ""]],
+      ["Re-imports its own export",
+        ["na", ""],
+        ["no", "Its own export is refused: <em>invalid identifier 'SALES.SALES_QUANTITY'</em>"],
+        ["na", ""]],
+      ["How the model in this repo is written",
+        ["yes", "In Ossie: the baseline plus the 16 measures in DAX, <a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">oss_dax_dialect.ossie.yaml</a>"],
+        ["no", "Not in Ossie: <code>CREATE SEMANTIC VIEW</code> DDL, <a href=\"" + GH + "semantic_model/snowflake/semantic_view.sql\">semantic_view.sql</a>"],
+        ["no", "Not in Ossie: 5 metric views in Databricks' YAML, <a href=\"" + GH + "semantic_model/dbx/\">semantic_model/dbx/</a>"]]
     ];
-    var FW = { in: ["match", "yes"], extra: ["partial", "with more"], out: ["refused", "no"] };
-    $("sup-feat").innerHTML = "<thead><tr><th>Feature</th>" + P.map(function (p) { return '<th><span class="dot ' + p + '"></span>' + NAME[p] + "</th>"; }).join("") +
+    $("sup-feat").innerHTML = "<thead><tr><th></th>" + P.map(function (p) { return '<th><span class="dot ' + p + '"></span>' + NAME[p] + "</th>"; }).join("") +
       "</tr></thead><tbody>" + F.map(function (f) {
         return "<tr><td>" + f[0] + "</td>" + [1, 2, 3].map(function (j) {
-          var w = FW[f[j][0]];
-          return '<td><span class="chip ' + w[0] + '"><i aria-hidden="true">' + ICON[w[0]] + "</i>" + w[1] + '</span><span class="why">' + f[j][1] + "</span></td>";
+          var w = W[f[j][0]];
+          return '<td><span class="chip ' + w[0] + '"><i aria-hidden="true">' + ICON[w[0]] + "</i>" + w[1] + "</span>" +
+            (f[j][1] ? '<span class="why">' + f[j][1] + "</span>" : "") + "</td>";
         }).join("") + "</tr>";
       }).join("") + "</tbody>";
+    $("sup-note").innerHTML = "The standard itself is at <code>" + esc(DATA.ossie.version) + "</code> on apache/ossie main, unreleased. " +
+      "No platform reads that version yet: Power BI reads <code>" + fv + "</code>, Snowflake <code>0.1.1</code>. See <a href=\"#ossie\">What Ossie supports</a> for what the standard itself can write.";
+
+    var EV = [
+      ["fabric", [["Publish of the Ossie + DAX file", E.fabric_publish, "semantic_model/fabric/publish_response.json"]]],
+      ["snowflake", [
+        ["Import of a 0.1.1 file", E.sf_import, "semantic_model/snowflake/tests/import_response.txt"],
+        ["Import with its own dialect (LOD)", E.sf_dialect, "semantic_model/snowflake/tests/lod_via_ossie_response.txt"],
+        ["Re-import of its own export", E.sf_reimport, "semantic_model/snowflake/tests/export_reimport_response.txt"]]],
+      ["dbx", []]
+    ];
+    $("sup-ev").innerHTML = EV.map(function (e) {
+      var body = e[1].length ? e[1].map(function (x) {
+        return '<div class="stack" style="gap:6px"><h4>' + x[0] + '</h4><pre><code>' + esc(x[1]) + '</code></pre><p class="sub"><a href="' + GH + x[2] + '">' + x[2].split("/").pop() + "</a></p></div>";
+      }).join("") : '<p class="sub">Nothing to hand it: Databricks has no Ossie import, so the model is written as metric views directly.</p>';
+      return '<div class="card stack ev"><h3><span class="dot ' + e[0] + '"></span>' + NAME[e[0]] + ": what it answered</h3>" + body + "</div>";
+    }).join("");
   })();
 
   // ---------- 1. drill across (q13, q12): a walkthrough in three steps, two routes
