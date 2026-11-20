@@ -13,7 +13,7 @@ and every query and answer beside the reference.
 This is not a benchmark. It is an educational repo about semantic modeling. All the models were built with AI; I
 know Power BI well, Databricks less, and Snowflake's LOD least. Any mistake is still mine. A personal project: the
 views are mine, not my employer's, and nothing here is endorsed by Microsoft, Snowflake, Databricks or the Apache
-Software Foundation. Found something wrong? Open an [issue](https://github.com/djouallah/ossie_bench/issues).
+Software Foundation.
 
 ## The model ([semantic_model/](semantic_model/))
 
