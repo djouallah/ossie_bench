@@ -1,0 +1,6 @@
+Fabric semantic views API (beta), lakehouse ossie:
+
+GET list the semantic views: HTTP 200 {"data": [{"name": "dax_context"}]}
+GET read the semantic view dax_context: HTTP 404 EntityNotFound: The requested resource could not be found
+
+The API publishes a view into a semantic model; it has no call that writes a model back out as Ossie.

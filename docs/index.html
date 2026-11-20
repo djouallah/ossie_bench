@@ -818,7 +818,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     }).join("") + "</tbody>";
 
     var E = DATA.evidence;
-    var W = { yes: ["match", "yes"], part: ["partial", "partly"], no: ["refused", "no"], na: ["na", "n/a"], untested: ["na", "not tried"] };
+    var W = { yes: ["match", "yes"], part: ["partial", "partly"], no: ["refused", "no"], na: ["na", "n/a"] };
     var fv = E.fabric_version.split(":")[1].trim(), sv = E.sf_export_version.split(":")[1].trim();
     function ev(path) { return ' <a href="' + GH + path + '">response</a>'; }
     var F = [
@@ -827,8 +827,11 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       ["Ossie version it reads", ["yes", "<code>" + fv + "</code>"], ["part", "<code>0.1.1</code> only"], ["na", ""]],
       ["Its own dialect inside the file", ["yes", "DAX: all 16 measures, 0 errors."],
         ["no", "The SNOWFLAKE dialect is refused: <code>FIXED</code>, <code>EXCLUDE DIMENSIONS</code>." + ev("semantic_model/snowflake/tests/lod_via_ossie_response.txt")], ["na", ""]],
-      ["Vendor extensions", ["part", "Format strings dropped without a warning."], ["untested", ""], ["na", ""]],
-      ["Exports Ossie", ["untested", ""], ["yes", "As <code>" + sv + "</code>."], ["untested", ""]],
+      ["Vendor extensions", ["part", "Its own <code>POWER_BI</code> format strings are dropped without a warning."],
+        ["part", "Its own <code>SNOWFLAKE</code> extension: a table metric is applied, an access modifier is kept but not applied. Another vendor's is dropped without a warning." + ev("semantic_model/snowflake/tests/extensions_response.txt")], ["na", ""]],
+      ["Exports Ossie", ["no", "No way back: the semantic views API lists views and publishes them; reading one returns 404." + ev("semantic_model/fabric/export_response.txt")],
+        ["yes", "As <code>" + sv + "</code>."],
+        ["no", "<code>export_to_ossie</code> exists but is disabled, and the SQL warehouse refuses the flag that enables it." + ev("semantic_model/dbx/export_to_ossie_response.txt")]],
       ["Re-imports its own export", ["na", ""], ["no", "<em>invalid identifier 'SALES.SALES_QUANTITY'</em>" + ev("semantic_model/snowflake/tests/export_reimport_response.txt")], ["na", ""]],
       ["This repo's model is in Ossie",["yes", "<a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">Ossie with the DAX dialect</a>"],
         ["no", "<a href=\"" + GH + "semantic_model/snowflake/semantic_view.sql\">Semantic view DDL</a>"], ["no", "<a href=\"" + GH + "semantic_model/dbx/\">Metric view YAML</a>"]]

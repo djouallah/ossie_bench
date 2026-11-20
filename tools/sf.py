@@ -7,6 +7,8 @@
     python tools/sf.py ossie-out   # SYSTEM$READ_OSSIE_YAML_FROM_SEMANTIC_VIEW
                                           #   -> semantic_model/snowflake/tests/export_from_semantic_view.ossie.yaml
     python tools/sf.py ossie-in    # SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML(semantic_model/snowflake/tests/dax_context.ossie.yaml)
+    python tools/sf.py ossie-ext   # the same import with vendor extensions, on a scratch view that is then dropped
+                                          #   -> semantic_model/snowflake/tests/extensions_response.txt
 
 Connection: the default connection of ~/.snowflake/config.toml. Commands chain: `setup export`.
 """
@@ -152,13 +154,59 @@ def ossie_in(conn):
     print(r)
 
 
+def ossie_ext(conn):
+    """Vendor extensions on import: the 0.1.1 test file with one extension at a time, imported into a scratch semantic
+    view, read back (SYSTEM$READ_OSSIE_YAML + DESCRIBE), then dropped. -> tests/extensions_response.txt"""
+    import copy
+    import yaml
+    base = yaml.safe_load((ROOT / "semantic_model" / "snowflake" / "tests" / "dax_context.ossie.yaml").read_text(encoding="utf-8"))
+    name, cur, out = "OSSIE_EXT_TEST", conn.cursor(), []
+
+    def ds(doc, n):
+        return next(d for d in doc["datasets"] if d["name"] == n)
+
+    def run(label, edit, check):
+        doc = copy.deepcopy(base)
+        doc["name"] = name
+        for d in doc["datasets"]:
+            d["source"] = d["source"].replace("DAX_CONTEXT_DEMO", SCHEMA)   # the test file's tables, now in DAX_DEMO.MODEL
+        edit(doc)
+        try:
+            r = cur.execute("CALL SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML(%s, %s)", (FQ, yaml.safe_dump(doc, sort_keys=False))).fetchone()[0]
+            back = cur.execute(f"SELECT SYSTEM$READ_OSSIE_YAML_FROM_SEMANTIC_VIEW('{FQ}.{name}')").fetchone()[0]
+            desc = [" ".join(str(x) for x in row) for row in cur.execute(f"DESCRIBE SEMANTIC VIEW {FQ}.{name}").fetchall()]
+            out.append(f"{label}:\n  import: {r}\n  {check(back, desc)}")
+        except snowflake.connector.errors.ProgrammingError as e:
+            out.append(f"{label}:\n  import: ERROR {' '.join(str(e).split())}")
+        finally:
+            cur.execute(f"DROP SEMANTIC VIEW IF EXISTS {FQ}.{name}")
+
+    run("SNOWFLAKE extension on a dataset, a table metric {metrics: [BUDGET_QTY_EXT]}",
+        lambda d: ds(d, "fact_budget").__setitem__("custom_extensions", [{"vendor_name": "SNOWFLAKE", "data": json.dumps(
+            {"metrics": [{"name": "BUDGET_QTY_EXT", "expr": "SUM(fact_budget.budget_qty)"}]})}]),
+        lambda back, desc: "applied: DESCRIBE lists metric BUDGET_QTY_EXT" if any("BUDGET_QTY_EXT" in x for x in desc) else "not applied")
+    run("SNOWFLAKE extension on a field, {access_modifier: private_access} on sales_qty",
+        lambda d: next(f for f in ds(d, "fact_sales")["fields"] if f["name"] == "sales_qty").__setitem__(
+            "custom_extensions", [{"vendor_name": "SNOWFLAKE", "data": json.dumps({"access_modifier": "private_access"})}]),
+        lambda back, desc: ("kept in the export: " + str("private_access" in back) + "; applied: " +
+                            str(not any("SALES_QTY" in x and "ACCESS_MODIFIER PUBLIC" in x for x in desc)) +
+                            " (DESCRIBE: " + next((x for x in desc if "SALES_QTY" in x and "ACCESS_MODIFIER" in x), "") + ")"))
+    run("POWER_BI extension on a metric, {formatString: #,##0}",
+        lambda d: d["metrics"][0].__setitem__("custom_extensions", [{"vendor_name": "POWER_BI", "data": json.dumps({"formatString": "#,##0"})}]),
+        lambda back, desc: "kept in the export: " + str("formatString" in back) + "; no warning")
+    p = ROOT / "semantic_model" / "snowflake" / "tests" / "extensions_response.txt"
+    p.write_text("SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML with vendor extensions (tests/dax_context.ossie.yaml, one at a time):\n\n" +
+                 "\n\n".join(out) + "\n", encoding="utf-8")
+    print(p.read_text(encoding="utf-8"))
+
+
 def main(argv):
     if not argv:
         print(__doc__)
         return
     conn = connect()
     for cmd in argv:
-        {"setup": setup, "view": view, "export": export, "ossie-out": ossie_out, "ossie-in": ossie_in}[cmd](conn)
+        {"setup": setup, "view": view, "export": export, "ossie-out": ossie_out, "ossie-in": ossie_in, "ossie-ext": ossie_ext}[cmd](conn)
 
 
 if __name__ == "__main__":

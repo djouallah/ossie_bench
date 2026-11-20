@@ -2,6 +2,7 @@
 
     python tools/dbx.py load      # data/*.parquet -> volume databricks_ne.ossie_demo.raw -> managed Delta tables
     python tools/dbx.py deploy    # semantic_model/dbx/<name>.metric_view.yaml -> metric view <name>_mv
+    python tools/dbx.py ossie-out # export_to_ossie on sales_mv -> semantic_model/dbx/export_to_ossie_response.txt
 
 Auth: the Databricks CLI, profile `analyst`; SQL warehouse 2x-small. Commands chain: `load deploy`.
 """
@@ -68,8 +69,22 @@ def deploy():
         print(f"created {view}")
 
 
+def ossie_out():
+    """export_to_ossie on sales_mv, and the flag it asks for. -> semantic_model/dbx/export_to_ossie_response.txt"""
+    out = []
+    for st in [f"SELECT * FROM export_to_ossie(TABLE({FQ}.sales_mv))", "SET spark.databricks.sql.metricView.exportToOssie.enabled = true"]:
+        try:
+            cols, rows = sql(st)
+            out.append(f"{st}\n  OK: {str(rows)[:2000]}")
+        except RuntimeError as e:
+            out.append(f"{st}\n  {' '.join(str(e).split())}")
+    p = ROOT / "semantic_model" / "dbx" / "export_to_ossie_response.txt"
+    p.write_text("On the SQL warehouse (2x-small):\n\n" + "\n\n".join(out) + "\n", encoding="utf-8")
+    print(p.read_text(encoding="utf-8"))
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(__doc__)
     for cmd in sys.argv[1:]:
-        {"load": load, "deploy": deploy}[cmd]()
+        {"load": load, "deploy": deploy, "ossie-out": ossie_out}[cmd]()

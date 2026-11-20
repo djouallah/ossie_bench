@@ -65,6 +65,9 @@ def evidence():
         "sf_import": sm / "snowflake" / "tests" / "import_response.txt",
         "sf_reimport": sm / "snowflake" / "tests" / "export_reimport_response.txt",
         "sf_dialect": sm / "snowflake" / "tests" / "lod_via_ossie_response.txt",
+        "sf_extensions": sm / "snowflake" / "tests" / "extensions_response.txt",
+        "fabric_export": sm / "fabric" / "export_response.txt",
+        "dbx_export": sm / "dbx" / "export_to_ossie_response.txt",
     }
     out = {k: p.read_text(encoding="utf-8").strip() for k, p in files.items()}
     head = lambda p: next(x for x in p.read_text(encoding="utf-8").splitlines() if x.startswith("version:"))  # noqa: E731

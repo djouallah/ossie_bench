@@ -1,0 +1,7 @@
+On the SQL warehouse (2x-small):
+
+SELECT * FROM export_to_ossie(TABLE(databricks_ne.ossie_demo.sales_mv))
+  [EXPORT_TO_OSSIE.FEATURE_DISABLED] Cannot read Apache Ossie YAML from the metric view. The export_to_ossie function is disabled. Please make sure "spark.databricks.sql.metricView.exportToOssie.enabled" is set to true. SQLSTATE: 42K0E == SQL == SELECT * FROM export_to_ossie(TABLE(databricks_ne.ossie_demo.sales_mv))
+
+SET spark.databricks.sql.metricView.exportToOssie.enabled = true
+  [CONFIG_NOT_AVAILABLE.WITHOUT_SUGGESTION] Configuration spark.databricks.sql.metricView.exportToOssie.enabled is not available. SQLSTATE: 42K0I

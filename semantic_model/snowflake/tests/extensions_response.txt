@@ -1,0 +1,13 @@
+SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML with vendor extensions (tests/dax_context.ossie.yaml, one at a time):
+
+SNOWFLAKE extension on a dataset, a table metric {metrics: [BUDGET_QTY_EXT]}:
+  import: Semantic view was successfully created from OSI YAML.
+  applied: DESCRIBE lists metric BUDGET_QTY_EXT
+
+SNOWFLAKE extension on a field, {access_modifier: private_access} on sales_qty:
+  import: Semantic view was successfully created from OSI YAML.
+  kept in the export: True; applied: False (DESCRIBE: FACT SALES_QTY FACT_SALES ACCESS_MODIFIER PUBLIC)
+
+POWER_BI extension on a metric, {formatString: #,##0}:
+  import: Semantic view was successfully created from OSI YAML.
+  kept in the export: False; no warning

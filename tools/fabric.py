@@ -3,6 +3,7 @@
     python tools/fabric.py load       # data/*.parquet -> Delta tables in lakehouse `ossie` (workspace `app`)
     python tools/fabric.py publish    # semantic_model/fabric/oss_dax_dialect.ossie.yaml -> Context/Semantic Views/, then
                                       #   Fabric's Publish -> Direct Lake semantic model `dax_context`
+    python tools/fabric.py ossie-out  # the semantic views API, read back -> semantic_model/fabric/export_response.txt
 
 Auth: `az login` (tenant fabriccat.net). Commands chain: `load publish`.
 """
@@ -130,6 +131,25 @@ def publish():
     print("publish:", json.dumps(result.get("summary", result))[:500])
 
 
+def ossie_out():
+    """Is there a way back to Ossie? The semantic views API: list the views, then read one.
+    -> semantic_model/fabric/export_response.txt"""
+    ws = workspace_id()
+    lh = lakehouse_id(ws)
+    out = []
+    for what, url in [("list the semantic views", f"{API}/workspaces/{ws}/lakehouses/{lh}/semanticViews?beta=true"),
+                      (f"read the semantic view {VIEW}", f"{API}/workspaces/{ws}/lakehouses/{lh}/semanticViews/{VIEW}?beta=true")]:
+        try:
+            status, body, _ = http("GET", url)
+            out.append(f"GET {what}: HTTP {status} {json.dumps(body) if not isinstance(body, bytes) else body[:500]}")
+        except urllib.error.HTTPError as e:
+            msg = json.loads(e.read().decode(errors="replace"))
+            out.append(f"GET {what}: HTTP {e.code} {msg.get('errorCode')}: {msg.get('message')}")
+    p = ROOT / "semantic_model" / "fabric" / "export_response.txt"
+    p.write_text("Fabric semantic views API (beta), lakehouse " + LAKEHOUSE + ":\n\n" + "\n".join(out) +
+                 "\n\nThe API publishes a view into a semantic model; it has no call that writes a model back out as Ossie.\n", encoding="utf-8")
+    print(p.read_text(encoding="utf-8"))
+
 
 # --- DAX ------------------------------------------------------------------------------------------------------------
 def dataset_id(ws, name):
@@ -166,4 +186,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(__doc__)
     for cmd in sys.argv[1:]:
-        {"load": load, "publish": publish}[cmd]()
+        {"load": load, "publish": publish, "ossie-out": ossie_out}[cmd]()
