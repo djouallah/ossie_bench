@@ -1,0 +1,1 @@
+ERROR 000904 (42000): Uncaught exception of type 'EXPRESSION_ERROR' on line 3 at position 23 : SQL compilation error: error line 15 at position 489 invalid identifier 'SALES.SALES_QUANTITY'

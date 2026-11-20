@@ -1,0 +1,32 @@
+version: '1.1'
+comment: 'Bridge: both facts in one metric view, through their shared keys (calendar, category, country).'
+source: SELECT c.date_key, cat.category, co.country FROM databricks_ne.ossie_demo.dim_calendar c CROSS JOIN databricks_ne.ossie_demo.dim_category
+  cat CROSS JOIN databricks_ne.ossie_demo.dim_country co
+joins:
+- name: sales
+  source: SELECT f.sale_date, p.category, s.country, f.sales_qty FROM databricks_ne.ossie_demo.fact_sales f JOIN databricks_ne.ossie_demo.dim_product
+    p ON f.product_id = p.product_id JOIN databricks_ne.ossie_demo.dim_store s ON f.store_id = s.store_id
+  cardinality: one_to_many
+  'on': source.date_key = sales.sale_date AND source.category = sales.category AND source.country = sales.country
+- name: budget
+  source: databricks_ne.ossie_demo.fact_budget
+  cardinality: one_to_many
+  'on': source.date_key = budget.month_start AND source.category = budget.category AND source.country = budget.country
+fields:
+- name: date_key
+  expr: date_key
+- name: year
+  expr: YEAR(date_key)
+- name: month_start
+  expr: TRUNC(date_key, 'MM')
+- name: category
+  expr: category
+- name: country
+  expr: country
+measures:
+- name: sales_quantity
+  expr: SUM(sales.sales_qty)
+- name: budget_quantity
+  expr: SUM(budget.budget_qty)
+- name: sales_vs_budget_pct
+  expr: (MEASURE(sales_quantity) - MEASURE(budget_quantity)) / NULLIF(MEASURE(budget_quantity), 0)

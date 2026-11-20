@@ -1,0 +1,11 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    dim_calendar[date_key],
+    FILTER (
+        ALL ( dim_calendar[date_key] ),
+        dim_calendar[date_key] >= DATE ( 2021, 2, 25 ) && dim_calendar[date_key] <= DATE ( 2021, 3, 3 )
+    ),
+    "sales_quantity", [sales_quantity],
+    "sales_qty_ly", [sales_qty_ly]
+)
+ORDER BY dim_calendar[date_key]

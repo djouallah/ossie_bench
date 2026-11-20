@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One semantic model, three platforms</title>
+<meta name="description" content="How Power BI, Snowflake and Databricks answer the same 13 questions over one model, explained through drill-across.">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --sunken: #f1f0ec;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --line: #e1e0d9; --line-2: #c3c2b7; --ring: rgba(11,11,11,.10);
+  --p-fabric: #2a78d6; --p-snowflake: #eb6834; --p-dbx: #1baf7a;
+  --good: #0ca30c; --good-ink: #006300; --warn: #fab219; --crit: #d03b3b;
+  --good-bg: #e7f5e7; --warn-bg: #fdf1d2; --crit-bg: #fae6e6; --note-bg: #eaf2fc;
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --sunken: #232322;
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --line: #2c2c2a; --line-2: #383835; --ring: rgba(255,255,255,.10);
+    --p-fabric: #3987e5; --p-snowflake: #d95926; --p-dbx: #199e70;
+    --good-ink: #0ca30c;
+    --good-bg: #132a13; --warn-bg: #33290c; --crit-bg: #331616; --note-bg: #14233a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --sunken: #232322;
+  --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --line: #2c2c2a; --line-2: #383835; --ring: rgba(255,255,255,.10);
+  --p-fabric: #3987e5; --p-snowflake: #d95926; --p-dbx: #199e70;
+  --good-ink: #0ca30c;
+  --good-bg: #132a13; --warn-bg: #33290c; --crit-bg: #331616; --note-bg: #14233a;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: inherit; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+code, pre { font-family: var(--mono); font-size: 12.5px; }
+code { background: var(--sunken); padding: 1px 5px; border-radius: 4px; }
+pre { margin: 0; padding: 12px 14px; background: var(--sunken); border-radius: 8px; overflow-x: auto;
+  line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre code { background: none; padding: 0; }
+h1, h2, h3, h4, p { margin: 0; }
+h1 { font-size: 26px; line-height: 1.2; letter-spacing: -.01em; }
+h2 { font-size: 21px; line-height: 1.25; letter-spacing: -.01em; }
+h3 { font-size: 16px; }
+h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
+.lead { color: var(--ink-2); max-width: 76ch; }
+.sub { color: var(--ink-2); font-size: 13.5px; }
+.muted { color: var(--muted); }
+
+/* top bar */
+.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--page) 88%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 18px; height: 52px; }
+.top strong { font-size: 14px; white-space: nowrap; }
+.top nav { display: flex; gap: 4px; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.top nav a { padding: 6px 10px; border-radius: 6px; text-decoration: none; color: var(--ink-2); font-size: 13.5px;
+  white-space: nowrap; }
+.top nav a:hover { background: var(--sunken); color: var(--ink); }
+.btn { font: inherit; font-size: 13px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line-2);
+  border-radius: 6px; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
+.btn:hover { color: var(--ink); }
+
+section { padding: 44px 0 8px; }
+.hero { padding: 40px 0 0; }
+.hero p { margin-top: 10px; font-size: 16px; }
+.head { display: grid; gap: 8px; margin-bottom: 20px; }
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 18px; }
+.grid2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.stack { display: grid; gap: 12px; align-content: start; }
+.grid2 > *, .grid3 > *, .stack > *, .lane > *, .branch > *, .branches > *, .pair > *, .explorer > * { min-width: 0; }
+
+/* tables */
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+th { font-weight: 600; color: var(--ink-2); font-size: 12px; background: var(--sunken); }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+td.bad { background: var(--crit-bg); box-shadow: inset 2px 0 0 var(--crit); }
+tr.gone td { background: var(--crit-bg); color: var(--ink-2); font-style: italic; }
+tr.hot td { background: var(--note-bg); }
+tr.total td { font-weight: 600; }
+.wrapcell td, .wrapcell th { white-space: normal; vertical-align: top; }
+
+/* status */
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px 1px 6px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; line-height: 1.6; white-space: nowrap; color: var(--ink); }
+.chip i { font-style: normal; font-weight: 700; }
+.chip.match { background: var(--good-bg); } .chip.match i { color: var(--good-ink); }
+.chip.differs, .chip.refused { background: var(--crit-bg); } .chip.differs i, .chip.refused i { color: var(--crit); }
+.chip.partial { background: var(--warn-bg); } .chip.partial i { color: #9a6a00; }
+:root[data-theme="dark"] .chip.partial i { color: var(--warn); }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .chip.partial i { color: var(--warn); } }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; }
+.dot.fabric { background: var(--p-fabric); } .dot.snowflake { background: var(--p-snowflake); }
+.dot.dbx { background: var(--p-dbx); }
+
+/* flow diagrams */
+.lane { display: grid; gap: 10px; align-content: start; }
+.lane > header { display: grid; gap: 2px; }
+.branches { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.branch { display: grid; gap: 6px; align-content: start; }
+.box { border: 1px solid var(--line-2); border-radius: 8px; padding: 8px 10px; background: var(--surface); }
+.box b { font-family: var(--mono); font-size: 12.5px; }
+.box span { display: block; font-size: 12px; color: var(--ink-2); }
+.op { text-align: center; font-size: 12px; color: var(--ink-2); line-height: 1.3; }
+.op::before { content: "↓"; display: block; color: var(--muted); }
+.op b { font-family: var(--mono); font-weight: 600; color: var(--ink); }
+.verdict { border-radius: 8px; padding: 9px 12px; font-size: 13.5px; }
+.verdict.ok { background: var(--good-bg); } .verdict.no { background: var(--crit-bg); }
+.note { background: var(--note-bg); border-radius: 8px; padding: 12px 14px; font-size: 13.5px; }
+
+/* platform cards */
+.plat > header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.who { font-size: 20px; font-weight: 650; letter-spacing: -.01em; line-height: 1.2; }
+ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 8px; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 13.5px; }
+ol.steps li::before { content: counter(s); width: 22px; height: 22px; border-radius: 50%; background: var(--sunken);
+  color: var(--ink-2); font-size: 12px; font-weight: 600; display: grid; place-items: center; }
+details > summary { cursor: pointer; font-size: 13px; color: var(--ink-2); }
+details[open] > summary { margin-bottom: 8px; }
+
+/* scoreboard */
+.tile .big { font-size: 40px; font-weight: 650; letter-spacing: -.02em; line-height: 1.1; }
+.tile .big small { font-size: 18px; font-weight: 500; color: var(--muted); }
+.tile dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13px; }
+.tile dt { color: var(--muted); } .tile dd { margin: 0; }
+.bar { height: 6px; border-radius: 3px; background: var(--sunken); overflow: hidden; }
+.bar span { display: block; height: 100%; border-radius: 3px; background: var(--good); }
+#grid td:first-child { white-space: normal; min-width: 200px; }
+#grid td { vertical-align: top; }
+#grid td .why { display: block; margin-top: 4px; color: var(--ink-2); font-size: 12.5px; white-space: normal;
+  min-width: 190px; }
+#grid tbody tr { cursor: pointer; }
+#grid tbody tr:hover td { background: var(--sunken); }
+
+/* explorer */
+.explorer { display: grid; grid-template-columns: 270px 1fr; gap: 16px; align-items: start; }
+.qlist { display: grid; gap: 2px; position: sticky; top: 64px; max-height: calc(100vh - 80px); overflow-y: auto; }
+.qlist button { font: inherit; text-align: left; background: none; border: 0; border-radius: 6px; padding: 7px 10px;
+  color: var(--ink-2); cursor: pointer; display: grid; grid-template-columns: 30px 1fr; gap: 6px; font-size: 13.5px; }
+.qlist button:hover { background: var(--sunken); }
+.qlist button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--ring); }
+.qlist button b { font-family: var(--mono); font-size: 12px; color: var(--muted); padding-top: 2px; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button { font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink-2); cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
+.tabs button[aria-selected="true"] { border-color: var(--ink); color: var(--ink); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 960px) {
+  .grid2, .grid3, .explorer, .pair { grid-template-columns: 1fr; }
+  .qlist { position: static; max-height: none; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
+@media (max-width: 560px) {
+  .wrap { padding: 0 16px; } .branches { grid-template-columns: 1fr; } .top strong { display: none; }
+  h1 { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <strong>One model, three platforms</strong>
+  <nav>
+    <a href="#idea">The idea</a>
+    <a href="#platforms">How each platform does it</a>
+    <a href="#grain">One grain</a>
+    <a href="#score">Scoreboard</a>
+    <a href="#questions">Questions</a>
+  </nav>
+  <button class="btn" id="theme" type="button">Dark</button>
+  <a class="btn" href="https://github.com/djouallah/semantic_models">GitHub</a>
+</div></div>
+
+<div class="wrap">
+
+<div class="hero head">
+  <h1>One semantic model, three platforms</h1>
+  <p class="lead">One model with two facts at two grains (daily sales, monthly budget), built natively on Power BI,
+  Snowflake and Databricks, then asked the same 13 questions. Every platform can reach every answer. What differs
+  is who does the work: the engine, the model, or the person writing the query.</p>
+</div>
+
+<!-- ============================== 1. the idea -->
+<section id="idea">
+  <div class="head">
+    <h2>The idea: drill across</h2>
+    <p class="lead">Kimball's rule for a question that touches more than one table: group each table on its own,
+    down to the dimension they share, then merge the results on that dimension. Never join the tables first.</p>
+    <p class="lead">The smallest example in this repo: <b>days in the calendar and sales, by year</b>. The calendar
+    runs to 2023. Sales stop at 2022.</p>
+  </div>
+  <div class="grid2">
+    <div class="card lane">
+      <header><h3>Drill across</h3><p class="sub">Two group-bys, then a merge.</p></header>
+      <div class="branches">
+        <div class="branch">
+          <div class="box"><b>dim_calendar</b><span>1,461 rows, 2020 to 2023</span></div>
+          <div class="op"><b>GROUP BY year</b></div>
+          <div id="d-cal"></div>
+        </div>
+        <div class="branch">
+          <div class="box"><b>fact_sales</b><span>2,411,200 rows, 2020 to 2022</span></div>
+          <div class="op"><b>GROUP BY year</b></div>
+          <div id="d-sales"></div>
+        </div>
+      </div>
+      <div class="op"><b>merge on year</b> (full outer join)</div>
+      <div id="d-merged"></div>
+      <div class="verdict ok"><b>4 rows.</b> 2023 is there: 365 days, no sales.</div>
+    </div>
+    <div class="card lane">
+      <header><h3>Single pass</h3><p class="sub">One join, then one group-by.</p></header>
+      <div class="box"><b>fact_sales</b> <span style="display:inline">LEFT JOIN</span> <b>dim_calendar</b>
+        <span>one row per sale: 2,411,200 rows, none of them dated 2023</span></div>
+      <div class="op"><b>GROUP BY year</b></div>
+      <div id="d-single"></div>
+      <div class="verdict no"><b>3 rows.</b> 2023 is gone, and nothing says so. The day count is the days that
+      had a sale, which happens to equal the calendar here.</div>
+    </div>
+  </div>
+
+  <div class="card stack" style="margin-top:16px">
+    <header><h3>The same move with two facts</h3>
+      <p class="sub">Actual against budget by category, 2021. Sales are daily by store and product; the budget is
+      monthly by country and category. Each is summed on its own, then merged on category. The percentage is
+      computed after the merge, from the two totals.</p></header>
+    <div class="grid3" style="align-items:start">
+      <div class="branch"><div class="box"><b>fact_sales</b><span>grouped by category, through product</span></div>
+        <div id="f-sales"></div></div>
+      <div class="branch"><div class="box"><b>fact_budget</b><span>grouped by category, its own column</span></div>
+        <div id="f-budget"></div></div>
+      <div class="branch"><div class="box"><b>merged on category</b><span>then (sales - budget) / budget</span></div>
+        <div id="f-merged"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== 2. platforms -->
+<section id="platforms">
+  <div class="head">
+    <h2>How each platform does it</h2>
+    <p class="lead">The same question, days and sales by year, asked as plainly as each platform allows. The steps
+    under Snowflake and Databricks are read from their own query plans.</p>
+  </div>
+  <div class="grid3" style="align-items:start">
+
+    <div class="card stack plat">
+      <header><h3><span class="dot fabric"></span>Power BI</h3><span class="sub">1 model · 7 tables · 16 measures</span></header>
+      <div><h4>Who drills across</h4><div class="who">The engine</div></div>
+      <ol class="steps">
+        <li><div>The groups come from the column asked for, <code>dim_calendar[year]</code>: four years.</div></li>
+        <li><div>Each expression is evaluated per year against its own table: the day count on the calendar, the
+          sales measure on the fact, filtered through the relationship.</div></li>
+        <li><div>A year is kept when any expression has a value, so 2023 stays with a blank for sales.</div></li>
+      </ol>
+      <p class="sub">From how <code>SUMMARIZECOLUMNS</code> is defined. Power BI shows no SQL plan for this.</p>
+      <div id="p-fabric" class="stack"></div>
+    </div>
+
+    <div class="card stack plat">
+      <header><h3><span class="dot snowflake"></span>Snowflake</h3><span class="sub">1 semantic view · 16 logical tables · 19 metrics</span></header>
+      <div><h4>Who drills across</h4><div class="who">The engine</div></div>
+      <ol class="steps">
+        <li><div><code>Aggregate</code> the calendar by year: <code>COUNT(date_key)</code>.</div></li>
+        <li><div><code>Aggregate</code> the sales by date, join them to the calendar, aggregate again by year:
+          <code>SUM(sales_qty)</code>.</div></li>
+        <li><div><code>FullOuterJoin</code> the two results on year.</div></li>
+      </ol>
+      <p class="sub">From <code>EXPLAIN</code> on the query below. The semantic view compiles to drill-across.</p>
+      <div id="p-snowflake" class="stack"></div>
+    </div>
+
+    <div class="card stack plat">
+      <header><h3><span class="dot dbx"></span>Databricks</h3><span class="sub">5 metric views · one source each · 20 measures</span></header>
+      <div><h4>Who drills across</h4><div class="who">You, in the query</div></div>
+      <ol class="steps">
+        <li><div>Scan <code>fact_sales</code>, the source of the metric view.</div></li>
+        <li><div><code>LeftOuter</code> join the calendar onto it. Still one row per sale.</div></li>
+        <li><div>One <code>GroupingAgg</code> by year over that rowset computes both columns.</div></li>
+      </ol>
+      <p class="sub">From <code>EXPLAIN FORMATTED</code>. The calendar is only reachable through a sale, so a year
+      without sales has no rows.</p>
+      <div id="p-dbx" class="stack"></div>
+    </div>
+  </div>
+
+  <div class="card stack" style="margin-top:16px">
+    <header><h3>Drill-across by hand on Databricks</h3>
+      <p class="sub">The calendar gets its own metric view. The query groups each view on its own and merges the
+      two, which is the plan Snowflake builds for you.</p></header>
+    <div class="pair" id="p-dbx-fix"></div>
+  </div>
+
+  <p class="note" style="margin-top:16px">The Apache Ossie draft (0.3.0.dev0) writes drill-across down as the rule
+  for any engine: metrics are evaluated in branches, one per home dataset, and the branches are combined on the
+  dimension keys.
+  <a href="https://github.com/apache/ossie/blob/main/core-spec/wide_table_semantics.md">wide_table_semantics.md, sections 5.4 and 5.5</a>.</p>
+</section>
+
+<!-- ============================== 3. one grain -->
+<section id="grain">
+  <div class="head">
+    <h2>A metric view is one grain</h2>
+    <p class="lead">A metric view is one source table with its dimensions joined on, so everything in it lives at
+    the grain of that source. That is why 2023 disappears above, and it is also why "last year" behaves the way
+    it does. Each platform defines it differently:</p>
+  </div>
+  <div class="grid3" style="align-items:start">
+    <div class="card stack"><h3><span class="dot fabric"></span>Power BI: move the filter</h3>
+      <pre><code>CALCULATE (
+  [sales_quantity],
+  SAMEPERIODLASTYEAR ( dim_calendar[date_key] )
+)</code></pre>
+      <p class="sub">The dates in the current group are shifted a year, then the measure is evaluated. It works
+      at any grain because the group decides which dates are shifted.</p></div>
+    <div class="card stack"><h3><span class="dot snowflake"></span>Snowflake: another branch</h3>
+      <pre><code>sales_ly AS FACT_SALES  -- a second logical table
+sales_ly.sale_date_ly AS DATEADD('year', 1, sale_date)
+sales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)</code></pre>
+      <p class="sub">A copy of the fact with its date moved a year, related to the calendar through the moved
+      date. "Last year" is one more table to drill across, so it also works at any grain.</p></div>
+    <div class="card stack"><h3><span class="dot dbx"></span>Databricks: a window</h3>
+      <pre><code>- name: sales_qty_ly
+  expr: SUM(sales_qty)
+  window:
+  - order: date_key
+    range: current
+    offset: -1 year
+    semiadditive: last
+  # then one entry per other calendar column</code></pre>
+      <p class="sub">A window ordered by one column, the date. Asked by date it is right. Asked by month, each
+      month gets one day's value, with no error.</p></div>
+  </div>
+  <div class="card stack" style="margin-top:16px">
+    <header><h3 id="g-title"></h3><p class="sub">Sales last year, as each route returned it. Marked cells differ
+    from the reference.</p></header>
+    <div id="g-table"></div>
+    <p class="sub">A measure per grain fixes the months and still gets the total wrong. The route that matches
+    is a second metric view of the fact with its date moved a year, joined in the query: Snowflake's extra
+    branch, done by hand.</p>
+  </div>
+</section>
+
+<!-- ============================== 4. scoreboard -->
+<section id="score">
+  <div class="head">
+    <h2>Scoreboard</h2>
+    <p class="lead">Each answer is compared with a reference written in plain SQL and run on DuckDB, which no
+    vendor owns. A platform's native features used as designed count as a plain query. Copies of the fact,
+    helper tables, extra views and logic moved into the query are named.</p>
+  </div>
+  <div class="grid3" id="tiles"></div>
+  <div class="tw" style="margin-top:16px"><table id="grid" class="wrapcell"></table></div>
+  <p class="sub" style="margin-top:8px">Select a row to open the question.</p>
+</section>
+
+<!-- ============================== 5. questions -->
+<section id="questions">
+  <div class="head"><h2>The 13 questions</h2>
+    <p class="lead">Every query as it was run, and every answer beside the reference.</p></div>
+  <div class="explorer">
+    <div class="qlist" id="qlist" role="tablist" aria-label="Questions"></div>
+    <div class="card stack" id="qview"></div>
+  </div>
+</section>
+
+<footer>Built from <code>questions/*/results.csv</code> by <code>tools/build_dashboard.py</code>.
+  Source and models: <a href="https://github.com/djouallah/semantic_models">github.com/djouallah/semantic_models</a>.</footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var Q = {}; DATA.questions.forEach(function (q) { Q[q.id] = q; });
+  var NAME = { fabric: "Power BI", snowflake: "Snowflake", dbx: "Databricks" };
+  var ICON = { match: "✓", differs: "≠", partial: "◐", refused: "✕" };
+  var PLATS = ["fabric", "snowflake", "dbx"];
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function label(l) { var p = l.split(" ")[0]; return NAME[p] + l.slice(p.length); }
+  function chip(s) { return s ? '<span class="chip ' + s + '"><i aria-hidden="true">' + ICON[s] + "</i>" + s + "</span>" : ""; }
+  function fmt(col, v, isMeasure) {
+    if (v === "" || v == null) return '<span class="muted">' + (isMeasure ? "–" : "Total") + "</span>";
+    if (!isMeasure || isNaN(v)) return esc(v);
+    var x = Number(v);
+    if (/pct|share/.test(col)) return (x * 100).toFixed(2) + "%";
+    return x.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  }
+  function head(cols, measures) {
+    return "<thead><tr>" + cols.map(function (c, i) { return '<th class="' + (measures[i] ? "n" : "") + '">' + esc(c) + "</th>"; }).join("") + "</tr></thead>";
+  }
+  // rows: arrays; opt: {diff, missing, hot(row) -> bool}
+  function table(cols, measures, rows, opt) {
+    opt = opt || {};
+    var h = '<div class="tw"><table>' + head(cols, measures) + "<tbody>";
+    rows.forEach(function (r, ri) {
+      var cls = (opt.hot && opt.hot(r) ? "hot " : "") + (!measures[0] && r[0] === "" ? "total" : "");
+      h += '<tr class="' + cls + '">' + r.map(function (v, i) {
+        var bad = opt.diff && opt.diff[ri] && opt.diff[ri][i];
+        return '<td class="' + (measures[i] ? "n" : "") + (bad ? " bad" : "") + '">' + fmt(cols[i], v, measures[i]) + "</td>";
+      }).join("") + "</tr>";
+    });
+    (opt.missing || []).forEach(function (r) {
+      h += '<tr class="gone">' + r.map(function (v, i) {
+        return '<td class="' + (measures[i] ? "n" : "") + '">' + (measures[i] ? "missing" : fmt(cols[i], v, false)) + "</td>";
+      }).join("") + "</tr>";
+    });
+    return h + "</tbody></table></div>";
+  }
+  function pick(q, names) {             // a sub-table of the reference: columns by name
+    var idx = names.map(function (n) { return q.columns.indexOf(n); });
+    return { cols: names, measures: idx.map(function (i) { return q.measures[i]; }),
+             rows: function (rows) { return rows.map(function (r) { return idx.map(function (i) { return r[i]; }); }); } };
+  }
+  function run(q, l) { return q.runs.filter(function (r) { return r.label === l; })[0]; }
+  function runTable(q, r) { return table(q.columns, q.measures, r.rows, { diff: r.diff, missing: r.missing }); }
+
+  // ---------- 1. the idea (q13, q12)
+  (function () {
+    var q = Q.q13, ref = q.expected.rows, is2023 = function (r) { return r[0] === "2023"; };
+    var cal = pick(q, ["year", "day_count"]), sal = pick(q, ["year", "sales_quantity"]);
+    $("d-cal").innerHTML = table(cal.cols, cal.measures, cal.rows(ref), { hot: is2023 });
+    $("d-sales").innerHTML = table(sal.cols, sal.measures, sal.rows(ref).filter(function (r) { return r[1] !== ""; }));
+    $("d-merged").innerHTML = table(q.columns, q.measures, ref, { hot: is2023 });
+    $("d-single").innerHTML = runTable(q, run(q, "dbx"));
+
+    var f = Q.q12, rows = f.expected.rows.filter(function (r) { return r[0] !== ""; });
+    var a = pick(f, ["category", "sales_quantity"]), b = pick(f, ["category", "budget_quantity"]),
+        m = pick(f, ["category", "sales_quantity", "budget_quantity", "sales_vs_budget_pct"]);
+    $("f-sales").innerHTML = table(a.cols, a.measures, a.rows(rows));
+    $("f-budget").innerHTML = table(b.cols, b.measures, b.rows(rows));
+    $("f-merged").innerHTML = table(m.cols, m.measures, m.rows(rows));
+  })();
+
+  // ---------- 2. platforms (q13)
+  (function () {
+    var q = Q.q13;
+    PLATS.forEach(function (p) {
+      var r = run(q, p);
+      $("p-" + p).innerHTML = "<pre><code>" + esc(r.code) + "</code></pre>" +
+        "<div>" + chip(r.status) + ' <span class="sub">' + r.rows.length + " rows returned</span></div>" + runTable(q, r);
+    });
+    var w = run(q, "dbx (workaround)");
+    $("p-dbx-fix").innerHTML = "<pre><code>" + esc(w.code) + "</code></pre>" +
+      '<div class="stack"><div>' + chip(w.status) + ' <span class="sub">' + w.rows.length + " rows returned</span></div>" + runTable(q, w) + "</div>";
+  })();
+
+  // ---------- 3. one grain (q04): one measure across every route
+  (function () {
+    var q = Q.q04, ci = q.columns.indexOf("sales_qty_ly"), cols = ["month_start", "reference"], meas = [false, true];
+    q.runs.forEach(function (r) { cols.push(label(r.label)); meas.push(true); });
+    var rows = q.expected.rows.map(function (e, i) { return [e[0], e[ci]].concat(q.runs.map(function (r) { return r.rows[i] ? r.rows[i][ci] : ""; })); });
+    var diff = q.expected.rows.map(function (e, i) { return [false, false].concat(q.runs.map(function (r) { return !!(r.diff[i] && r.diff[i][ci]); })); });
+    $("g-title").textContent = q.id + ": " + q.title;
+    var h = '<div class="tw"><table><thead><tr><th>month</th><th class="n">Reference</th>' +
+      q.runs.map(function (r) { return '<th class="n">' + esc(label(r.label)) + "<br>" + chip(r.status) + "</th>"; }).join("") + "</tr></thead><tbody>";
+    rows.forEach(function (r, ri) {
+      h += '<tr class="' + (r[0] === "" ? "total" : "") + '">' + r.map(function (v, i) {
+        return '<td class="' + (meas[i] ? "n" : "") + (diff[ri][i] ? " bad" : "") + '">' + fmt("x", v, meas[i]) + "</td>";
+      }).join("") + "</tr>";
+    });
+    $("g-table").innerHTML = h + "</tbody></table></div>";
+  })();
+
+  // ---------- 4. scoreboard
+  (function () {
+    var facts = {
+      fabric: [["Models", "1"], ["Tables", "7"], ["Measures", "16"], ["Queries", "one per question"]],
+      snowflake: [["Models", "1 semantic view"], ["Tables", "16 logical over 9 physical"], ["Measures", "19 (6 over LOD facts)"], ["Queries", "plus a second query for totals"]],
+      dbx: [["Models", "5 metric views"], ["Tables", "one source per view"], ["Measures", "20 across 4 views (9 with windows)"], ["Queries", "plus joins between views"]]
+    };
+    var n = DATA.questions.length;
+    $("tiles").innerHTML = PLATS.map(function (p) {
+      var plain = 0, any = 0;
+      DATA.questions.forEach(function (q) {
+        if ((run(q, p) || {}).status === "match") plain++;
+        if (q.runs.some(function (r) { return r.platform === p && r.status === "match"; })) any++;
+      });
+      return '<div class="card stack tile"><h3><span class="dot ' + p + '"></span>' + NAME[p] + "</h3>" +
+        '<div><div class="big">' + plain + " <small>of " + n + "</small></div>" +
+        '<div class="sub">plain queries match the reference</div></div>' +
+        '<div class="bar" role="img" aria-label="' + plain + " of " + n + '"><span style="width:' + (100 * plain / n) + '%"></span></div>' +
+        '<div class="sub"><b>' + any + " of " + n + "</b> after more model or query logic</div>" +
+        "<dl>" + facts[p].map(function (f) { return "<dt>" + f[0] + "</dt><dd>" + f[1] + "</dd>"; }).join("") + "</dl></div>";
+    }).join("");
+
+    function why(s) {
+      s = s.replace(/^\**(match|differs|partial|refused)\**\s*[:,;.]?\s*/, "").replace(/^\((.*)\)$/, "$1");
+      s = esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<code>$1</code>");
+      return s ? '<span class="why">' + s.charAt(0).toUpperCase() + s.slice(1) + "</span>" : "";
+    }
+    $("grid").innerHTML = "<thead><tr><th>Question</th>" + PLATS.map(function (p) { return "<th>" + NAME[p] + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      DATA.questions.map(function (q) {
+        return '<tr data-q="' + q.id + '"><td><a href="#' + q.id + '"><b>' + q.id + "</b> " + esc(q.title) + "</a></td>" +
+          PLATS.map(function (p) { return "<td>" + chip((run(q, p) || {}).status) + why(q.notes[p] || "") + "</td>"; }).join("") + "</tr>";
+      }).join("") + "</tbody>";
+    $("grid").addEventListener("click", function (e) {
+      var tr = e.target.closest("tr[data-q]"); if (tr) { location.hash = tr.dataset.q; }
+    });
+  })();
+
+  // ---------- 5. explorer
+  var cur = { q: "q13", tab: "fabric" };
+  function show(id, tab, scroll) {
+    var q = Q[id]; if (!q) return;
+    cur.q = id; cur.tab = tab && (tab === "expected" || run(q, tab)) ? tab : q.runs[0].label;
+    Array.prototype.forEach.call($("qlist").children, function (b) { b.setAttribute("aria-selected", b.dataset.q === id); });
+    var r = cur.tab === "expected" ? null : run(q, cur.tab);
+    var tabs = '<button type="button" data-tab="expected" aria-selected="' + (cur.tab === "expected") + '">Reference (DuckDB)</button>' +
+      q.runs.map(function (x) { return '<button type="button" data-tab="' + esc(x.label) + '" aria-selected="' + (x.label === cur.tab) + '">' + esc(label(x.label)) + " " + chip(x.status) + "</button>"; }).join("");
+    var body;
+    if (!r) {
+      body = '<pre><code>' + esc(q.expected.code) + "</code></pre>" + table(q.columns, q.measures, q.expected.rows);
+    } else {
+      body = '<p class="sub"><code>questions/' + q.folder + "/" + r.file + "</code></p><pre><code>" + esc(r.code) + "</code></pre>" +
+        '<div class="pair"><div class="stack"><h4>' + esc(label(r.label)) + " returned</h4>" +
+        (r.error ? '<div class="verdict no">' + esc(r.error) + "</div>" : runTable(q, r)) + "</div>" +
+        '<div class="stack"><h4>Reference</h4>' + table(q.columns, q.measures, q.expected.rows) + "</div></div>";
+    }
+    $("qview").innerHTML = "<header class='stack' style='gap:6px'><h3>" + q.id + ": " + esc(q.title) + "</h3><p class='sub'>" + esc(q.text).replace(/`(.+?)`/g, "<code>$1</code>") + "</p></header>" +
+      '<div class="tabs" role="tablist">' + tabs + "</div>" + body;
+    if (scroll) $("questions").scrollIntoView();
+  }
+  $("qlist").innerHTML = DATA.questions.map(function (q) {
+    return '<button type="button" role="tab" data-q="' + q.id + '"><b>' + q.id + "</b><span>" + esc(q.title) + "</span></button>";
+  }).join("");
+  $("qlist").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { history.replaceState(null, "", "#" + b.dataset.q); show(b.dataset.q); } });
+  $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
+  function route(scroll) { var h = location.hash.slice(1); if (Q[h]) show(h, null, scroll); }
+  window.addEventListener("hashchange", function () { route(true); });
+  show("q13"); route(true);
+
+  // ---------- theme
+  var root = document.documentElement, btn = $("theme");
+  function dark() { return root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; }
+  function paint() { btn.textContent = dark() ? "Light" : "Dark"; }
+  try { var t = localStorage.getItem("theme"); if (t) root.dataset.theme = t; } catch (e) {}
+  btn.addEventListener("click", function () { root.dataset.theme = dark() ? "light" : "dark"; try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {} paint(); });
+  paint();
+})();
+</script>
+</body>
+</html>

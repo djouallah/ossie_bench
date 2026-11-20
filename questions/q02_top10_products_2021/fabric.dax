@@ -1,0 +1,11 @@
+EVALUATE
+TOPN (
+    10,
+    SUMMARIZECOLUMNS (
+        dim_product[product_name],
+        TREATAS ( { 2021 }, dim_calendar[year] ),
+        "sales_quantity", [sales_quantity]
+    ),
+    [sales_quantity], DESC
+)
+ORDER BY [sales_quantity] DESC

@@ -1,0 +1,8 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    dim_country[country],
+    dim_calendar[year],
+    FILTER ( ALL ( dim_calendar[year] ), dim_calendar[year] <= 2022 ),
+    "sales_quantity", [sales_quantity]
+)
+ORDER BY dim_country[country], dim_calendar[year]

@@ -1,0 +1,352 @@
+version: 0.1.1
+name: dax_context
+description: Sales by day, store and product, and a monthly budget by country and category (2020-2022).
+datasets:
+- name: fact_sales
+  source: DAX_DEMO.DAX_CONTEXT_DEMO.FACT_SALES
+  primary_key:
+  - sale_date
+  - store_id
+  - product_id
+  description: One row per day, store and product.
+  fields:
+  - name: sale_date
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: sale_date
+    datatype: Date
+  - name: store_id
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: store_id
+    datatype: Integer
+  - name: product_id
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: product_id
+    datatype: Integer
+  - name: sales_qty
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: sales_qty
+    datatype: Integer
+  - name: net_profit
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: net_profit
+    datatype: Float
+- name: fact_budget
+  source: DAX_DEMO.DAX_CONTEXT_DEMO.FACT_BUDGET
+  primary_key:
+  - month_start
+  - country
+  - category
+  description: One row per month, country and category. month_start is the first day of the month.
+  fields:
+  - name: month_start
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: month_start
+    datatype: Date
+  - name: country
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: country
+    datatype: String
+  - name: category
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: category
+    datatype: String
+  - name: budget_qty
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: budget_qty
+    datatype: Integer
+- name: dim_calendar
+  source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_CALENDAR
+  primary_key:
+  - date_key
+  description: Calendar 2020-2023, with 4-4-5 fiscal periods (52-week fiscal years starting 2019-12-30).
+  fields:
+  - name: date_key
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: date_key
+    datatype: Date
+    dimension:
+      is_time: true
+  - name: year
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: year
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: year_month_num
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: year_month_num
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: year_month_name
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: year_month_name
+    datatype: String
+    dimension:
+      is_time: false
+  - name: month_start
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: month_start
+    datatype: Date
+    dimension:
+      is_time: true
+  - name: year_start
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: year_start
+    datatype: Date
+    dimension:
+      is_time: true
+  - name: fiscal_year
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: fiscal_year
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: fiscal_period
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: fiscal_period
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: fiscal_period_name
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: fiscal_period_name
+    datatype: String
+    dimension:
+      is_time: false
+  - name: fiscal_period_start
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: fiscal_period_start
+    datatype: Date
+    dimension:
+      is_time: true
+  - name: fiscal_year_start
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: fiscal_year_start
+    datatype: Date
+    dimension:
+      is_time: true
+- name: dim_product
+  source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_PRODUCT
+  primary_key:
+  - product_id
+  description: 40 products, 8 brands. Its category is a key to dim_category (Clearance has negative margins).
+  fields:
+  - name: product_id
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: product_id
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: product_name
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: product_name
+    datatype: String
+    dimension:
+      is_time: false
+  - name: brand
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: brand
+    datatype: String
+    dimension:
+      is_time: false
+  - name: manufacturer
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: manufacturer
+    datatype: String
+    dimension:
+      is_time: false
+  - name: category
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: category
+    datatype: String
+- name: dim_category
+  source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_CATEGORY
+  primary_key:
+  - category
+  description: 4 categories, shared by sales (through product) and budget.
+  fields:
+  - name: category
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: category
+    datatype: String
+    dimension:
+      is_time: false
+- name: dim_store
+  source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_STORE
+  primary_key:
+  - store_id
+  description: 55 stores; a customer is a store chain within one country. Its country is a key to dim_country.
+  fields:
+  - name: store_id
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: store_id
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: store_name
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: store_name
+    datatype: String
+    dimension:
+      is_time: false
+  - name: customer
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: customer
+    datatype: String
+    dimension:
+      is_time: false
+  - name: country
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: country
+    datatype: String
+- name: dim_country
+  source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_COUNTRY
+  primary_key:
+  - country
+  description: 3 countries, shared by sales (through store) and budget.
+  fields:
+  - name: country
+    expression:
+      dialects:
+      - dialect: ANSI_SQL
+        expression: country
+    datatype: String
+    dimension:
+      is_time: false
+relationships:
+- name: sales_to_calendar
+  from: fact_sales
+  to: dim_calendar
+  from_columns:
+  - sale_date
+  to_columns:
+  - date_key
+- name: sales_to_product
+  from: fact_sales
+  to: dim_product
+  from_columns:
+  - product_id
+  to_columns:
+  - product_id
+- name: sales_to_store
+  from: fact_sales
+  to: dim_store
+  from_columns:
+  - store_id
+  to_columns:
+  - store_id
+- name: product_to_category
+  from: dim_product
+  to: dim_category
+  from_columns:
+  - category
+  to_columns:
+  - category
+- name: store_to_country
+  from: dim_store
+  to: dim_country
+  from_columns:
+  - country
+  to_columns:
+  - country
+- name: budget_to_calendar
+  from: fact_budget
+  to: dim_calendar
+  from_columns:
+  - month_start
+  to_columns:
+  - date_key
+- name: budget_to_category
+  from: fact_budget
+  to: dim_category
+  from_columns:
+  - category
+  to_columns:
+  - category
+- name: budget_to_country
+  from: fact_budget
+  to: dim_country
+  from_columns:
+  - country
+  to_columns:
+  - country
+metrics:
+- name: sales_quantity
+  description: Units sold.
+  expression:
+    dialects:
+    - dialect: ANSI_SQL
+      expression: SUM(fact_sales.sales_qty)
+- name: net_profit_total
+  description: Net profit (negative for Clearance).
+  expression:
+    dialects:
+    - dialect: ANSI_SQL
+      expression: SUM(fact_sales.net_profit)
+- name: budget_quantity
+  description: Budgeted units (month x country x category).
+  expression:
+    dialects:
+    - dialect: ANSI_SQL
+      expression: SUM(fact_budget.budget_qty)

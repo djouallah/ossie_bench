@@ -1,0 +1,11 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    dim_country[country],
+    TREATAS ( { 2021 }, dim_calendar[year] ),
+    TREATAS ( { "Tide", "Dove" }, dim_product[brand] ),
+    TREATAS ( { "Laundry" }, dim_category[category] ),
+    FILTER ( ALL ( dim_store[customer] ), dim_store[customer] <> "Tesco" ),
+    "sales_quantity", [sales_quantity],
+    "cust_cat_share_all", [cust_cat_share_all]
+)
+ORDER BY dim_country[country]

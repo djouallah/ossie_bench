@@ -1,0 +1,12 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    dim_calendar[month_start],
+    TREATAS ( { "Clearance" }, dim_category[category] ),
+    FILTER (
+        ALL ( dim_calendar[month_start] ),
+        dim_calendar[month_start] >= DATE ( 2021, 1, 1 ) && dim_calendar[month_start] <= DATE ( 2021, 4, 1 )
+    ),
+    "net_profit_total", [net_profit_total],
+    "net_profit_ly", [net_profit_ly]
+)
+ORDER BY dim_calendar[month_start]

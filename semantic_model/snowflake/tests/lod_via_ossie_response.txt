@@ -1,0 +1,10 @@
+SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML, with FIXED / EXCLUDE DIMENSIONS in the SNOWFLAKE dialect:
+  as a metric:           ERROR 001003 (42000): Uncaught exception of type 'EXPRESSION_ERROR' on line 3 at position 23 : SQL compilation error: syntax error line 15 at position 350 unexpected 'FIXED'.
+  as a field + metric:   ERROR 001003 (42000): Uncaught exception of type 'EXPRESSION_ERROR' on line 3 at position 23 : SQL compilation error: syntax error line 9 at position 268 unexpected 'FIXED'. syntax error line 9 at position 305 unexpected ','. syntax error line 9 at position 324 unexpected ')'. syntax error line 9 at position 325 unexpected ','.
+
+The same expressions in hand-written CREATE SEMANTIC VIEW DDL:
+  view-level fact (no table prefix, the notebook's way):  accepted
+  table-scoped fact (sales.x AS SUM(...) FIXED ...):       syntax error, unexpected 'FIXED'
+  metric (sales.m AS SUM(...) FIXED ...):                  syntax error, unexpected 'FIXED'
+
+An LOD fact exists only at view level; Ossie has no place for a view-level fact (a field belongs to a dataset).

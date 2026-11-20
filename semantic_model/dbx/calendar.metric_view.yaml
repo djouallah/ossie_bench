@@ -1,0 +1,26 @@
+version: '1.1'
+comment: Calendar 2020-2023 with 4-4-5 fiscal periods.
+source: databricks_ne.ossie_demo.dim_calendar
+fields:
+- name: date_key
+  expr: date_key
+- name: year
+  expr: year
+- name: year_month_num
+  expr: year_month_num
+- name: year_month_name
+  expr: year_month_name
+- name: month_start
+  expr: month_start
+- name: year_start
+  expr: year_start
+- name: fiscal_year
+  expr: fiscal_year
+- name: fiscal_period
+  expr: fiscal_period
+- name: fiscal_period_name
+  expr: fiscal_period_name
+- name: fiscal_period_start
+  expr: fiscal_period_start
+- name: fiscal_year_start
+  expr: fiscal_year_start

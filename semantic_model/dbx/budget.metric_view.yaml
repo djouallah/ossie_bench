@@ -1,0 +1,44 @@
+version: '1.1'
+comment: One row per month, country and category. month_start is the first day of the month.
+source: databricks_ne.ossie_demo.fact_budget
+joins:
+- name: dim_calendar
+  source: databricks_ne.ossie_demo.dim_calendar
+  'on': source.month_start = dim_calendar.date_key
+- name: dim_category
+  source: databricks_ne.ossie_demo.dim_category
+  'on': source.category = dim_category.category
+- name: dim_country
+  source: databricks_ne.ossie_demo.dim_country
+  'on': source.country = dim_country.country
+fields:
+- name: date_key
+  expr: dim_calendar.date_key
+- name: year
+  expr: YEAR(date_key)
+- name: year_month_num
+  expr: YEAR(date_key) * 100 + MONTH(date_key)
+- name: year_month_name
+  expr: DATE_FORMAT(date_key, 'MMM yyyy')
+- name: month_start
+  expr: TRUNC(date_key, 'MM')
+- name: year_start
+  expr: TRUNC(date_key, 'YEAR')
+- name: fiscal_year
+  expr: dim_calendar.fiscal_year
+- name: fiscal_period
+  expr: dim_calendar.fiscal_period
+- name: fiscal_period_name
+  expr: dim_calendar.fiscal_period_name
+- name: fiscal_period_start
+  expr: dim_calendar.fiscal_period_start
+- name: fiscal_year_start
+  expr: dim_calendar.fiscal_year_start
+- name: category
+  expr: dim_category.category
+- name: country
+  expr: dim_country.country
+measures:
+- name: budget_quantity
+  expr: SUM(budget_qty)
+  comment: Budgeted units (month x country x category).

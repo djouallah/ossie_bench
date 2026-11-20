@@ -1,0 +1,12 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    dim_calendar[fiscal_period_name],
+    dim_calendar[fiscal_period_start],
+    FILTER (
+        ALL ( dim_calendar[fiscal_period_start] ),
+        dim_calendar[fiscal_period_start] >= DATE ( 2021, 1, 25 ) && dim_calendar[fiscal_period_start] <= DATE ( 2021, 5, 24 )
+    ),
+    "sales_quantity", [sales_quantity],
+    "sales_qty_fly", [sales_qty_fly]
+)
+ORDER BY dim_calendar[fiscal_period_start]

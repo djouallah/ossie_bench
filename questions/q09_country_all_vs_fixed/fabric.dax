@@ -1,0 +1,10 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    ROLLUPADDISSUBTOTAL ( dim_country[country], "is_total" ),
+    TREATAS ( { DATE ( 2021, 2, 1 ) }, dim_calendar[month_start] ),
+    FILTER ( ALL ( dim_store[customer] ), dim_store[customer] <> "Tesco" ),
+    "sales_quantity", [sales_quantity],
+    "country_qty_all_customers", [country_qty_all_customers],
+    "country_total_fixed", [country_total_fixed]
+)
+ORDER BY [is_total], dim_country[country]

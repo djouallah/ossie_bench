@@ -1,0 +1,286 @@
+version: '1.1'
+comment: One row per day, store and product.
+source: databricks_ne.ossie_demo.fact_sales
+joins:
+- name: dim_calendar
+  source: databricks_ne.ossie_demo.dim_calendar
+  'on': source.sale_date = dim_calendar.date_key
+- name: dim_product
+  source: databricks_ne.ossie_demo.dim_product
+  'on': source.product_id = dim_product.product_id
+  joins:
+  - name: dim_category
+    source: databricks_ne.ossie_demo.dim_category
+    'on': dim_product.category = dim_category.category
+- name: dim_store
+  source: databricks_ne.ossie_demo.dim_store
+  'on': source.store_id = dim_store.store_id
+  joins:
+  - name: dim_country
+    source: databricks_ne.ossie_demo.dim_country
+    'on': dim_store.country = dim_country.country
+fields:
+- name: date_key
+  expr: dim_calendar.date_key
+- name: year
+  expr: dim_calendar.year
+- name: year_month_num
+  expr: dim_calendar.year_month_num
+- name: year_month_name
+  expr: dim_calendar.year_month_name
+- name: month_start
+  expr: dim_calendar.month_start
+- name: year_start
+  expr: dim_calendar.year_start
+- name: fiscal_year
+  expr: dim_calendar.fiscal_year
+- name: fiscal_period
+  expr: dim_calendar.fiscal_period
+- name: fiscal_period_name
+  expr: dim_calendar.fiscal_period_name
+- name: fiscal_period_start
+  expr: dim_calendar.fiscal_period_start
+- name: fiscal_year_start
+  expr: dim_calendar.fiscal_year_start
+- name: product_id
+  expr: dim_product.product_id
+- name: product_name
+  expr: dim_product.product_name
+- name: brand
+  expr: dim_product.brand
+- name: manufacturer
+  expr: dim_product.manufacturer
+- name: category
+  expr: dim_product.dim_category.category
+- name: store_id
+  expr: dim_store.store_id
+- name: store_name
+  expr: dim_store.store_name
+- name: customer
+  expr: dim_store.customer
+- name: country
+  expr: dim_store.dim_country.country
+measures:
+- name: sales_quantity
+  expr: SUM(sales_qty)
+  comment: Units sold.
+- name: net_profit_total
+  expr: SUM(net_profit)
+  comment: Net profit (negative for Clearance).
+- name: sales_qty_ly
+  expr: SUM(sales_qty)
+  comment: 'Last year by day: the date shifted one year; range all over the other calendar columns so they can be in the query
+    too.'
+  window:
+  - order: date_key
+    semiadditive: last
+    range: current
+    offset: -1 year
+  - order: year
+    semiadditive: last
+    range: all
+  - order: year_month_num
+    semiadditive: last
+    range: all
+  - order: year_month_name
+    semiadditive: last
+    range: all
+  - order: month_start
+    semiadditive: last
+    range: all
+  - order: year_start
+    semiadditive: last
+    range: all
+  - order: fiscal_year
+    semiadditive: last
+    range: all
+  - order: fiscal_period
+    semiadditive: last
+    range: all
+  - order: fiscal_period_name
+    semiadditive: last
+    range: all
+  - order: fiscal_period_start
+    semiadditive: last
+    range: all
+  - order: fiscal_year_start
+    semiadditive: last
+    range: all
+- name: net_profit_ly
+  expr: SUM(net_profit)
+  comment: Net profit, same period last year (calendar).
+  window:
+  - order: date_key
+    semiadditive: last
+    range: current
+    offset: -1 year
+  - order: year
+    semiadditive: last
+    range: all
+  - order: year_month_num
+    semiadditive: last
+    range: all
+  - order: year_month_name
+    semiadditive: last
+    range: all
+  - order: month_start
+    semiadditive: last
+    range: all
+  - order: year_start
+    semiadditive: last
+    range: all
+  - order: fiscal_year
+    semiadditive: last
+    range: all
+  - order: fiscal_period
+    semiadditive: last
+    range: all
+  - order: fiscal_period_name
+    semiadditive: last
+    range: all
+  - order: fiscal_period_start
+    semiadditive: last
+    range: all
+  - order: fiscal_year_start
+    semiadditive: last
+    range: all
+- name: sales_qty_fly
+  expr: SUM(sales_qty)
+  comment: Sales quantity, same period last fiscal year (4-4-5, so 364 days back).
+  window:
+  - order: date_key
+    semiadditive: last
+    range: current
+    offset: -364 day
+  - order: year
+    semiadditive: last
+    range: all
+  - order: year_month_num
+    semiadditive: last
+    range: all
+  - order: year_month_name
+    semiadditive: last
+    range: all
+  - order: month_start
+    semiadditive: last
+    range: all
+  - order: year_start
+    semiadditive: last
+    range: all
+  - order: fiscal_year
+    semiadditive: last
+    range: all
+  - order: fiscal_period
+    semiadditive: last
+    range: all
+  - order: fiscal_period_name
+    semiadditive: last
+    range: all
+  - order: fiscal_period_start
+    semiadditive: last
+    range: all
+  - order: fiscal_year_start
+    semiadditive: last
+    range: all
+- name: sales_qty_yoy_pct
+  expr: (MEASURE(sales_quantity) - MEASURE(sales_qty_ly)) / NULLIF(MEASURE(sales_qty_ly), 0)
+  comment: Sales quantity growth on last year.
+- name: country_qty_all_customers
+  expr: SUM(sales_qty)
+  comment: Sales quantity of all the country's customers; every other filter kept (DAX ALL).
+  window:
+  - order: customer
+    range: all
+- name: customer_share_all
+  expr: MEASURE(sales_quantity) / MEASURE(country_qty_all_customers)
+- name: country_total_fixed
+  expr: SUM(sales_qty)
+  comment: 'FIXED (country, year): range all over customer, brand and every calendar column but year, current on year.'
+  window:
+  - order: customer
+    range: all
+  - order: brand
+    range: all
+  - order: date_key
+    range: all
+  - order: year_month_num
+    range: all
+  - order: year_month_name
+    range: all
+  - order: month_start
+    range: all
+  - order: year_start
+    range: all
+  - order: fiscal_year
+    range: all
+  - order: fiscal_period
+    range: all
+  - order: fiscal_period_name
+    range: all
+  - order: fiscal_period_start
+    range: all
+  - order: fiscal_year_start
+    range: all
+  - order: year
+    range: current
+- name: country_qty_all_cust_cat
+  expr: SUM(sales_qty)
+  comment: Sales quantity of all customers and categories of the country; every other filter kept.
+  window:
+  - order: customer
+    range: all
+  - order: category
+    range: all
+- name: cust_cat_share_all
+  expr: MEASURE(sales_quantity) / MEASURE(country_qty_all_cust_cat)
+- name: sales_qty_ly_month
+  expr: SUM(sales_qty)
+  comment: 'Last year by month: a second flavour, ordered by month_start (offset -12 month).'
+  window:
+  - order: month_start
+    semiadditive: last
+    range: current
+    offset: -12 month
+  - order: year_month_num
+    semiadditive: last
+    range: all
+  - order: year_month_name
+    semiadditive: last
+    range: all
+  - order: year
+    semiadditive: last
+    range: all
+  - order: year_start
+    semiadditive: last
+    range: all
+- name: sales_qty_ly_year
+  expr: SUM(sales_qty)
+  comment: 'Last year by year: a third flavour, ordered by year (offset -1).'
+  window:
+  - order: year
+    semiadditive: last
+    range: current
+    offset: -1
+  - order: year_start
+    semiadditive: last
+    range: all
+- name: sales_qty_fly_period
+  expr: SUM(sales_qty)
+  comment: 'Last fiscal year by fiscal period: ordered by fiscal_period_start (offset -364 day).'
+  window:
+  - order: fiscal_period_start
+    semiadditive: last
+    range: current
+    offset: -364 day
+  - order: fiscal_period_name
+    semiadditive: last
+    range: all
+  - order: fiscal_period
+    semiadditive: last
+    range: all
+  - order: fiscal_year
+    semiadditive: last
+    range: all
+  - order: fiscal_year_start
+    semiadditive: last
+    range: all

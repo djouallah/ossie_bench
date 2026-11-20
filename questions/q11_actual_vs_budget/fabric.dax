@@ -1,0 +1,10 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    dim_country[country],
+    dim_category[category],
+    TREATAS ( { 2021 }, dim_calendar[year] ),
+    "sales_quantity", [sales_quantity],
+    "budget_quantity", [budget_quantity],
+    "sales_vs_budget_pct", [sales_vs_budget_pct]
+)
+ORDER BY dim_country[country], dim_category[category]

@@ -1,0 +1,9 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    ROLLUPADDISSUBTOTAL ( dim_calendar[year], "is_total" ),
+    FILTER ( ALL ( dim_calendar[year] ), dim_calendar[year] <= 2022 ),
+    "sales_quantity", [sales_quantity],
+    "sales_qty_ly", [sales_qty_ly],
+    "sales_qty_yoy_pct", [sales_qty_yoy_pct]
+)
+ORDER BY [is_total], dim_calendar[year]

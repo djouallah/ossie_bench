@@ -1,0 +1,639 @@
+version: 0.1.1
+semantic_model:
+  - name: DAX_CONTEXT_SV
+    description: "DAX context manipulation patterns (Year Ago, ALL, ALLEXCEPT, ALLSELECTED) on a Snowflake semantic view"
+    datasets:
+      - name: ALL_MEMBERS
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_ALL_MEMBERS
+        primary_key:
+          - ALL_KEY
+      - name: BRAND
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_BRAND
+        primary_key:
+          - BRAND
+        fields:
+          - name: BRAND
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: brand
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+      - name: BUDGET
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.FACT_BUDGET
+        primary_key:
+          - MONTH_START
+          - COUNTRY
+          - CATEGORY
+        fields:
+          - name: BUDGET_QTY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: budget_qty
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"metrics\":[{\"name\":\"BUDGET_QUANTITY\",\"expr\":\"SUM(budget.budget_qty)\"}]}"
+      - name: CALENDAR
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_CALENDAR
+        primary_key:
+          - DATE_KEY
+        fields:
+          - name: DATE_KEY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: date_key
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: FISCAL_PERIOD_NAME
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: fiscal_period_name
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: FISCAL_PERIOD_START
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: fiscal_period_start
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: FISCAL_YEAR
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: fiscal_year
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: MONTH_START
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: month_start
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: YEAR
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: year
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: YEAR_MONTH_NAME
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: year_month_name
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: YEAR_MONTH_NUM
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: year_month_num
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: YEAR_START
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: year_start
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+      - name: CATEGORY
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_CATEGORY
+        primary_key:
+          - CATEGORY
+        fields:
+          - name: CATEGORY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: category
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+      - name: COUNTRY
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_COUNTRY
+        primary_key:
+          - COUNTRY
+        fields:
+          - name: COUNTRY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: country
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+      - name: PRODUCT
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_PRODUCT
+        primary_key:
+          - PRODUCT_ID
+        description: Category path only; no dimensions
+      - name: PRODUCT_ATTRS
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_PRODUCT
+        primary_key:
+          - PRODUCT_ID
+        description: Product attributes ALL(category) keeps
+        fields:
+          - name: MANUFACTURER
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: manufacturer
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: PRODUCT_ID
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: product_id
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: PRODUCT_NAME
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: product_name
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+      - name: SALES
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.FACT_SALES
+        primary_key:
+          - SALE_DATE
+          - STORE_ID
+          - PRODUCT_ID
+        fields:
+          - name: NET_PROFIT
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: net_profit
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: SALES_QTY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: sales_qty
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"metrics\":[{\"name\":\"NET_PROFIT_TOTAL\",\"expr\":\"SUM(sales.net_profit)\"},{\"name\":\"SALES_QUANTITY\",\"expr\":\"SUM(sales.sales_qty)\"}]}"
+      - name: SALES_ALL_CUST
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.FACT_SALES
+        primary_key:
+          - SALE_DATE
+          - STORE_ID
+          - PRODUCT_ID
+        fields:
+          - name: SALES_QTY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: sales_qty
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"metrics\":[{\"name\":\"COUNTRY_QTY_ALL_CUSTOMERS\",\"expr\":\"SUM(sales_all_cust.sales_qty)\"}]}"
+      - name: SALES_ALL_CUST_CAT
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.FACT_SALES
+        primary_key:
+          - SALE_DATE
+          - STORE_ID
+          - PRODUCT_ID
+        fields:
+          - name: ALL_KEY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: "1"
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: SALES_QTY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: sales_qty
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"metrics\":[{\"name\":\"COUNTRY_QTY_ALL_CUST_CAT\",\"expr\":\"SUM(sales_all_cust_cat.sales_qty)\"}]}"
+      - name: SALES_FLY
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.FACT_SALES
+        primary_key:
+          - SALE_DATE
+          - STORE_ID
+          - PRODUCT_ID
+        fields:
+          - name: SALES_QTY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: sales_qty
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: SALE_DATE_FLY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: "DATEADD('day', 364, sale_date)"
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"metrics\":[{\"name\":\"SALES_QTY_FLY\",\"expr\":\"SUM(sales_fly.sales_qty)\"}]}"
+      - name: SALES_LY
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.FACT_SALES
+        primary_key:
+          - SALE_DATE
+          - STORE_ID
+          - PRODUCT_ID
+        fields:
+          - name: NET_PROFIT
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: net_profit
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: SALES_QTY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: sales_qty
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: SALE_DATE_LY
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: "DATEADD('year', 1, sale_date)"
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"metrics\":[{\"name\":\"NET_PROFIT_LY\",\"expr\":\"SUM(sales_ly.net_profit)\"},{\"name\":\"SALES_QTY_LY\",\"expr\":\"SUM(sales_ly.sales_qty)\"}]}"
+      - name: STORE
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_STORE
+        primary_key:
+          - STORE_ID
+        fields:
+          - name: CUSTOMER
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: customer
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+          - name: STORE_ID
+            expression:
+              dialects:
+                - dialect: SNOWFLAKE
+                  expression: store_id
+            dimension: {}
+            custom_extensions:
+              - vendor_name: SNOWFLAKE
+                data: "{\"access_modifier\":\"public_access\"}"
+      - name: STORE_GEO
+        source: DAX_DEMO.DAX_CONTEXT_DEMO.DIM_STORE
+        primary_key:
+          - STORE_ID
+        description: Country path only; no dimensions
+    relationships:
+      - name: BUDGET_TO_CALENDAR
+        from: BUDGET
+        to: CALENDAR
+        from_columns:
+          - MONTH_START
+        to_columns:
+          - DATE_KEY
+      - name: BUDGET_TO_CATEGORY
+        from: BUDGET
+        to: CATEGORY
+        from_columns:
+          - CATEGORY
+        to_columns:
+          - CATEGORY
+      - name: BUDGET_TO_COUNTRY
+        from: BUDGET
+        to: COUNTRY
+        from_columns:
+          - COUNTRY
+        to_columns:
+          - COUNTRY
+      - name: CATEGORY_TO_ALL
+        from: CATEGORY
+        to: ALL_MEMBERS
+        from_columns:
+          - ALL_KEY
+        to_columns:
+          - ALL_KEY
+      - name: PRODUCT_TO_CATEGORY
+        from: PRODUCT
+        to: CATEGORY
+        from_columns:
+          - CATEGORY
+        to_columns:
+          - CATEGORY
+      - name: PRODUCT_ATTRS_TO_BRAND
+        from: PRODUCT_ATTRS
+        to: BRAND
+        from_columns:
+          - BRAND
+        to_columns:
+          - BRAND
+      - name: SALES_TO_CALENDAR
+        from: SALES
+        to: CALENDAR
+        from_columns:
+          - SALE_DATE
+        to_columns:
+          - DATE_KEY
+      - name: SALES_TO_PRODUCT
+        from: SALES
+        to: PRODUCT
+        from_columns:
+          - PRODUCT_ID
+        to_columns:
+          - PRODUCT_ID
+      - name: SALES_TO_PRODUCT_ATTRS
+        from: SALES
+        to: PRODUCT_ATTRS
+        from_columns:
+          - PRODUCT_ID
+        to_columns:
+          - PRODUCT_ID
+      - name: SALES_TO_STORE
+        from: SALES
+        to: STORE
+        from_columns:
+          - STORE_ID
+        to_columns:
+          - STORE_ID
+      - name: ALL_CUST_TO_CALENDAR
+        from: SALES_ALL_CUST
+        to: CALENDAR
+        from_columns:
+          - SALE_DATE
+        to_columns:
+          - DATE_KEY
+      - name: ALL_CUST_TO_PRODUCT
+        from: SALES_ALL_CUST
+        to: PRODUCT
+        from_columns:
+          - PRODUCT_ID
+        to_columns:
+          - PRODUCT_ID
+      - name: ALL_CUST_TO_PRODUCT_ATTRS
+        from: SALES_ALL_CUST
+        to: PRODUCT_ATTRS
+        from_columns:
+          - PRODUCT_ID
+        to_columns:
+          - PRODUCT_ID
+      - name: ALL_CUST_TO_STORE_GEO
+        from: SALES_ALL_CUST
+        to: STORE_GEO
+        from_columns:
+          - STORE_ID
+        to_columns:
+          - STORE_ID
+      - name: ALL_CC_TO_ALL_MEMBERS
+        from: SALES_ALL_CUST_CAT
+        to: ALL_MEMBERS
+        from_columns:
+          - ALL_KEY
+        to_columns:
+          - ALL_KEY
+      - name: ALL_CC_TO_CALENDAR
+        from: SALES_ALL_CUST_CAT
+        to: CALENDAR
+        from_columns:
+          - SALE_DATE
+        to_columns:
+          - DATE_KEY
+      - name: ALL_CC_TO_PRODUCT_ATTRS
+        from: SALES_ALL_CUST_CAT
+        to: PRODUCT_ATTRS
+        from_columns:
+          - PRODUCT_ID
+        to_columns:
+          - PRODUCT_ID
+      - name: ALL_CC_TO_STORE_GEO
+        from: SALES_ALL_CUST_CAT
+        to: STORE_GEO
+        from_columns:
+          - STORE_ID
+        to_columns:
+          - STORE_ID
+      - name: SALES_FLY_TO_CALENDAR
+        from: SALES_FLY
+        to: CALENDAR
+        from_columns:
+          - SALE_DATE_FLY
+        to_columns:
+          - DATE_KEY
+      - name: SALES_FLY_TO_PRODUCT
+        from: SALES_FLY
+        to: PRODUCT
+        from_columns:
+          - PRODUCT_ID
+        to_columns:
+          - PRODUCT_ID
+      - name: SALES_FLY_TO_PRODUCT_ATTRS
+        from: SALES_FLY
+        to: PRODUCT_ATTRS
+        from_columns:
+          - PRODUCT_ID
+        to_columns:
+          - PRODUCT_ID
+      - name: SALES_FLY_TO_STORE
+        from: SALES_FLY
+        to: STORE
+        from_columns:
+          - STORE_ID
+        to_columns:
+          - STORE_ID
+      - name: SALES_LY_TO_CALENDAR
+        from: SALES_LY
+        to: CALENDAR
+        from_columns:
+          - SALE_DATE_LY
+        to_columns:
+          - DATE_KEY
+      - name: SALES_LY_TO_PRODUCT
+        from: SALES_LY
+        to: PRODUCT
+        from_columns:
+          - PRODUCT_ID
+        to_columns:
+          - PRODUCT_ID
+      - name: SALES_LY_TO_PRODUCT_ATTRS
+        from: SALES_LY
+        to: PRODUCT_ATTRS
+        from_columns:
+          - PRODUCT_ID
+        to_columns:
+          - PRODUCT_ID
+      - name: SALES_LY_TO_STORE
+        from: SALES_LY
+        to: STORE
+        from_columns:
+          - STORE_ID
+        to_columns:
+          - STORE_ID
+      - name: STORE_TO_COUNTRY
+        from: STORE
+        to: COUNTRY
+        from_columns:
+          - COUNTRY
+        to_columns:
+          - COUNTRY
+      - name: STORE_GEO_TO_COUNTRY
+        from: STORE_GEO
+        to: COUNTRY
+        from_columns:
+          - COUNTRY
+        to_columns:
+          - COUNTRY
+    metrics:
+      - name: COUNTRY_TOTAL_ALLEXCEPT
+        expression:
+          dialects:
+            - dialect: SNOWFLAKE
+              expression: AVG(country_qty_fixed)
+        description: ""
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"access_modifier\":\"public_access\"}"
+      - name: COUNTRY_TOTAL_ALLSELECTED
+        expression:
+          dialects:
+            - dialect: SNOWFLAKE
+              expression: AVG(country_qty_excl_customer)
+        description: ""
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"access_modifier\":\"public_access\"}"
+      - name: COUNTRY_TOTAL_FIXED
+        expression:
+          dialects:
+            - dialect: SNOWFLAKE
+              expression: AVG(country_qty_fixed)
+        description: ""
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"access_modifier\":\"public_access\"}"
+      - name: CUSTOMER_SHARE_ALL
+        expression:
+          dialects:
+            - dialect: SNOWFLAKE
+              expression: "DIV0(sales.sales_quantity, sales_all_cust.country_qty_all_customers)"
+        description: ""
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"access_modifier\":\"public_access\"}"
+      - name: CUSTOMER_SHARE_ALLEXCEPT
+        expression:
+          dialects:
+            - dialect: SNOWFLAKE
+              expression: SUM(sales.sales_qty) / AVG(country_qty_fixed)
+        description: ""
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"access_modifier\":\"public_access\"}"
+      - name: CUSTOMER_SHARE_ALLSELECTED
+        expression:
+          dialects:
+            - dialect: SNOWFLAKE
+              expression: SUM(sales.sales_qty) / AVG(country_qty_excl_customer)
+        description: ""
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"access_modifier\":\"public_access\"}"
+      - name: CUST_CAT_SHARE_ALL
+        expression:
+          dialects:
+            - dialect: SNOWFLAKE
+              expression: "DIV0(sales.sales_quantity, sales_all_cust_cat.country_qty_all_cust_cat)"
+        description: ""
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"access_modifier\":\"public_access\"}"
+      - name: CUST_CAT_SHARE_ALLSELECTED
+        expression:
+          dialects:
+            - dialect: SNOWFLAKE
+              expression: SUM(sales.sales_qty) / AVG(country_qty_excl_customer_category)
+        description: ""
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"access_modifier\":\"public_access\"}"
+      - name: SALES_QTY_YOY_PCT
+        expression:
+          dialects:
+            - dialect: SNOWFLAKE
+              expression: "DIV0(sales.sales_quantity - sales_ly.sales_qty_ly, sales_ly.sales_qty_ly)"
+        description: ""
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"access_modifier\":\"public_access\"}"
+      - name: SALES_VS_BUDGET_PCT
+        expression:
+          dialects:
+            - dialect: SNOWFLAKE
+              expression: "DIV0(sales.sales_quantity - budget.budget_quantity, budget.budget_quantity)"
+        description: ""
+        custom_extensions:
+          - vendor_name: SNOWFLAKE
+            data: "{\"access_modifier\":\"public_access\"}"

@@ -1,0 +1,20 @@
+platform,status,year,day_count,sales_quantity
+expected,,2020,366,82797945
+expected,,2021,365,89070158
+expected,,2022,365,94792246
+expected,,2023,365,
+fabric,match,2020,366,82797945
+fabric,match,2021,365,89070158
+fabric,match,2022,365,94792246
+fabric,match,2023,365,
+snowflake,match,2020,366,82797945
+snowflake,match,2021,365,89070158
+snowflake,match,2022,365,94792246
+snowflake,match,2023,365,
+dbx,differs,2020,366,82797945
+dbx,differs,2021,365,89070158
+dbx,differs,2022,365,94792246
+dbx (workaround),match,2020,366,82797945
+dbx (workaround),match,2021,365,89070158
+dbx (workaround),match,2022,365,94792246
+dbx (workaround),match,2023,365,

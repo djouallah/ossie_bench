@@ -1,0 +1,12 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    ROLLUPADDISSUBTOTAL ( dim_calendar[month_start], "is_total" ),
+    FILTER (
+        ALL ( dim_calendar[month_start] ),
+        dim_calendar[month_start] >= DATE ( 2021, 1, 1 ) && dim_calendar[month_start] <= DATE ( 2021, 4, 1 )
+    ),
+    "sales_quantity", [sales_quantity],
+    "sales_qty_ly", [sales_qty_ly],
+    "sales_qty_yoy_pct", [sales_qty_yoy_pct]
+)
+ORDER BY [is_total], dim_calendar[month_start]

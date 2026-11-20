@@ -1,0 +1,61 @@
+platform,status,country,category,sales_quantity,budget_quantity,sales_vs_budget_pct
+expected,,Germany,Clearance,9037851,9019629,0.00202026047856
+expected,,Germany,Hair Care,9055308,9096916,-0.00457385777773
+expected,,Germany,Laundry,9061647,9124124,-0.00684745187593
+expected,,Germany,Oral Care,9048601,9083304,-0.00382052609931
+expected,,Poland,Clearance,7674383,7664571,0.00128017602029
+expected,,Poland,Hair Care,7693248,7666825,0.00344640708507
+expected,,Poland,Laundry,7688170,7732939,-0.00578939003657
+expected,,Poland,Oral Care,7699261,7709646,-0.00134701385771
+expected,,UK,Clearance,5534210,5575135,-0.00734062941974
+expected,,UK,Hair Care,5512252,5523247,-0.00199067686091
+expected,,UK,Laundry,5535746,5480303,0.0101167763899
+expected,,UK,Oral Care,5529481,5572849,-0.007782015985
+fabric,match,Germany,Clearance,9037851,9019629,0.00202026047856
+fabric,match,Germany,Hair Care,9055308,9096916,-0.00457385777773
+fabric,match,Germany,Laundry,9061647,9124124,-0.00684745187593
+fabric,match,Germany,Oral Care,9048601,9083304,-0.00382052609931
+fabric,match,Poland,Clearance,7674383,7664571,0.00128017602029
+fabric,match,Poland,Hair Care,7693248,7666825,0.00344640708507
+fabric,match,Poland,Laundry,7688170,7732939,-0.00578939003657
+fabric,match,Poland,Oral Care,7699261,7709646,-0.00134701385771
+fabric,match,UK,Clearance,5534210,5575135,-0.00734062941974
+fabric,match,UK,Hair Care,5512252,5523247,-0.00199067686091
+fabric,match,UK,Laundry,5535746,5480303,0.0101167763899
+fabric,match,UK,Oral Care,5529481,5572849,-0.007782015985
+snowflake,match,Germany,Clearance,9037851,9019629,0.00202
+snowflake,match,Germany,Hair Care,9055308,9096916,-0.004574
+snowflake,match,Germany,Laundry,9061647,9124124,-0.006847
+snowflake,match,Germany,Oral Care,9048601,9083304,-0.003821
+snowflake,match,Poland,Clearance,7674383,7664571,0.00128
+snowflake,match,Poland,Hair Care,7693248,7666825,0.003446
+snowflake,match,Poland,Laundry,7688170,7732939,-0.005789
+snowflake,match,Poland,Oral Care,7699261,7709646,-0.001347
+snowflake,match,UK,Clearance,5534210,5575135,-0.007341
+snowflake,match,UK,Hair Care,5512252,5523247,-0.001991
+snowflake,match,UK,Laundry,5535746,5480303,0.010117
+snowflake,match,UK,Oral Care,5529481,5572849,-0.007782
+dbx,match,Germany,Clearance,9037851,9019629,0.002020260478562921
+dbx,match,Germany,Hair Care,9055308,9096916,-0.004573857777734784
+dbx,match,Germany,Laundry,9061647,9124124,-0.006847451875928034
+dbx,match,Germany,Oral Care,9048601,9083304,-0.003820526099313642
+dbx,match,Poland,Clearance,7674383,7664571,0.0012801760202886764
+dbx,match,Poland,Hair Care,7693248,7666825,0.003446407085071069
+dbx,match,Poland,Laundry,7688170,7732939,-0.0057893900365695375
+dbx,match,Poland,Oral Care,7699261,7709646,-0.00134701385770501
+dbx,match,UK,Clearance,5534210,5575135,-0.007340629419736024
+dbx,match,UK,Hair Care,5512252,5523247,-0.0019906768609117063
+dbx,match,UK,Laundry,5535746,5480303,0.010116776389918586
+dbx,match,UK,Oral Care,5529481,5572849,-0.007782015985001567
+dbx (workaround),match,Germany,Clearance,9037851,9019629,0.002020260478562921
+dbx (workaround),match,Germany,Hair Care,9055308,9096916,-0.004573857777734784
+dbx (workaround),match,Germany,Laundry,9061647,9124124,-0.006847451875928034
+dbx (workaround),match,Germany,Oral Care,9048601,9083304,-0.003820526099313642
+dbx (workaround),match,Poland,Clearance,7674383,7664571,0.0012801760202886764
+dbx (workaround),match,Poland,Hair Care,7693248,7666825,0.003446407085071069
+dbx (workaround),match,Poland,Laundry,7688170,7732939,-0.0057893900365695375
+dbx (workaround),match,Poland,Oral Care,7699261,7709646,-0.00134701385770501
+dbx (workaround),match,UK,Clearance,5534210,5575135,-0.007340629419736024
+dbx (workaround),match,UK,Hair Care,5512252,5523247,-0.0019906768609117063
+dbx (workaround),match,UK,Laundry,5535746,5480303,0.010116776389918586
+dbx (workaround),match,UK,Oral Care,5529481,5572849,-0.007782015985001567

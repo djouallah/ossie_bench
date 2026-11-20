@@ -1,0 +1,7 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    dim_calendar[year],
+    "day_count", COUNTROWS ( dim_calendar ),
+    "sales_quantity", [sales_quantity]
+)
+ORDER BY dim_calendar[year]

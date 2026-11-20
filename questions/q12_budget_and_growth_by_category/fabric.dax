@@ -1,0 +1,11 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    ROLLUPADDISSUBTOTAL ( dim_category[category], "is_total" ),
+    TREATAS ( { 2021 }, dim_calendar[year] ),
+    "sales_quantity", [sales_quantity],
+    "budget_quantity", [budget_quantity],
+    "sales_vs_budget_pct", [sales_vs_budget_pct],
+    "sales_qty_ly", [sales_qty_ly],
+    "sales_qty_yoy_pct", [sales_qty_yoy_pct]
+)
+ORDER BY [is_total], dim_category[category]

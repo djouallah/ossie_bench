@@ -1,0 +1,70 @@
+version: '1.1'
+comment: 'Last year as rows, not as a window: the fact with its date moved one year forward (Feb 29 -> Feb 28), so SUM is
+  last year''s value at any grain, totals included. Queried next to sales_mv and joined.'
+source: SELECT CAST(add_months(sale_date, 12) AS DATE) AS sale_date, store_id, product_id, sales_qty, net_profit FROM databricks_ne.ossie_demo.fact_sales
+joins:
+- name: dim_calendar
+  source: databricks_ne.ossie_demo.dim_calendar
+  'on': source.sale_date = dim_calendar.date_key
+- name: dim_product
+  source: databricks_ne.ossie_demo.dim_product
+  'on': source.product_id = dim_product.product_id
+  joins:
+  - name: dim_category
+    source: databricks_ne.ossie_demo.dim_category
+    'on': dim_product.category = dim_category.category
+- name: dim_store
+  source: databricks_ne.ossie_demo.dim_store
+  'on': source.store_id = dim_store.store_id
+  joins:
+  - name: dim_country
+    source: databricks_ne.ossie_demo.dim_country
+    'on': dim_store.country = dim_country.country
+fields:
+- name: date_key
+  expr: dim_calendar.date_key
+- name: year
+  expr: dim_calendar.year
+- name: year_month_num
+  expr: dim_calendar.year_month_num
+- name: year_month_name
+  expr: dim_calendar.year_month_name
+- name: month_start
+  expr: dim_calendar.month_start
+- name: year_start
+  expr: dim_calendar.year_start
+- name: fiscal_year
+  expr: dim_calendar.fiscal_year
+- name: fiscal_period
+  expr: dim_calendar.fiscal_period
+- name: fiscal_period_name
+  expr: dim_calendar.fiscal_period_name
+- name: fiscal_period_start
+  expr: dim_calendar.fiscal_period_start
+- name: fiscal_year_start
+  expr: dim_calendar.fiscal_year_start
+- name: product_id
+  expr: dim_product.product_id
+- name: product_name
+  expr: dim_product.product_name
+- name: brand
+  expr: dim_product.brand
+- name: manufacturer
+  expr: dim_product.manufacturer
+- name: category
+  expr: dim_product.dim_category.category
+- name: store_id
+  expr: dim_store.store_id
+- name: store_name
+  expr: dim_store.store_name
+- name: customer
+  expr: dim_store.customer
+- name: country
+  expr: dim_store.dim_country.country
+measures:
+- name: sales_qty_ly
+  expr: SUM(sales_qty)
+  comment: Sales quantity last year, at any grain.
+- name: net_profit_ly
+  expr: SUM(net_profit)
+  comment: Net profit last year, at any grain.

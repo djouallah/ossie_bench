@@ -1,0 +1,12 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    dim_country[country],
+    dim_store[customer],
+    FILTER ( ALL ( dim_store[customer] ), NOT dim_store[customer] IN { "Zabka", "Rewe", "Superdrug" } ),
+    TREATAS ( { DATE ( 2021, 2, 1 ) }, dim_calendar[month_start] ),
+    FILTER ( ALL ( dim_product[brand] ), dim_product[brand] <> "Somat" ),
+    "sales_quantity", [sales_quantity],
+    "customer_share_all", [customer_share_all],
+    "customer_share_allselected", [customer_share_allselected]
+)
+ORDER BY dim_country[country], dim_store[customer]

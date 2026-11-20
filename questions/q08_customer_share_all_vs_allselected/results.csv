@@ -1,0 +1,41 @@
+platform,status,country,customer,sales_quantity,customer_share_all,customer_share_allselected
+expected,,Germany,Edeka,599134,0.216475952697,0.268969560712
+expected,,Germany,Rossmann DE,721869,0.260821918798,0.324069052703
+expected,,Germany,dm,906513,0.327536519889,0.406961386585
+expected,,Poland,Biedronka,845866,0.359804721845,0.425928126586
+expected,,Poland,Lidl PL,659874,0.28068959034,0.332273547587
+expected,,Poland,Rossmann PL,480196,0.204260235322,0.241798325827
+expected,,UK,Boots,540694,0.319720095462,0.406791622121
+expected,,UK,Tesco,788473,0.466235362014,0.593208377879
+fabric,match,Germany,dm,906513,0.327536519889,0.406961386585
+fabric,match,Germany,Edeka,599134,0.216475952697,0.268969560712
+fabric,match,Germany,Rossmann DE,721869,0.260821918798,0.324069052703
+fabric,match,Poland,Biedronka,845866,0.359804721845,0.425928126586
+fabric,match,Poland,Lidl PL,659874,0.28068959034,0.332273547587
+fabric,match,Poland,Rossmann PL,480196,0.204260235322,0.241798325827
+fabric,match,UK,Boots,540694,0.319720095462,0.406791622121
+fabric,match,UK,Tesco,788473,0.466235362014,0.593208377879
+snowflake,match,Germany,Edeka,599134,0.216476,0.26897
+snowflake,match,Germany,Rossmann DE,721869,0.260822,0.324069
+snowflake,match,Germany,dm,906513,0.327537,0.406961
+snowflake,match,Poland,Biedronka,845866,0.359805,0.425928
+snowflake,match,Poland,Lidl PL,659874,0.28069,0.332274
+snowflake,match,Poland,Rossmann PL,480196,0.20426,0.241798
+snowflake,match,UK,Boots,540694,0.31972,0.406792
+snowflake,match,UK,Tesco,788473,0.466235,0.593208
+dbx,partial,Germany,Edeka,599134,0.21647595269667266,
+dbx,partial,Germany,Rossmann DE,721869,0.2608219187981226,
+dbx,partial,Germany,dm,906513,0.3275365198885705,
+dbx,partial,Poland,Biedronka,845866,0.35980472184518036,
+dbx,partial,Poland,Lidl PL,659874,0.2806895903403926,
+dbx,partial,Poland,Rossmann PL,480196,0.20426023532234208,
+dbx,partial,UK,Boots,540694,0.319720095461781,
+dbx,partial,UK,Tesco,788473,0.46623536201444227,
+dbx (workaround),match,Germany,Edeka,599134,0.21647595269667266,0.26896956071247075
+dbx (workaround),match,Germany,Rossmann DE,721869,0.2608219187981226,0.32406905270265174
+dbx (workaround),match,Germany,dm,906513,0.3275365198885705,0.4069613865848775
+dbx (workaround),match,Poland,Biedronka,845866,0.35980472184518036,0.4259281265861538
+dbx (workaround),match,Poland,Lidl PL,659874,0.2806895903403926,0.3322735475866292
+dbx (workaround),match,Poland,Rossmann PL,480196,0.20426023532234208,0.241798325827217
+dbx (workaround),match,UK,Boots,540694,0.319720095461781,0.4067916221212233
+dbx (workaround),match,UK,Tesco,788473,0.46623536201444227,0.5932083778787767

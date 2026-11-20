@@ -1,0 +1,1 @@
+Semantic view was successfully created from OSI YAML.

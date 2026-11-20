@@ -1,0 +1,296 @@
+# The baseline: the model in standard Ossie, portable SQL only (expression.sql), no vendor dialect and no extension.
+# Version 0.3.0.dev0 is the unreleased development version on apache/ossie main (read 2026-11-20); it can still change.
+# 7 datasets, 8 relationships, and the 4 measures the standard can express: three sums, each declared on its own
+# dataset, and one ratio across the two facts that reads them with AGG(). The other 12 are defined in words in
+# measures.md; each platform writes them in its own language. Sources are bare table names: each platform
+# prefixes its own schema.
+version: 0.3.0.dev0
+name: sales_and_budget
+description: Sales by day, store and product, and a monthly budget by country and category (2020-2022).
+datasets:
+- name: fact_sales
+  source: fact_sales
+  primary_key:
+  - sale_date
+  - store_id
+  - product_id
+  description: One row per day, store and product.
+  fields:
+  - name: sale_date
+    expression:
+      sql: sale_date
+    datatype: Date
+  - name: store_id
+    expression:
+      sql: store_id
+    datatype: Integer
+  - name: product_id
+    expression:
+      sql: product_id
+    datatype: Integer
+  - name: sales_qty
+    expression:
+      sql: sales_qty
+    datatype: Integer
+  - name: net_profit
+    expression:
+      sql: net_profit
+    datatype: Float
+  metrics:
+  - name: sales_quantity
+    description: Units sold.
+    expression:
+      sql: SUM(sales_qty)
+  - name: net_profit_total
+    description: Net profit (negative for Clearance).
+    expression:
+      sql: SUM(net_profit)
+- name: fact_budget
+  source: fact_budget
+  primary_key:
+  - month_start
+  - country
+  - category
+  description: One row per month, country and category. month_start is the first day of the month.
+  fields:
+  - name: month_start
+    expression:
+      sql: month_start
+    datatype: Date
+  - name: country
+    expression:
+      sql: country
+    datatype: String
+  - name: category
+    expression:
+      sql: category
+    datatype: String
+  - name: budget_qty
+    expression:
+      sql: budget_qty
+    datatype: Integer
+  metrics:
+  - name: budget_quantity
+    description: Budgeted units (month x country x category).
+    expression:
+      sql: SUM(budget_qty)
+- name: dim_calendar
+  source: dim_calendar
+  primary_key:
+  - date_key
+  description: Calendar 2020-2023, with 4-4-5 fiscal periods (52-week fiscal years starting 2019-12-30).
+  fields:
+  - name: date_key
+    expression:
+      sql: date_key
+    datatype: Date
+    dimension:
+      is_time: true
+  - name: year
+    expression:
+      sql: year
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: year_month_num
+    expression:
+      sql: year_month_num
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: year_month_name
+    expression:
+      sql: year_month_name
+    datatype: String
+    dimension:
+      is_time: false
+  - name: month_start
+    expression:
+      sql: month_start
+    datatype: Date
+    dimension:
+      is_time: true
+  - name: year_start
+    expression:
+      sql: year_start
+    datatype: Date
+    dimension:
+      is_time: true
+  - name: fiscal_year
+    expression:
+      sql: fiscal_year
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: fiscal_period
+    expression:
+      sql: fiscal_period
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: fiscal_period_name
+    expression:
+      sql: fiscal_period_name
+    datatype: String
+    dimension:
+      is_time: false
+  - name: fiscal_period_start
+    expression:
+      sql: fiscal_period_start
+    datatype: Date
+    dimension:
+      is_time: true
+  - name: fiscal_year_start
+    expression:
+      sql: fiscal_year_start
+    datatype: Date
+    dimension:
+      is_time: true
+- name: dim_product
+  source: dim_product
+  primary_key:
+  - product_id
+  description: 40 products, 8 brands. Its category is a key to dim_category (Clearance has negative margins).
+  fields:
+  - name: product_id
+    expression:
+      sql: product_id
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: product_name
+    expression:
+      sql: product_name
+    datatype: String
+    dimension:
+      is_time: false
+  - name: brand
+    expression:
+      sql: brand
+    datatype: String
+    dimension:
+      is_time: false
+  - name: manufacturer
+    expression:
+      sql: manufacturer
+    datatype: String
+    dimension:
+      is_time: false
+  - name: category
+    expression:
+      sql: category
+    datatype: String
+- name: dim_category
+  source: dim_category
+  primary_key:
+  - category
+  description: 4 categories, shared by sales (through product) and budget.
+  fields:
+  - name: category
+    expression:
+      sql: category
+    datatype: String
+    dimension:
+      is_time: false
+- name: dim_store
+  source: dim_store
+  primary_key:
+  - store_id
+  description: 55 stores; a customer is a store chain within one country. Its country is a key to dim_country.
+  fields:
+  - name: store_id
+    expression:
+      sql: store_id
+    datatype: Integer
+    dimension:
+      is_time: false
+  - name: store_name
+    expression:
+      sql: store_name
+    datatype: String
+    dimension:
+      is_time: false
+  - name: customer
+    expression:
+      sql: customer
+    datatype: String
+    dimension:
+      is_time: false
+  - name: country
+    expression:
+      sql: country
+    datatype: String
+- name: dim_country
+  source: dim_country
+  primary_key:
+  - country
+  description: 3 countries, shared by sales (through store) and budget.
+  fields:
+  - name: country
+    expression:
+      sql: country
+    datatype: String
+    dimension:
+      is_time: false
+relationships:
+- name: sales_to_calendar
+  from: fact_sales
+  to: dim_calendar
+  from_columns:
+  - sale_date
+  to_columns:
+  - date_key
+- name: sales_to_product
+  from: fact_sales
+  to: dim_product
+  from_columns:
+  - product_id
+  to_columns:
+  - product_id
+- name: sales_to_store
+  from: fact_sales
+  to: dim_store
+  from_columns:
+  - store_id
+  to_columns:
+  - store_id
+- name: product_to_category
+  from: dim_product
+  to: dim_category
+  from_columns:
+  - category
+  to_columns:
+  - category
+- name: store_to_country
+  from: dim_store
+  to: dim_country
+  from_columns:
+  - country
+  to_columns:
+  - country
+- name: budget_to_calendar
+  from: fact_budget
+  to: dim_calendar
+  from_columns:
+  - month_start
+  to_columns:
+  - date_key
+- name: budget_to_category
+  from: fact_budget
+  to: dim_category
+  from_columns:
+  - category
+  to_columns:
+  - category
+- name: budget_to_country
+  from: fact_budget
+  to: dim_country
+  from_columns:
+  - country
+  to_columns:
+  - country
+metrics:
+- name: sales_vs_budget_pct
+  description: (sales - budget) / budget. Each side is summed over its own table first.
+  expression:
+    sql: (AGG(fact_sales.sales_quantity) - AGG(fact_budget.budget_quantity)) / AGG(fact_budget.budget_quantity)
