@@ -327,6 +327,29 @@ details[open] > summary { margin-bottom: 8px; }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
+/* ossie: what it is */
+.flow { display: grid; grid-template-columns: 1fr 28px 1.15fr 28px 1fr 34px .85fr; align-items: stretch; }
+.fbox { border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 14px; background: var(--surface); display: grid; gap: 5px; align-content: start; }
+.fbox h4 { color: var(--ink); font-size: 12px; }
+.fbox p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+.fbox code { font-size: 12px; }
+.fbox .ftag { justify-self: start; align-self: end; font-size: 11.5px; border-radius: 999px; padding: 1px 9px; margin-top: 6px;
+  border: 1px solid var(--line-2); color: var(--ink-2); background: var(--sunken); }
+.fbox .ftag.ok { color: var(--good-ink); border-color: var(--good); background: var(--good-bg); }
+.fbox .ftag.dev { color: var(--warn-ink); border-color: var(--warn); background: var(--warn-bg); }
+.fbox .ftag.todo { color: var(--crit); border: 1px dashed var(--crit); background: var(--crit-bg); }
+.fbox.todo { border-style: dashed; border-color: var(--crit); background: transparent; }
+.fbox a { font-size: 12px; color: var(--muted); }
+.farrow { display: grid; place-items: center; color: var(--k-fact); font-size: 19px; line-height: 1; position: relative; }
+.farrow small { position: absolute; top: calc(50% - 26px); font: 600 10px var(--mono); color: var(--muted); }
+.today { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; border: 1px solid var(--line-2); border-radius: 12px;
+  padding: 10px 14px; background: var(--sunken); font-size: 14px; color: var(--ink-2); }
+.today b { color: var(--ink); } .today .farrow { display: inline; font-size: 15px; }
+.today .st { font: 600 12px var(--mono); padding: 2px 8px; border-radius: 7px; border: 1px solid var(--line-2); background: var(--surface); color: var(--ink); }
+@media (max-width: 960px) {
+  .flow { grid-template-columns: 1fr; gap: 4px; }
+  .flow > .farrow { transform: rotate(90deg); height: 26px; } .flow > .farrow small { transform: rotate(-90deg); top: 4px; left: calc(50% + 14px); }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .rv, .rv tbody tr, .rv .yr, .rv .verdict { opacity: 1; transform: none; }
@@ -447,8 +470,42 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 <!-- ============================== 3. ossie -->
 <section id="ossie" class="view">
   <div class="subtabs" id="st-ossie">
+    <button type="button" data-k="what">What Ossie is</button>
     <button type="button" data-k="std">What Ossie supports</button>
     <button type="button" data-k="plat">What each platform supports</button>
+  </div>
+  <div class="card stack" data-pane-of="st-ossie" data-k="what">
+    <header class="stack" style="gap:6px"><h3>What Ossie is</h3>
+      <p class="sub">An Apache specification (incubating), not software. <b>Released: <code>0.1.1</code></b> (December 2025), the only release.
+        In development: <code id="os-ver"></code> on main, unreleased and still changing; there will be no 0.2.0, the next release is planned as
+        <code>0.3.0-incubating</code>. <a href="https://github.com/apache/ossie/blob/main/core-spec/spec.md#version-history">version history</a></p></header>
+    <div class="flow" role="img" aria-label="An Ossie model and a query go into a compiler, which writes plain SQL; any SQL engine runs it. The compiler is in progress.">
+      <div class="fbox"><h4>1 · Model</h4><p>The Ossie file: datasets, relationships, fields, metrics, written in a portable SQL expression language.</p>
+        <span class="ftag ok">spec, released in 0.1.1</span></div>
+      <div class="farrow" aria-hidden="true">+</div>
+      <div class="fbox"><h4>2 · Query</h4><p>SQL with measures, <code>SELECT AGG(sales) &hellip;</code>, or a wide table: dimensions + metrics + a filter, and the joins are picked for you.
+        Either way, nothing is counted twice.</p>
+        <a href="https://github.com/apache/ossie/blob/main/core-spec/spec_layers.md">the layers</a>
+        <span class="ftag dev">spec, in <code id="os-ver2"></code> only</span></div>
+      <div class="farrow" aria-hidden="true">&rarr;</div>
+      <div class="fbox todo"><h4>3 · Compiler</h4><p>&ldquo;View expansion&rdquo;: rewrites the query on the model into plain SQL on the tables.</p>
+        <a href="https://github.com/apache/ossie/issues/707">issue #707</a> <a href="https://github.com/apache/ossie/pull/769">PR #769, open</a>
+        <span class="ftag todo">in progress</span></div>
+      <div class="farrow" aria-hidden="true"><small>SQL</small>&rarr;</div>
+      <div class="fbox"><h4>4 · Engine</h4><p>Any SQL engine runs that SQL and returns the answer.</p>
+        <span class="ftag">exists</span></div>
+    </div>
+    <div class="today"><b>Today:</b> <span class="st">Ossie file</span><span class="farrow" aria-hidden="true">&rarr;</span>
+      <span>a platform that supports Ossie imports it into its semantic model</span><span class="farrow" aria-hidden="true">&rarr;</span>
+      <span>its planner and engine answer the query.</span></div>
+    <h4>What is open today</h4>
+    <ul class="facts" style="--pc: var(--k-fact)">
+      <li>The specification and its JSON schema, and a Python SDK that parses and validates a file. It does not run queries.</li>
+      <li>Compliance cases with expected results. Their DuckDB SQL is written by hand, not generated. <a class="src" href="https://github.com/apache/ossie/blob/main/compliance/query/README.md">compliance</a></li>
+      <li>24 converters that move a model between Ossie and dbt, Cube, Snowflake, Microsoft and others. <a class="src" href="https://github.com/apache/ossie-converters">ossie-converters</a></li>
+      <li><b>Next: the compiler.</b> A reference compiler from Ossie to SQL is on the roadmap and in progress; until it lands there is no open-source implementation, as far as I found. <a class="src" href="https://github.com/apache/ossie/blob/main/ROADMAP.md#semantic-query-language--reference-engine">roadmap</a></li>
+    </ul>
+    <p class="sub">The next two tabs: what Ossie can say about this repo's measures, and what each vendor's import did with the file.</p>
   </div>
   <div class="card stack" data-pane-of="st-ossie" data-k="std">
     <header class="stack" style="gap:6px"><h3>What Ossie supports</h3><p class="sub" id="os-std-sub"></p></header>
@@ -840,6 +897,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   // ---------- 3. ossie: what the standard supports, then what each platform supports
   (function () {
     var SPEC = "https://github.com/apache/ossie/blob/main/core-spec/", O = DATA.ossie, M = DATA.measures;
+    $("os-ver").textContent = $("os-ver2").textContent = O.version;
     var yes = M.filter(function (m) { return /^yes/.test(m.standard); }).length;
     $("os-std-sub").innerHTML = "<code>" + esc(O.version) + "</code>, unreleased, on apache/ossie main: <b>" + yes + " of " + M.length +
       "</b> measures. The others need evaluation controls, which the specification defers (<a href=\"" + SPEC +
@@ -1071,7 +1129,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   }).join("");
   $("qlist").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) show(b.dataset.q); });
   var selResults = subtabs("st-results"), selOssie = subtabs("st-ossie");
-  selResults("q"); selOssie("std");
+  selResults("q"); selOssie("what");
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
 
   // ---------- routing: the 4 tabs
