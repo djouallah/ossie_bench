@@ -1,4 +1,4 @@
--- The reference answer: plain SQL over data/*.parquet (DuckDB).
+-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.
 -- Each fact is summed at its own grain, then the two are joined on what they share.
 WITH a AS (
     SELECT s.country, p.category, SUM(f.sales_qty) AS sales_quantity

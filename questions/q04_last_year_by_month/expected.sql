@@ -1,4 +1,4 @@
--- The reference answer: plain SQL over data/*.parquet (DuckDB).
+-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.
 -- Last year of a month is the whole same month one year earlier (February 2020 with its 29 days).
 WITH m AS (
     SELECT c.month_start, SUM(f.sales_qty) AS qty

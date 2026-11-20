@@ -1,4 +1,4 @@
--- The reference answer: plain SQL over data/*.parquet (DuckDB).
+-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.
 -- Each number is summed on its own, by category; the percentages are computed after, so the total row is right.
 WITH s AS (
     SELECT p.category,

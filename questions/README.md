@@ -5,7 +5,7 @@ Each folder is one question, written once per platform in its own language, with
 ```
 q04_last_year_by_month/
   README.md            the question and what it tests
-  expected.sql         the reference answer: plain SQL over data/*.parquet, on DuckDB
+  expected.sql         the reference answer: raw SQL over data/*.parquet, no semantic model
   fabric.dax           Power BI: DAX, through executeQueries
   snowflake.sql        SELECT ... AGG(metric) FROM the semantic view
   dbx.sql              SELECT ... AGG(measure) FROM the metric view

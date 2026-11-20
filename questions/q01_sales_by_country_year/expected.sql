@@ -1,4 +1,4 @@
--- The reference answer: plain SQL over data/*.parquet (DuckDB).
+-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.
 SELECT s.country, c.year, SUM(f.sales_qty) AS sales_quantity
 FROM 'data/fact_sales.parquet' f
     JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key

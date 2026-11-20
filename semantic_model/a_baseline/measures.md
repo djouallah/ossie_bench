@@ -38,4 +38,4 @@ The standard here is the development version on [apache/ossie](https://github.co
 | `country_qty_all_cust_cat` | Units sold to every customer in every category. Every other filter is kept. | no: fields included in or excluded from the grouping |
 | `cust_cat_share_all` | sales / `country_qty_all_cust_cat`. | no: fields included in or excluded from the grouping |
 
-The answer each question expects is in `questions/<question>/expected.sql`: plain SQL over the tables, run on DuckDB.
+The answer each question expects is in `questions/<question>/expected.sql`: raw SQL straight over the tables.

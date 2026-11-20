@@ -57,6 +57,46 @@ def ossie():
     return {"version": doc["version"], "yaml": text.strip(), "expr": expr}
 
 
+def window(w):
+    """A metric view window spec in one line: the ordered column and its offset, then the columns it spans."""
+    cur = [x for x in w if x.get("range") == "current"]
+    rest = [x["order"] for x in w if x.get("range") == "all"]
+    parts = [f"{x['order']} current" + (f", offset {x['offset']}" if "offset" in x else "") for x in cur]
+    if rest:
+        parts.append("range all over " + (", ".join(rest) if len(rest) <= 3 else f"{len(rest)} other columns"))
+    return "window: " + "; ".join(parts)
+
+
+def models():
+    """Each measure as each platform's model writes it: {fabric|snowflake: {name: code}, dbx: {name: [{view, code}]}}."""
+    import yaml
+    sm = ROOT / "semantic_model"
+    doc = yaml.safe_load((sm / "fabric" / "oss_dax_dialect.ossie.yaml").read_text(encoding="utf-8"))
+    fabric = {m["name"]: m["expression"]["dialects"][0]["expression"] for m in doc["metrics"]}
+
+    sql = (sm / "snowflake" / "semantic_view.sql").read_text(encoding="utf-8")
+    sec = lambda k: sql.split(f"\n  {k} (", 1)[1].split("\n  )", 1)[0]  # noqa: E731
+    pat = re.compile(r"^\s*(?:(\w+)\.)?(\w+)\s+AS\s+(.+?),?\s*$")
+    facts = [m.groups() for m in map(pat.match, sec("FACTS").splitlines()) if m]
+    snowflake = {}
+    for line in sec("METRICS").splitlines():
+        m = pat.match(line)
+        if m and not line.strip().startswith("--"):
+            code = (f"{m.group(1)}." if m.group(1) else "") + f"{m.group(2)} AS {m.group(3)}"
+            # The facts it stands on: an LOD fact it reads, or the moved date of the copy of the fact it sums.
+            pre = [f"{k} AS {v}" for t, k, v in facts if not t and re.search(rf"\b{k}\b", m.group(3))]
+            pre += [f"{t}.{k} AS {v}" for t, k, v in facts if t and t == m.group(1) and k.startswith("sale_date")]
+            snowflake[m.group(2)] = "\n".join(["-- fact: " + x for x in pre] + [code])
+
+    dbx = {}
+    for f in sorted((sm / "dbx").glob("*.metric_view.yaml")):
+        view = f.name.split(".")[0] + "_mv"
+        for m in yaml.safe_load(f.read_text(encoding="utf-8")).get("measures", []):
+            code = m["expr"] + ("\n" + window(m["window"]) if m.get("window") else "")
+            dbx.setdefault(m["name"], []).append({"view": view, "code": code})
+    return {"fabric": fabric, "snowflake": snowflake, "dbx": dbx}
+
+
 def question(qdir, notes):
     lines = (qdir / "README.md").read_text(encoding="utf-8").strip().splitlines()
     rows = list(csv.DictReader((qdir / "results.csv").open(encoding="utf-8")))
@@ -101,7 +141,7 @@ def main():
     qs = [question(d, notes) for d in sorted((ROOT / "questions").glob("q*/")) if (d / "results.csv").exists()]
     out = ROOT / "docs" / "data.js"
     out.parent.mkdir(exist_ok=True)
-    out.write_text("window.DATA = " + json.dumps({"measures": measures(), "ossie": ossie(), "questions": qs}, ensure_ascii=False, indent=1) + ";\n",
+    out.write_text("window.DATA = " + json.dumps({"measures": measures(), "ossie": ossie(), "models": models(), "questions": qs}, ensure_ascii=False, indent=1) + ";\n",
                    encoding="utf-8", newline="\n")
     plain = {p: sum(1 for q in qs for r in q["runs"] if r["label"] == p and r["status"] == "match") for p in PLATFORMS}
     print(f"{out.relative_to(ROOT)}: {len(qs)} questions; plain matches {plain}")

@@ -1,4 +1,4 @@
--- The reference answer: plain SQL over data/*.parquet (DuckDB).
+-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.
 WITH m AS (
     SELECT c.month_start, SUM(f.net_profit) AS profit
     FROM 'data/fact_sales.parquet' f

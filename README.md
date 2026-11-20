@@ -20,7 +20,7 @@ drill-across (group each table on its own, then merge), and shows every query an
 
 ## How an answer is judged
 
-Each question has an `expected.sql`: plain SQL over the tables, run on DuckDB. No vendor owns it. Every platform's
+Each question has an `expected.sql`: raw SQL straight over the tables, with no semantic model in between. No vendor owns it. Every platform's
 answer is compared with it and gets a status in `results.csv`: `match`, `differs` (an answer, no error, other
 numbers or rows), `partial` or `refused`.
 
@@ -48,7 +48,7 @@ numbers or rows), `partial` or `refused`.
 python tools/sf.py setup export          # Snowflake data (Iceberg) + semantic view; data/*.parquet for the others
 python tools/fabric.py load publish      # Fabric: the Ossie + DAX file, published by Fabric
 python tools/dbx.py load deploy
-python tools/run_questions.py            # every question: the reference on DuckDB, then every platform
+python tools/run_questions.py            # every question: the reference (raw SQL), then every platform
 python tools/build_dashboard.py          # questions/ -> docs/data.js, the data of the dashboard (docs/index.html)
 ```
 `setup` generates the data from the original Snowflake notebook (`dax_context_demo.ipynb`), which is not in this

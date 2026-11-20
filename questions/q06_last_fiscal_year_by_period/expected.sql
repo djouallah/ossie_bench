@@ -1,4 +1,4 @@
--- The reference answer: plain SQL over data/*.parquet (DuckDB).
+-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.
 -- A 4-4-5 fiscal year is 52 weeks: last fiscal year of a day is the day 364 days earlier.
 WITH day AS (
     SELECT sale_date, SUM(sales_qty) AS qty FROM 'data/fact_sales.parquet' GROUP BY ALL

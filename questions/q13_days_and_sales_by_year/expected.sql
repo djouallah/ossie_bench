@@ -1,4 +1,4 @@
--- The reference answer: plain SQL over data/*.parquet (DuckDB).
+-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.
 -- The calendar is counted on its own, then sales are joined to it.
 SELECT c.year, COUNT(*) AS day_count, SUM(d.qty) AS sales_quantity
 FROM 'data/dim_calendar.parquet' c

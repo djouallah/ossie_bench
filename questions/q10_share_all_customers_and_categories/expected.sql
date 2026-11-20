@@ -1,4 +1,4 @@
--- The reference answer: plain SQL over data/*.parquet (DuckDB).
+-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.
 -- The denominator drops the customer and category filters and keeps year and brand.
 WITH r AS (
     SELECT s.country,

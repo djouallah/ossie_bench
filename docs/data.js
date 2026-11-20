@@ -103,6 +103,161 @@ window.DATA = {
    }
   }
  },
+ "models": {
+  "fabric": {
+   "sales_quantity": "SUM(fact_sales[sales_qty])",
+   "net_profit_total": "SUM(fact_sales[net_profit])",
+   "budget_quantity": "SUM(fact_budget[budget_qty])",
+   "sales_vs_budget_pct": "DIVIDE([sales_quantity] - [budget_quantity], [budget_quantity])",
+   "sales_qty_ly": "CALCULATE([sales_quantity], SAMEPERIODLASTYEAR(dim_calendar[date_key]))",
+   "net_profit_ly": "CALCULATE([net_profit_total], SAMEPERIODLASTYEAR(dim_calendar[date_key]))",
+   "sales_qty_fly": "CALCULATE([sales_quantity], DATEADD(dim_calendar[date_key], -364, DAY))",
+   "sales_qty_yoy_pct": "DIVIDE([sales_quantity] - [sales_qty_ly], [sales_qty_ly])",
+   "country_qty_all_customers": "CALCULATE([sales_quantity], ALL(dim_store[customer]))",
+   "customer_share_all": "DIVIDE([sales_quantity], [country_qty_all_customers])",
+   "country_total_allselected": "CALCULATE([sales_quantity], ALLSELECTED(dim_store[customer]))",
+   "customer_share_allselected": "DIVIDE([sales_quantity], [country_total_allselected])",
+   "country_total_allexcept": "CALCULATE([sales_quantity], ALLEXCEPT(fact_sales, dim_country[country], dim_calendar[year]))",
+   "country_total_fixed": "CALCULATE([sales_quantity], REMOVEFILTERS(), VALUES(dim_country[country]), VALUES(dim_calendar[year]))",
+   "country_qty_all_cust_cat": "CALCULATE([sales_quantity], REMOVEFILTERS(dim_store[customer]), REMOVEFILTERS(dim_category[category]))",
+   "cust_cat_share_all": "DIVIDE([sales_quantity], [country_qty_all_cust_cat])"
+  },
+  "snowflake": {
+   "sales_quantity": "sales.sales_quantity AS SUM(sales.sales_qty)",
+   "net_profit_total": "sales.net_profit_total AS SUM(sales.net_profit)",
+   "sales_qty_ly": "-- fact: sales_ly.sale_date_ly AS DATEADD('year', 1, sale_date)\nsales_ly.sales_qty_ly AS SUM(sales_ly.sales_qty)",
+   "net_profit_ly": "-- fact: sales_ly.sale_date_ly AS DATEADD('year', 1, sale_date)\nsales_ly.net_profit_ly AS SUM(sales_ly.net_profit)",
+   "sales_qty_fly": "-- fact: sales_fly.sale_date_fly AS DATEADD('day', 364, sale_date)\nsales_fly.sales_qty_fly AS SUM(sales_fly.sales_qty)",
+   "sales_qty_ly_day": "-- fact: sales_ly_day.sale_date_ly_day AS IFF(MONTH(sale_date) = 2 AND DAY(sale_date) = 29, NULL, DATEADD('year', 1, sale_date))\nsales_ly_day.sales_qty_ly_day AS SUM(sales_ly_day.sales_qty)",
+   "sales_qty_yoy_pct": "sales_qty_yoy_pct AS DIV0(sales.sales_quantity - sales_ly.sales_qty_ly, sales_ly.sales_qty_ly)",
+   "country_qty_all_customers": "sales_all_cust.country_qty_all_customers AS SUM(sales_all_cust.sales_qty)",
+   "country_qty_all_cust_cat": "sales_all_cust_cat.country_qty_all_cust_cat AS SUM(sales_all_cust_cat.sales_qty)",
+   "customer_share_all": "customer_share_all AS DIV0(sales.sales_quantity, sales_all_cust.country_qty_all_customers)",
+   "cust_cat_share_all": "cust_cat_share_all AS DIV0(sales.sales_quantity, sales_all_cust_cat.country_qty_all_cust_cat)",
+   "country_total_allexcept": "-- fact: country_qty_fixed AS SUM(sales.sales_qty) FIXED DIMENSIONS (country.country, calendar.year)\ncountry_total_allexcept AS AVG(country_qty_fixed)",
+   "country_total_allselected": "-- fact: country_qty_excl_customer AS SUM(sales.sales_qty) EXCLUDE DIMENSIONS (store.customer)\ncountry_total_allselected AS AVG(country_qty_excl_customer)",
+   "customer_share_allexcept": "-- fact: country_qty_fixed AS SUM(sales.sales_qty) FIXED DIMENSIONS (country.country, calendar.year)\ncustomer_share_allexcept AS SUM(sales.sales_qty) / AVG(country_qty_fixed)",
+   "customer_share_allselected": "-- fact: country_qty_excl_customer AS SUM(sales.sales_qty) EXCLUDE DIMENSIONS (store.customer)\ncustomer_share_allselected AS SUM(sales.sales_qty) / AVG(country_qty_excl_customer)",
+   "cust_cat_share_allselected": "-- fact: country_qty_excl_customer_category AS SUM(sales.sales_qty) EXCLUDE DIMENSIONS (store.customer, category.category)\ncust_cat_share_allselected AS SUM(sales.sales_qty) / AVG(country_qty_excl_customer_category)",
+   "country_total_fixed": "-- fact: country_qty_fixed AS SUM(sales.sales_qty) FIXED DIMENSIONS (country.country, calendar.year)\ncountry_total_fixed AS SUM(DISTINCT country_qty_fixed)",
+   "budget_quantity": "budget.budget_quantity AS SUM(budget.budget_qty)",
+   "sales_vs_budget_pct": "sales_vs_budget_pct AS DIV0(sales.sales_quantity - budget.budget_quantity, budget.budget_quantity)"
+  },
+  "dbx": {
+   "sales_quantity": [
+    {
+     "view": "bridge_mv",
+     "code": "SUM(sales.sales_qty)"
+    },
+    {
+     "view": "sales_mv",
+     "code": "SUM(sales_qty)"
+    }
+   ],
+   "budget_quantity": [
+    {
+     "view": "bridge_mv",
+     "code": "SUM(budget.budget_qty)"
+    },
+    {
+     "view": "budget_mv",
+     "code": "SUM(budget_qty)"
+    }
+   ],
+   "sales_vs_budget_pct": [
+    {
+     "view": "bridge_mv",
+     "code": "(MEASURE(sales_quantity) - MEASURE(budget_quantity)) / NULLIF(MEASURE(budget_quantity), 0)"
+    }
+   ],
+   "net_profit_total": [
+    {
+     "view": "sales_mv",
+     "code": "SUM(net_profit)"
+    }
+   ],
+   "sales_qty_ly": [
+    {
+     "view": "sales_mv",
+     "code": "SUM(sales_qty)\nwindow: date_key current, offset -1 year; range all over 10 other columns"
+    },
+    {
+     "view": "sales_ly_mv",
+     "code": "SUM(sales_qty)"
+    }
+   ],
+   "net_profit_ly": [
+    {
+     "view": "sales_mv",
+     "code": "SUM(net_profit)\nwindow: date_key current, offset -1 year; range all over 10 other columns"
+    },
+    {
+     "view": "sales_ly_mv",
+     "code": "SUM(net_profit)"
+    }
+   ],
+   "sales_qty_fly": [
+    {
+     "view": "sales_mv",
+     "code": "SUM(sales_qty)\nwindow: date_key current, offset -364 day; range all over 10 other columns"
+    }
+   ],
+   "sales_qty_yoy_pct": [
+    {
+     "view": "sales_mv",
+     "code": "(MEASURE(sales_quantity) - MEASURE(sales_qty_ly)) / NULLIF(MEASURE(sales_qty_ly), 0)"
+    }
+   ],
+   "country_qty_all_customers": [
+    {
+     "view": "sales_mv",
+     "code": "SUM(sales_qty)\nwindow: range all over customer"
+    }
+   ],
+   "customer_share_all": [
+    {
+     "view": "sales_mv",
+     "code": "MEASURE(sales_quantity) / MEASURE(country_qty_all_customers)"
+    }
+   ],
+   "country_total_fixed": [
+    {
+     "view": "sales_mv",
+     "code": "SUM(sales_qty)\nwindow: year current; range all over 12 other columns"
+    }
+   ],
+   "country_qty_all_cust_cat": [
+    {
+     "view": "sales_mv",
+     "code": "SUM(sales_qty)\nwindow: range all over customer, category"
+    }
+   ],
+   "cust_cat_share_all": [
+    {
+     "view": "sales_mv",
+     "code": "MEASURE(sales_quantity) / MEASURE(country_qty_all_cust_cat)"
+    }
+   ],
+   "sales_qty_ly_month": [
+    {
+     "view": "sales_mv",
+     "code": "SUM(sales_qty)\nwindow: month_start current, offset -12 month; range all over 4 other columns"
+    }
+   ],
+   "sales_qty_ly_year": [
+    {
+     "view": "sales_mv",
+     "code": "SUM(sales_qty)\nwindow: year current, offset -1; range all over year_start"
+    }
+   ],
+   "sales_qty_fly_period": [
+    {
+     "view": "sales_mv",
+     "code": "SUM(sales_qty)\nwindow: fiscal_period_start current, offset -364 day; range all over 4 other columns"
+    }
+   ]
+  }
+ },
  "questions": [
   {
    "id": "q01",
@@ -120,7 +275,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\nSELECT s.country, c.year, SUM(f.sales_qty) AS sales_quantity\nFROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\nWHERE c.year <= 2022\nGROUP BY ALL\nORDER BY country, year",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\nSELECT s.country, c.year, SUM(f.sales_qty) AS sales_quantity\nFROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\nWHERE c.year <= 2022\nGROUP BY ALL\nORDER BY country, year",
     "rows": [
      [
       "Germany",
@@ -497,7 +652,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\nSELECT p.product_name, SUM(f.sales_qty) AS sales_quantity\nFROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\nWHERE c.year = 2021\nGROUP BY ALL\nORDER BY sales_quantity DESC\nLIMIT 10",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\nSELECT p.product_name, SUM(f.sales_qty) AS sales_quantity\nFROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\nWHERE c.year = 2021\nGROUP BY ALL\nORDER BY sales_quantity DESC\nLIMIT 10",
     "rows": [
      [
       "Persil SKU 5",
@@ -841,7 +996,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\n-- Last year of a day is the same calendar date one year earlier, so Feb 29, 2020 belongs to no day of 2021.\nWITH day AS (\n    SELECT sale_date, SUM(sales_qty) AS qty FROM 'data/fact_sales.parquet' GROUP BY ALL\n)\nSELECT c.date_key, cur.qty AS sales_quantity, ly.qty AS sales_qty_ly\nFROM 'data/dim_calendar.parquet' c\nLEFT JOIN day cur ON cur.sale_date = c.date_key\nLEFT JOIN day ly ON ly.sale_date = c.date_key - INTERVAL 1 YEAR\nWHERE c.date_key BETWEEN DATE '2021-02-25' AND DATE '2021-03-03'\nORDER BY c.date_key",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- Last year of a day is the same calendar date one year earlier, so Feb 29, 2020 belongs to no day of 2021.\nWITH day AS (\n    SELECT sale_date, SUM(sales_qty) AS qty FROM 'data/fact_sales.parquet' GROUP BY ALL\n)\nSELECT c.date_key, cur.qty AS sales_quantity, ly.qty AS sales_qty_ly\nFROM 'data/dim_calendar.parquet' c\nLEFT JOIN day cur ON cur.sale_date = c.date_key\nLEFT JOIN day ly ON ly.sale_date = c.date_key - INTERVAL 1 YEAR\nWHERE c.date_key BETWEEN DATE '2021-02-25' AND DATE '2021-03-03'\nORDER BY c.date_key",
     "rows": [
      [
       "2021-02-25",
@@ -1234,7 +1389,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\n-- Last year of a month is the whole same month one year earlier (February 2020 with its 29 days).\nWITH m AS (\n    SELECT c.month_start, SUM(f.sales_qty) AS qty\n    FROM 'data/fact_sales.parquet' f JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    GROUP BY ALL\n), r AS (\n    SELECT cur.month_start, cur.qty AS sales_quantity, ly.qty AS sales_qty_ly\n    FROM m cur LEFT JOIN m ly ON ly.month_start = cur.month_start - INTERVAL 1 YEAR\n    WHERE cur.month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\n)\nSELECT month_start, SUM(sales_quantity) AS sales_quantity, SUM(sales_qty_ly) AS sales_qty_ly,\n       (SUM(sales_quantity) - SUM(sales_qty_ly)) / SUM(sales_qty_ly) AS sales_qty_yoy_pct\nFROM r\nGROUP BY ROLLUP (month_start)\nORDER BY month_start NULLS LAST",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- Last year of a month is the whole same month one year earlier (February 2020 with its 29 days).\nWITH m AS (\n    SELECT c.month_start, SUM(f.sales_qty) AS qty\n    FROM 'data/fact_sales.parquet' f JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    GROUP BY ALL\n), r AS (\n    SELECT cur.month_start, cur.qty AS sales_quantity, ly.qty AS sales_qty_ly\n    FROM m cur LEFT JOIN m ly ON ly.month_start = cur.month_start - INTERVAL 1 YEAR\n    WHERE cur.month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\n)\nSELECT month_start, SUM(sales_quantity) AS sales_quantity, SUM(sales_qty_ly) AS sales_qty_ly,\n       (SUM(sales_quantity) - SUM(sales_qty_ly)) / SUM(sales_qty_ly) AS sales_qty_yoy_pct\nFROM r\nGROUP BY ROLLUP (month_start)\nORDER BY month_start NULLS LAST",
     "rows": [
      [
       "2021-01-01",
@@ -1654,7 +1809,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\n-- The total of last year is the sum of the rows above it (2019 has no sales, so 2020 + 2021).\nWITH y AS (\n    SELECT c.year, SUM(f.sales_qty) AS qty\n    FROM 'data/fact_sales.parquet' f JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    GROUP BY ALL\n), r AS (\n    SELECT cur.year, cur.qty AS sales_quantity, ly.qty AS sales_qty_ly\n    FROM y cur LEFT JOIN y ly ON ly.year = cur.year - 1\n    WHERE cur.year <= 2022\n)\nSELECT year, SUM(sales_quantity) AS sales_quantity, SUM(sales_qty_ly) AS sales_qty_ly,\n       (SUM(sales_quantity) - SUM(sales_qty_ly)) / SUM(sales_qty_ly) AS sales_qty_yoy_pct\nFROM r\nGROUP BY ROLLUP (year)\nORDER BY year NULLS LAST",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- The total of last year is the sum of the rows above it (2019 has no sales, so 2020 + 2021).\nWITH y AS (\n    SELECT c.year, SUM(f.sales_qty) AS qty\n    FROM 'data/fact_sales.parquet' f JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    GROUP BY ALL\n), r AS (\n    SELECT cur.year, cur.qty AS sales_quantity, ly.qty AS sales_qty_ly\n    FROM y cur LEFT JOIN y ly ON ly.year = cur.year - 1\n    WHERE cur.year <= 2022\n)\nSELECT year, SUM(sales_quantity) AS sales_quantity, SUM(sales_qty_ly) AS sales_qty_ly,\n       (SUM(sales_quantity) - SUM(sales_qty_ly)) / SUM(sales_qty_ly) AS sales_qty_yoy_pct\nFROM r\nGROUP BY ROLLUP (year)\nORDER BY year NULLS LAST",
     "rows": [
      [
       "2020",
@@ -2008,7 +2163,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\n-- A 4-4-5 fiscal year is 52 weeks: last fiscal year of a day is the day 364 days earlier.\nWITH day AS (\n    SELECT sale_date, SUM(sales_qty) AS qty FROM 'data/fact_sales.parquet' GROUP BY ALL\n)\nSELECT c.fiscal_period_name, c.fiscal_period_start, SUM(cur.qty) AS sales_quantity, SUM(ly.qty) AS sales_qty_fly\nFROM 'data/dim_calendar.parquet' c\nLEFT JOIN day cur ON cur.sale_date = c.date_key\nLEFT JOIN day ly ON ly.sale_date = c.date_key - INTERVAL 364 DAY\nWHERE c.fiscal_period_start BETWEEN DATE '2021-01-25' AND DATE '2021-05-24'\nGROUP BY ALL\nORDER BY c.fiscal_period_start",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- A 4-4-5 fiscal year is 52 weeks: last fiscal year of a day is the day 364 days earlier.\nWITH day AS (\n    SELECT sale_date, SUM(sales_qty) AS qty FROM 'data/fact_sales.parquet' GROUP BY ALL\n)\nSELECT c.fiscal_period_name, c.fiscal_period_start, SUM(cur.qty) AS sales_quantity, SUM(ly.qty) AS sales_qty_fly\nFROM 'data/dim_calendar.parquet' c\nLEFT JOIN day cur ON cur.sale_date = c.date_key\nLEFT JOIN day ly ON ly.sale_date = c.date_key - INTERVAL 364 DAY\nWHERE c.fiscal_period_start BETWEEN DATE '2021-01-25' AND DATE '2021-05-24'\nGROUP BY ALL\nORDER BY c.fiscal_period_start",
     "rows": [
      [
       "FY2021 P02",
@@ -2354,7 +2509,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\nWITH m AS (\n    SELECT c.month_start, SUM(f.net_profit) AS profit\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE p.category = 'Clearance'\n    GROUP BY ALL\n)\nSELECT cur.month_start, cur.profit AS net_profit_total, ly.profit AS net_profit_ly\nFROM m cur LEFT JOIN m ly ON ly.month_start = cur.month_start - INTERVAL 1 YEAR\nWHERE cur.month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\nORDER BY cur.month_start",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\nWITH m AS (\n    SELECT c.month_start, SUM(f.net_profit) AS profit\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE p.category = 'Clearance'\n    GROUP BY ALL\n)\nSELECT cur.month_start, cur.profit AS net_profit_total, ly.profit AS net_profit_ly\nFROM m cur LEFT JOIN m ly ON ly.month_start = cur.month_start - INTERVAL 1 YEAR\nWHERE cur.month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\nORDER BY cur.month_start",
     "rows": [
      [
       "2021-01-01",
@@ -2614,7 +2769,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\n-- One row per customer that has sales under the filters. Two denominators per country: every customer of the\n-- country (the filtered-out ones too), and only the customers shown.\nWITH base AS (\n    SELECT s.country, s.customer, SUM(f.sales_qty) AS qty\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.month_start = DATE '2021-02-01' AND p.brand <> 'Somat'\n    GROUP BY ALL\n), r AS (\n    SELECT country, customer, qty AS sales_quantity,\n           SUM(qty) OVER (PARTITION BY country) AS country_qty_all_customers,\n           customer NOT IN ('Zabka', 'Rewe', 'Superdrug') AS shown\n    FROM base\n)\nSELECT country, customer, sales_quantity,\n       sales_quantity / country_qty_all_customers AS customer_share_all,\n       sales_quantity / SUM(sales_quantity) OVER (PARTITION BY country) AS customer_share_allselected\nFROM r\nWHERE shown\nORDER BY country, customer",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- One row per customer that has sales under the filters. Two denominators per country: every customer of the\n-- country (the filtered-out ones too), and only the customers shown.\nWITH base AS (\n    SELECT s.country, s.customer, SUM(f.sales_qty) AS qty\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.month_start = DATE '2021-02-01' AND p.brand <> 'Somat'\n    GROUP BY ALL\n), r AS (\n    SELECT country, customer, qty AS sales_quantity,\n           SUM(qty) OVER (PARTITION BY country) AS country_qty_all_customers,\n           customer NOT IN ('Zabka', 'Rewe', 'Superdrug') AS shown\n    FROM base\n)\nSELECT country, customer, sales_quantity,\n       sales_quantity / country_qty_all_customers AS customer_share_all,\n       sales_quantity / SUM(sales_quantity) OVER (PARTITION BY country) AS customer_share_allselected\nFROM r\nWHERE shown\nORDER BY country, customer",
     "rows": [
      [
       "Germany",
@@ -3196,7 +3351,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\n-- Three numbers per country: February without Tesco; February, every customer; the whole of 2021, every customer.\nWITH r AS (\n    SELECT s.country,\n           SUM(f.sales_qty) FILTER (WHERE c.month_start = DATE '2021-02-01' AND s.customer <> 'Tesco') AS sales_quantity,\n           SUM(f.sales_qty) FILTER (WHERE c.month_start = DATE '2021-02-01') AS country_qty_all_customers,\n           SUM(f.sales_qty) AS country_total_fixed\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.year = 2021\n    GROUP BY ALL\n)\nSELECT country, SUM(sales_quantity) AS sales_quantity, SUM(country_qty_all_customers) AS country_qty_all_customers,\n       SUM(country_total_fixed) AS country_total_fixed\nFROM r\nGROUP BY ROLLUP (country)\nORDER BY country NULLS LAST",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- Three numbers per country: February without Tesco; February, every customer; the whole of 2021, every customer.\nWITH r AS (\n    SELECT s.country,\n           SUM(f.sales_qty) FILTER (WHERE c.month_start = DATE '2021-02-01' AND s.customer <> 'Tesco') AS sales_quantity,\n           SUM(f.sales_qty) FILTER (WHERE c.month_start = DATE '2021-02-01') AS country_qty_all_customers,\n           SUM(f.sales_qty) AS country_total_fixed\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.year = 2021\n    GROUP BY ALL\n)\nSELECT country, SUM(sales_quantity) AS sales_quantity, SUM(country_qty_all_customers) AS country_qty_all_customers,\n       SUM(country_total_fixed) AS country_total_fixed\nFROM r\nGROUP BY ROLLUP (country)\nORDER BY country NULLS LAST",
     "rows": [
      [
       "Germany",
@@ -3428,7 +3583,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\n-- The denominator drops the customer and category filters and keeps year and brand.\nWITH r AS (\n    SELECT s.country,\n           SUM(f.sales_qty) FILTER (WHERE p.category = 'Laundry' AND s.customer <> 'Tesco') AS sales_quantity,\n           SUM(f.sales_qty) AS country_qty_all_cust_cat\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.year = 2021 AND p.brand IN ('Tide', 'Dove')\n    GROUP BY ALL\n)\nSELECT country, sales_quantity, sales_quantity / country_qty_all_cust_cat AS cust_cat_share_all\nFROM r\nORDER BY country",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- The denominator drops the customer and category filters and keeps year and brand.\nWITH r AS (\n    SELECT s.country,\n           SUM(f.sales_qty) FILTER (WHERE p.category = 'Laundry' AND s.customer <> 'Tesco') AS sales_quantity,\n           SUM(f.sales_qty) AS country_qty_all_cust_cat\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.year = 2021 AND p.brand IN ('Tide', 'Dove')\n    GROUP BY ALL\n)\nSELECT country, sales_quantity, sales_quantity / country_qty_all_cust_cat AS cust_cat_share_all\nFROM r\nORDER BY country",
     "rows": [
      [
       "Germany",
@@ -3601,7 +3756,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\n-- Each fact is summed at its own grain, then the two are joined on what they share.\nWITH a AS (\n    SELECT s.country, p.category, SUM(f.sales_qty) AS sales_quantity\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.year = 2021\n    GROUP BY ALL\n), b AS (\n    SELECT country, category, SUM(budget_qty) AS budget_quantity\n    FROM 'data/fact_budget.parquet'\n    WHERE YEAR(month_start) = 2021\n    GROUP BY ALL\n)\nSELECT country, category, a.sales_quantity, b.budget_quantity,\n       (a.sales_quantity - b.budget_quantity) / b.budget_quantity AS sales_vs_budget_pct\nFROM a FULL OUTER JOIN b USING (country, category)\nORDER BY country, category",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- Each fact is summed at its own grain, then the two are joined on what they share.\nWITH a AS (\n    SELECT s.country, p.category, SUM(f.sales_qty) AS sales_quantity\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.year = 2021\n    GROUP BY ALL\n), b AS (\n    SELECT country, category, SUM(budget_qty) AS budget_quantity\n    FROM 'data/fact_budget.parquet'\n    WHERE YEAR(month_start) = 2021\n    GROUP BY ALL\n)\nSELECT country, category, a.sales_quantity, b.budget_quantity,\n       (a.sales_quantity - b.budget_quantity) / b.budget_quantity AS sales_vs_budget_pct\nFROM a FULL OUTER JOIN b USING (country, category)\nORDER BY country, category",
     "rows": [
      [
       "Germany",
@@ -4439,7 +4594,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\n-- Each number is summed on its own, by category; the percentages are computed after, so the total row is right.\nWITH s AS (\n    SELECT p.category,\n           SUM(f.sales_qty) FILTER (WHERE YEAR(f.sale_date) = 2021) AS sales_quantity,\n           SUM(f.sales_qty) FILTER (WHERE YEAR(f.sale_date) = 2020) AS sales_qty_ly\n    FROM 'data/fact_sales.parquet' f JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    GROUP BY ALL\n), b AS (\n    SELECT category, SUM(budget_qty) AS budget_quantity\n    FROM 'data/fact_budget.parquet'\n    WHERE YEAR(month_start) = 2021\n    GROUP BY ALL\n)\nSELECT category, SUM(sales_quantity) AS sales_quantity, SUM(budget_quantity) AS budget_quantity,\n       (SUM(sales_quantity) - SUM(budget_quantity)) / SUM(budget_quantity) AS sales_vs_budget_pct,\n       SUM(sales_qty_ly) AS sales_qty_ly,\n       (SUM(sales_quantity) - SUM(sales_qty_ly)) / SUM(sales_qty_ly) AS sales_qty_yoy_pct\nFROM s JOIN b USING (category)\nGROUP BY ROLLUP (category)\nORDER BY category NULLS LAST",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- Each number is summed on its own, by category; the percentages are computed after, so the total row is right.\nWITH s AS (\n    SELECT p.category,\n           SUM(f.sales_qty) FILTER (WHERE YEAR(f.sale_date) = 2021) AS sales_quantity,\n           SUM(f.sales_qty) FILTER (WHERE YEAR(f.sale_date) = 2020) AS sales_qty_ly\n    FROM 'data/fact_sales.parquet' f JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    GROUP BY ALL\n), b AS (\n    SELECT category, SUM(budget_qty) AS budget_quantity\n    FROM 'data/fact_budget.parquet'\n    WHERE YEAR(month_start) = 2021\n    GROUP BY ALL\n)\nSELECT category, SUM(sales_quantity) AS sales_quantity, SUM(budget_quantity) AS budget_quantity,\n       (SUM(sales_quantity) - SUM(budget_quantity)) / SUM(budget_quantity) AS sales_vs_budget_pct,\n       SUM(sales_qty_ly) AS sales_qty_ly,\n       (SUM(sales_quantity) - SUM(sales_qty_ly)) / SUM(sales_qty_ly) AS sales_qty_yoy_pct\nFROM s JOIN b USING (category)\nGROUP BY ROLLUP (category)\nORDER BY category NULLS LAST",
     "rows": [
      [
       "Clearance",
@@ -4875,7 +5030,7 @@ window.DATA = {
     true
    ],
    "expected": {
-    "code": "-- The reference answer: plain SQL over data/*.parquet (DuckDB).\n-- The calendar is counted on its own, then sales are joined to it.\nSELECT c.year, COUNT(*) AS day_count, SUM(d.qty) AS sales_quantity\nFROM 'data/dim_calendar.parquet' c\nLEFT JOIN (SELECT sale_date, SUM(sales_qty) AS qty FROM 'data/fact_sales.parquet' GROUP BY ALL) d\n       ON d.sale_date = c.date_key\nGROUP BY ALL\nORDER BY c.year",
+    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- The calendar is counted on its own, then sales are joined to it.\nSELECT c.year, COUNT(*) AS day_count, SUM(d.qty) AS sales_quantity\nFROM 'data/dim_calendar.parquet' c\nLEFT JOIN (SELECT sale_date, SUM(sales_qty) AS qty FROM 'data/fact_sales.parquet' GROUP BY ALL) d\n       ON d.sale_date = c.date_key\nGROUP BY ALL\nORDER BY c.year",
     "rows": [
      [
       "2020",

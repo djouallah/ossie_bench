@@ -1,4 +1,4 @@
--- The reference answer: plain SQL over data/*.parquet (DuckDB).
+-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.
 -- The total of last year is the sum of the rows above it (2019 has no sales, so 2020 + 2021).
 WITH y AS (
     SELECT c.year, SUM(f.sales_qty) AS qty

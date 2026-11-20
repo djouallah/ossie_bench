@@ -1,4 +1,4 @@
--- The reference answer: plain SQL over data/*.parquet (DuckDB).
+-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.
 -- Three numbers per country: February without Tesco; February, every customer; the whole of 2021, every customer.
 WITH r AS (
     SELECT s.country,

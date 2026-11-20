@@ -1,4 +1,4 @@
--- The reference answer: plain SQL over data/*.parquet (DuckDB).
+-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.
 -- One row per customer that has sales under the filters. Two denominators per country: every customer of the
 -- country (the filtered-out ones too), and only the customers shown.
 WITH base AS (
