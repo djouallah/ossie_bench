@@ -2,8 +2,8 @@
 
 One model, with two facts at two grains (daily sales, monthly budget), written once in Apache Ossie and built natively
 on Power BI / Fabric, Snowflake, Databricks and BigQuery, then asked the same 15 questions on each ([questions/](questions/)).
-The Ossie file itself is answered by [dax-sql](https://github.com/djouallah/dax-sql), a toy compiler, since Ossie is a
-specification and has no engine of its own.
+The Ossie file itself is answered by [dax-sql](https://github.com/djouallah/dax-sql), a toy compiler, fully AI generated
+and only a proof of concept, since Ossie is a specification and has no engine of its own.
 
 **The Ossie file is a proof of concept. No platform imports it.** It is written against `0.3.0.dev0`, the unreleased
 version on main, and 12 of its 16 measures are written in DAX, because we could not express them any other way yet:
@@ -15,14 +15,20 @@ rewritten for it.
 Every platform can reach every answer. What differs is how much has to be added to the model, or moved into the
 query, to get there.
 
-**[The dashboard](https://djouallah.github.io/ossie_bench/)** explains Ossie and this repo's Ossie file, shows each
-platform's model and how its engine answers (drill-across: group each table on its own, then merge), every query and
-answer beside the reference, and what each platform does with an Ossie file.
+**[The dashboard](https://djouallah.github.io/ossie_bench/)** has three tabs:
+- **Ossie open spec:** the baseline file as a graph, its 16 metrics, and what the standard covers today.
+- **Implementations:** Power BI, Snowflake, Databricks, BigQuery and dax-sql, each with its model, how it answers
+  (drill-across: group each table on its own, then merge) and a worked example.
+- **Results:** every query and answer beside the reference, and the grid of statuses.
+
+In the top bar, **Industry support** shows what each platform does with an Ossie file: import, export, and this
+repo's file. **About** is next to it.
 
 This is not a benchmark. It is an educational repo about semantic modeling. All the models were built with AI. I
-know Power BI well. Any mistake is still mine. A personal project: the
-views are mine, not my employer's, and nothing here is endorsed by Microsoft, Snowflake, Databricks, Google or the
-Apache Software Foundation. dax-sql was started by N.S. Devaraj and I work on it; it is not a product, and it is not Ossie's.
+know Power BI well. Any mistake is still mine. A personal project: the views are mine, not my employer's, and
+nothing here is endorsed by Microsoft, Snowflake, Databricks, Google or the Apache Software Foundation. dax-sql was
+started by N.S. Devaraj and I work on it. Its code is fully AI generated and it is just a proof of concept: not a
+product, and not Ossie's.
 
 ## The model ([semantic_model/](semantic_model/))
 

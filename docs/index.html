@@ -552,8 +552,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     <h3>How it was built</h3>
     <p>All the models here were built with AI. I know Power BI well. Every answer is checked against dax-sql's, but
     any mistake is still mine.</p>
-    <p>The Ossie file is answered by dax-sql, a toy compiler that N.S. Devaraj started and I work on; it is not a product,
-    and it is not Ossie's.</p>
+    <p>The Ossie file is answered by dax-sql, a toy compiler that N.S. Devaraj started and I work on. Its code is fully
+    AI generated and it is just a proof of concept: not a product, and not Ossie's.</p>
     <h3>A personal project</h3>
     <p>This is a personal project. The views are mine, not my employer's, and nothing here is endorsed by Microsoft,
     Snowflake, Databricks, Google or the Apache Software Foundation.</p>
@@ -1091,7 +1091,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       "Last year is a window measure ordered by one column. Grouped by another date field, it returns another number, with no error." + src("Databricks docs", DBXD + "metric-views/data-modeling/window-measures"),
       "A second fact is a second view joined in the query, or a <code>one_to_many</code> join from a dimension source (Runtime 18.1+), which aggregates each fact on its own and blends them: <code>bridge_mv</code> here." + src("Databricks docs", DBXD + "uc-semantics/metric-views/joins")
     ] },
-    daxsql: { appr: "A toy implementation of Ossie", who: "The one tool that reads this repo's Ossie file as it is. It shows the file is enough to answer the 15 questions; it is not how an engine should be built.", facts: [
+    daxsql: { appr: "A toy implementation of Ossie", who: "The one tool that reads this repo's Ossie file as it is: fully AI generated, a proof of concept. It shows the file is enough to answer the 15 questions; it is not how an engine should be built.", facts: [
       "It reads the baseline file, the 4 SQL measures and the 12 DAX ones together, and compiles a SQL query on the model (<code>SELECT ... AGG(measure) FROM model</code>) into one DuckDB query on the same parquet files." + src("dax-sql", "https://github.com/djouallah/dax-sql"),
       "Each measure is computed over its own table, then joined on the query's groups: drill-across, as Power BI and Snowflake do. The DAX measures are compiled to SQL with their filter context, so <code>CALCULATE</code>, <code>ALL</code> and <code>SAMEPERIODLASTYEAR</code> work as in DAX.",
       "Totals are <code>GROUP BY ROLLUP</code>, and a blank reads as 0 in <code>+</code> and <code>-</code>, as in DAX.",
