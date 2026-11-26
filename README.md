@@ -16,8 +16,8 @@ Every platform can reach every answer. What differs is how much has to be added 
 query, to get there.
 
 **[The dashboard](https://djouallah.github.io/ossie_bench/)** shows the model in Ossie and as each platform holds it,
-explains what Ossie is and how each platform answers (drill-across: group each table on its own, then merge), what
-each platform does with an Ossie file, and every query and answer beside the reference.
+explains what Ossie is and how each platform answers (drill-across: group each table on its own, then merge), every
+query and answer beside the reference, and what each platform does with an Ossie file.
 
 This is not a benchmark. It is an educational repo about semantic modeling. All the models were built with AI. I
 know Power BI well. Any mistake is still mine. A personal project: the

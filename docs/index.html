@@ -400,9 +400,9 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   <nav id="nav">
     <span class="ind" aria-hidden="true"></span>
     <a href="#model">The model</a>
-    <a href="#answer">How they work</a>
-    <a href="#support">Industry support</a>
+    <a href="#answer">How they answer</a>
     <a href="#results">Results</a>
+    <a href="#support">Industry support</a>
   </nav>
 </div></div>
 
@@ -414,7 +414,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   <div id="graphs"></div>
 </section>
 
-<!-- ============================== 2. how they work -->
+<!-- ============================== 2. how they answer -->
 <section id="answer" class="view">
   <div class="subtabs" id="st-answer">
     <button type="button" data-k="ossie"><span class="dot ossie"></span>Ossie</button>
@@ -521,7 +521,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 </section>
 
-<!-- ============================== 3. industry support -->
+<!-- ============================== 4. industry support -->
 <section id="support" class="view">
   <div class="card stack">
     <header class="stack" style="gap:6px"><h3>What each platform does with an Ossie file</h3>
@@ -552,7 +552,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   </div>
 </section>
 
-<!-- ============================== 4. results -->
+<!-- ============================== 3. results -->
 <section id="results" class="view">
   <div class="subtabs" id="st-results">
     <button type="button" data-k="q">Queries and answers</button>
@@ -1192,7 +1192,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
   })();
 
-  // ---------- 4. results: every question's queries and answers, and the grid
+  // ---------- 3. results: every question's queries and answers, and the grid
   (function () {
     function why(s) {
       s = s.replace(/^\**(match|differs|partial|refused|reference)\**\s*[:,;.]?\s*/, "").replace(/^\((.*)\)$/, "$1");
@@ -1235,7 +1235,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
 
   // ---------- routing: the 4 tabs, and About
-  var VIEWS = ["model", "answer", "support", "results", "about"];
+  var VIEWS = ["model", "answer", "results", "support", "about"];
   var nav = $("nav"), ind = nav.querySelector(".ind");
   function moveInd() {
     var a = nav.querySelector('a[aria-current="page"]'); ind.classList.toggle("off", !a); if (!a) return;
