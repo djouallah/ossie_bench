@@ -389,7 +389,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 <div class="top"><div class="wrap">
   <div class="tophead">
-    <a class="brand" href="#model"><span class="logo" aria-hidden="true"></span>ossie_bench</a>
+    <a class="brand" href="#ossie"><span class="logo" aria-hidden="true"></span>ossie_bench</a>
     <span class="tagline">not a benchmark</span>
     <div class="toplinks">
       <a href="#about" id="aboutlink">About</a>
@@ -399,7 +399,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   </div>
   <nav id="nav">
     <span class="ind" aria-hidden="true"></span>
-    <a href="#model">The model</a>
+    <a href="#ossie">Ossie</a>
     <a href="#answer">Implementation</a>
     <a href="#results">Results</a>
     <a href="#support">Industry support</a>
@@ -408,24 +408,10 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 <div class="wrap">
 
-<!-- ============================== 1. the model -->
-<section id="model" class="view">
-  <div class="subtabs" id="st-model"></div>
-  <div id="graphs"></div>
-</section>
-
-<!-- ============================== 2. implementation -->
-<section id="answer" class="view">
-  <div class="subtabs" id="st-answer">
-    <button type="button" data-k="ossie"><span class="dot ossie"></span>Ossie</button>
-    <button type="button" data-k="fabric"><span class="dot fabric"></span>Power BI</button>
-    <button type="button" data-k="snowflake"><span class="dot snowflake"></span>Snowflake</button>
-    <button type="button" data-k="dbx"><span class="dot dbx"></span>Databricks</button>
-    <button type="button" data-k="bigquery"><span class="dot bigquery"></span>BigQuery</button>
-  </div>
-  <div class="card stack demo">
-    <div id="how" class="how"></div>
-    <div id="ossiebox" class="stack" hidden>
+<!-- ============================== 1. ossie -->
+<section id="ossie" class="view">
+  <div class="card stack">
+    <div id="how-ossie" class="how ossie"></div>
       <div class="flow" role="img" aria-label="An Ossie model and a query go into a compiler, which writes plain SQL; any SQL engine runs it. Ossie's own compiler is a test tool; here dax-sql stands in.">
         <div class="fbox"><h4>1 · Model</h4><p>The Ossie file: datasets, relationships, fields, metrics, written in a portable SQL expression language.</p>
           <span class="ftag ok">spec, released in 0.1.1</span></div>
@@ -448,6 +434,9 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       <div class="today"><b>Today:</b> <span class="st">Ossie file</span><span class="farrow" aria-hidden="true">&rarr;</span>
         <span>a platform that supports Ossie imports it into its own semantic model</span><span class="farrow" aria-hidden="true">&rarr;</span>
         <span>its planner and engine answer the query (<a href="#support">Industry support</a>).</span></div>
+  </div>
+  <div id="graphs-ossie" class="stack" style="margin-top:16px"></div>
+  <div class="card stack" style="margin-top:16px">
       <h4>What is open today</h4>
       <ul class="facts" style="--pc: var(--p-ossie)">
         <li>The specification and its JSON schema, a validator, and a Python SDK that parses a file. None of them runs a query. <a class="src" href="https://github.com/apache/ossie/tree/main/validation">validator</a></li>
@@ -463,7 +452,20 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
           is enough to answer them; it is not how an engine should be built. <a class="src" href="https://github.com/djouallah/dax-sql">dax-sql</a></p>
         <div id="dx-example" class="stack"></div>
       </div>
-    </div>
+  </div>
+</section>
+
+<!-- ============================== 2. implementation -->
+<section id="answer" class="view">
+  <div class="subtabs" id="st-answer">
+    <button type="button" data-k="fabric"><span class="dot fabric"></span>Power BI</button>
+    <button type="button" data-k="snowflake"><span class="dot snowflake"></span>Snowflake</button>
+    <button type="button" data-k="dbx"><span class="dot dbx"></span>Databricks</button>
+    <button type="button" data-k="bigquery"><span class="dot bigquery"></span>BigQuery</button>
+  </div>
+  <div id="graphs"></div>
+  <div class="card stack demo" style="margin-top:16px">
+    <div id="how" class="how"></div>
     <div id="ctx" class="stack" hidden></div>
     <div id="lod" class="stack" hidden></div>
     <div id="walk" class="stack">
@@ -581,7 +583,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   var NAME = { ossie: "Ossie", fabric: "Power BI", snowflake: "Snowflake", dbx: "Databricks", bigquery: "BigQuery", daxsql: "Reference (dax-sql)" };
   var ICON = { match: "✓", differs: "≠", partial: "◐", refused: "✕", na: "–", reference: "★" };
   var PLATS = ["fabric", "snowflake", "dbx", "bigquery", "daxsql"];   // the clients that answer the questions
-  var MODELS = ["ossie", "fabric", "snowflake", "dbx", "bigquery"];    // the models, Ossie first
+  var MODELS = ["fabric", "snowflake", "dbx", "bigquery"];             // the vendors' models (Implementation tab)
   var GH = "https://github.com/djouallah/ossie_bench/blob/main/";
   var REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
   function $(id) { return document.getElementById(id); }
@@ -637,7 +639,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     return select;
   }
 
-  // ---------- 1. the model: one renderer for the Ossie, Power BI, Snowflake and Databricks graphs (BigQuery has its own)
+  // ---------- the models (the Ossie tab and the Implementation tab): one renderer for the Ossie, Power BI, Snowflake and Databricks graphs (BigQuery has its own)
   // g: {w, h, minw, dense, labels, card, islands, gulfs, nodes: {id: {x, y, w, k, t, rows, l: [lines], c: [columns],
   // compact, sub, badge, phys, tip}}, edges: [{a: one side, b: many side, label, as/bs, fa/fb}]}.
   var KIND = { fact: "fact", factcopy: "fact", dim: "dim", copy: "dim", shared: "shared", helper: "helper", measures: "measures" };
@@ -903,13 +905,16 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     function legend(items) {
       return items.map(function (x) { return '<span><i class="k ' + x[0] + '">' + (x[0] === "gulf" ? "✕" : "") + "</i>" + x[1] + "</span>"; }).join("");
     }
-    $("st-model").innerHTML = MODELS.map(function (p) { return '<button type="button" data-k="' + p + '"><span class="dot ' + p + '"></span>' + NAME[p] + "</button>"; }).join("");
-    $("graphs").innerHTML = MODELS.map(function (p) {
-      return '<div class="card graphcard" data-pane-of="st-model" data-k="' + p + '"><div class="gc-head"><h3><span class="dot ' + p + '"></span>' + NAME[p] + '</h3><p class="caption">' + PLAT[p].cap + "</p></div>" +
+    // A graph card; pane: the sub-tab bar it belongs to (the vendors' cards), or none (the Ossie card).
+    function card(p, pane) {
+      return '<div class="card graphcard"' + (pane ? ' data-pane-of="' + pane + '" data-k="' + p + '"' : "") + '><div class="gc-head"><h3><span class="dot ' + p + '"></span>' +
+        (p === "ossie" ? "The baseline file" : "The model on " + NAME[p]) + '</h3><p class="caption">' + PLAT[p].cap + "</p></div>" +
         '<div class="graphwrap" id="gw-' + p + '"><svg id="g-' + p + '" class="graph" role="img" aria-label="The model on ' + NAME[p] + '"></svg><div class="tip" id="tip-' + p + '" hidden></div></div>' +
         '<div class="gc-foot"><div class="legend">' + legend(PLAT[p].leg) + "</div></div></div>";
-    }).join("") +
-      '<div class="card stack" data-pane-of="st-model" data-k="ossie" style="margin-top:16px"><header class="stack" style="gap:6px"><h3>The 16 metrics in the file</h3>' +
+    }
+    $("graphs").innerHTML = MODELS.map(function (p) { return card(p, "st-answer"); }).join("");
+    $("graphs-ossie").innerHTML = card("ossie") +
+      '<div class="card stack"><header class="stack" style="gap:6px"><h3>The 16 metrics in the file</h3>' +
       '<p class="sub" id="os-std-sub"></p></header><div class="tw"><table id="os-std" class="wrapcell"></table></div></div>';
     var phoneLayout = null;
     // BigQuery: the property graph as its console draws it, node tables as circles, edge tables as arrows to the one side.
@@ -952,12 +957,11 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       if (p === "dbx") phoneLayout = phone;
       drawGraph($("g-" + p), p === "dbx" ? DBX(phone) : PLAT[p].g, $("tip-" + p), wrap);
     }
-    var selModel = subtabs("st-model", function (k) { if ($("model").classList.contains("on")) plot(k); });
-    window.__replot = function () { selModel(selModel.current() || "ossie"); };
+    window.__plot = plot;   // the Ossie tab plots "ossie"; the Implementation tab plots its sub-tab's vendor
     var rt;
     window.addEventListener("resize", function () {
       clearTimeout(rt);
-      rt = setTimeout(function () { if ($("model").classList.contains("on") && selModel.current() === "dbx" && ($("gw-dbx").clientWidth < 640) !== phoneLayout) plot("dbx"); }, 150);
+      rt = setTimeout(function () { if ($("answer").classList.contains("on") && demo.plat === "dbx" && ($("gw-dbx").clientWidth < 640) !== phoneLayout) plot("dbx"); }, 150);
     });
   })();
 
@@ -1145,14 +1149,15 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     each(els, function (e) { e.classList.remove("on"); });
     each(els, function (e) { lodTimers.push(setTimeout(function () { e.classList.add("on"); }, 150 + 650 * +e.dataset.i)); });
   }
-  function paintHow() {
-    var h = HOW[demo.plat];
-    $("how").className = "how " + demo.plat;
-    $("how").innerHTML = '<div class="appr">' + h.appr + '</div><p class="lead">' + h.who + '</p><ul class="facts">' +
+  function paintHow(k, el) {
+    var h = HOW[k];
+    el.className = "how " + k;
+    el.innerHTML = '<div class="appr">' + h.appr + '</div><p class="lead">' + h.who + '</p><ul class="facts">' +
       h.facts.map(function (f) { return "<li>" + f + "</li>"; }).join("") + "</ul>";
   }
+  paintHow("ossie", $("how-ossie"));
   function paintDemo() {
-    if (!STEPS[demo.plat]) return;  // Ossie and the two examples have no walkthrough
+    if (!STEPS[demo.plat]) return;
     each($("stage").querySelectorAll("[data-from]"), function (el) {
       el.hidden = !!el.dataset.mode && el.dataset.mode !== demo.mode;
       el.classList.toggle("on", +el.dataset.from <= demo.step);
@@ -1179,13 +1184,14 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     function single(k) { $("d-single").innerHTML = runTable(q, run(q, k === "bigquery" ? "bigquery" : "dbx")); }
     single("dbx");
     var selAnswer = subtabs("st-answer", function (k) {
-      var again = k !== demo.plat; demo.plat = k; demo.mode = MODE[k]; paintHow(); single(k);
-      var box = { fabric: "ctx", snowflake: "lod", ossie: "ossiebox" }[k];
-      $("ctx").hidden = k !== "fabric"; $("lod").hidden = k !== "snowflake"; $("ossiebox").hidden = k !== "ossie"; $("walk").hidden = !!box;
-      if (box === "ossiebox") stopDemo(); else if (box) { stopDemo(); playLod(box); } else if (again) playDemo();
+      var again = k !== demo.plat; demo.plat = k; demo.mode = MODE[k]; paintHow(k, $("how")); single(k);
+      if ($("answer").classList.contains("on")) window.__plot(k);
+      var box = { fabric: "ctx", snowflake: "lod" }[k];
+      $("ctx").hidden = k !== "fabric"; $("lod").hidden = k !== "snowflake"; $("walk").hidden = !!box;
+      if (box) { stopDemo(); playLod(box); } else if (again) playDemo();
     });
     window.__answer = selAnswer;
-    demo.plat = null; selAnswer("ossie");
+    demo.plat = null; selAnswer("fabric");
     $("stepper").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { stopDemo(); demo.step = +b.dataset.step; paintDemo(); } });
     $("play").addEventListener("click", playDemo);
     paintDemo();
@@ -1235,7 +1241,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
 
   // ---------- routing: the 4 tabs, and About
-  var VIEWS = ["model", "answer", "results", "support", "about"];
+  var VIEWS = ["ossie", "answer", "results", "support", "about"];
   var nav = $("nav"), ind = nav.querySelector(".ind");
   function moveInd() {
     var a = nav.querySelector('a[aria-current="page"]'); ind.classList.toggle("off", !a); if (!a) return;
@@ -1244,8 +1250,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   var shown = null;
   function route() {
     var h = location.hash.slice(1);
-    if (h === "ossie") { history.replaceState(null, "", "#answer"); h = "answer"; window.__answer("ossie"); }  // the old Ossie tab
-    var v = VIEWS.indexOf(h) >= 0 ? h : "model";
+    if (h === "model") { history.replaceState(null, "", "#ossie"); h = "ossie"; }  // the old model tab
+    var v = VIEWS.indexOf(h) >= 0 ? h : "ossie";
     VIEWS.forEach(function (x) { $(x).classList.toggle("on", x === v); });
     each(nav.querySelectorAll("a"), function (a) {
       if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
@@ -1253,7 +1259,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     if (v === "about") $("aboutlink").setAttribute("aria-current", "page"); else $("aboutlink").removeAttribute("aria-current");
     moveInd();
     window.scrollTo(0, 0);
-    if (v === "model" && shown !== "model") window.__replot();
+    if (v === "ossie" && shown !== "ossie") window.__plot("ossie");
+    if (v === "answer" && shown !== "answer") window.__answer(demo.plat);  // draws its graph, replays its example
     if (v === "answer" && !demo.played && demo.mode === "single") playDemo();
     if (v !== "answer") stopDemo();
     shown = v;
