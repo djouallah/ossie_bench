@@ -89,6 +89,7 @@ nav#nav .ind.off { opacity: 0; }
 
 .view { display: none; padding: 30px 0 8px; }
 .view.on { display: block; animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+.tabrow { display: grid; gap: 8px; margin-bottom: 16px; } .tabrow .subtabs { margin-bottom: 0; }
 .subtabs { display: flex; gap: 4px; padding: 4px; margin-bottom: 16px; width: fit-content; max-width: 100%; flex-wrap: wrap;
   background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
 .subtabs button { font: inherit; font-size: 14px; font-weight: 550; border: 0; background: none; color: var(--ink-2);
@@ -269,7 +270,7 @@ tr.total td { font-weight: 650; }
 .plat > header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .how { display: grid; gap: 10px; }
 .how .appr { font-size: 22px; font-weight: 750; letter-spacing: -.02em; color: var(--pc); }
-.how.fabric { --pc: var(--p-fabric); } .how.snowflake { --pc: var(--p-snowflake); } .how.dbx { --pc: var(--p-dbx); } .how.bigquery { --pc: var(--p-bigquery); } .how.ossie { --pc: var(--p-ossie); }
+.how.fabric { --pc: var(--p-fabric); } .how.snowflake { --pc: var(--p-snowflake); } .how.dbx { --pc: var(--p-dbx); } .how.bigquery { --pc: var(--p-bigquery); } .how.ossie { --pc: var(--p-ossie); } .how.daxsql { --pc: var(--p-daxsql); }
 ul.facts { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; max-width: 110ch; }
 ul.facts li { position: relative; padding-left: 18px; font-size: 14.5px; color: var(--ink); }
 ul.facts li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 7px; height: 7px; border-radius: 50%;
@@ -392,17 +393,17 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     <a class="brand" href="#ossie"><span class="logo" aria-hidden="true"></span>ossie_bench</a>
     <span class="tagline">not a benchmark</span>
     <div class="toplinks">
-      <a href="#about" id="aboutlink">About</a>
+      <a href="#support">Industry support</a>
+      <a href="#about">About</a>
       <button type="button" id="theme">Light</button>
       <a class="gh" href="https://github.com/djouallah/ossie_bench" aria-label="GitHub repository"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
     </div>
   </div>
   <nav id="nav">
     <span class="ind" aria-hidden="true"></span>
-    <a href="#ossie">Ossie</a>
-    <a href="#answer">Implementation</a>
+    <a href="#ossie">Ossie open spec</a>
+    <a href="#answer">Implementations</a>
     <a href="#results">Results</a>
-    <a href="#support">Industry support</a>
   </nav>
 </div></div>
 
@@ -410,7 +411,14 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 <!-- ============================== 1. ossie -->
 <section id="ossie" class="view">
-  <div class="card stack">
+  <div class="subtabs" id="st-ossie">
+    <button type="button" data-k="model">The model</button>
+    <button type="button" data-k="metrics">The 16 metrics</button>
+    <button type="button" data-k="spec">The standard</button>
+  </div>
+  <div id="ossie-graph" data-pane-of="st-ossie" data-k="model"></div>
+  <div id="ossie-metrics" data-pane-of="st-ossie" data-k="metrics"></div>
+  <div class="card stack" data-pane-of="st-ossie" data-k="spec">
     <div id="how-ossie" class="how ossie"></div>
       <div class="flow" role="img" aria-label="An Ossie model and a query go into a compiler, which writes plain SQL; any SQL engine runs it. Ossie's own compiler is a test tool; here dax-sql stands in.">
         <div class="fbox"><h4>1 · Model</h4><p>The Ossie file: datasets, relationships, fields, metrics, written in a portable SQL expression language.</p>
@@ -434,9 +442,6 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       <div class="today"><b>Today:</b> <span class="st">Ossie file</span><span class="farrow" aria-hidden="true">&rarr;</span>
         <span>a platform that supports Ossie imports it into its own semantic model</span><span class="farrow" aria-hidden="true">&rarr;</span>
         <span>its planner and engine answer the query (<a href="#support">Industry support</a>).</span></div>
-  </div>
-  <div id="graphs-ossie" class="stack" style="margin-top:16px"></div>
-  <div class="card stack" style="margin-top:16px">
       <h4>What is open today</h4>
       <ul class="facts" style="--pc: var(--p-ossie)">
         <li>The specification and its JSON schema, a validator, and a Python SDK that parses a file. None of them runs a query. <a class="src" href="https://github.com/apache/ossie/tree/main/validation">validator</a></li>
@@ -444,30 +449,31 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
         <li>24 converters that move a model between Ossie and dbt, Cube, Snowflake, Microsoft and others. <a class="src" href="https://github.com/apache/ossie-converters">ossie-converters</a></li>
         <li>A reference compiler from Ossie to SQL is on the roadmap. <a class="src" href="https://github.com/apache/ossie/blob/main/ROADMAP.md#semantic-query-language--reference-engine">roadmap</a></li>
       </ul>
-      <div class="plat daxsql stack" style="padding-top:14px">
-        <header><h3><span class="dot daxsql"></span>The stand-in engine here: dax-sql</h3></header>
-        <p class="lead">A toy compiler, open source (MIT), started by N.S. Devaraj and worked on by me. It reads the baseline file as it is, the only tool that does:
-          the 4 SQL measures and the 12 DAX ones together, and turns a SQL query on the model into one DuckDB query on the same
-          parquet files. Its answers are the reference every platform is judged against (<a href="#results">Results</a>). That shows the file
-          is enough to answer them; it is not how an engine should be built. <a class="src" href="https://github.com/djouallah/dax-sql">dax-sql</a></p>
-        <div id="dx-example" class="stack"></div>
-      </div>
   </div>
 </section>
 
-<!-- ============================== 2. implementation -->
+<!-- ============================== 2. implementations -->
 <section id="answer" class="view">
-  <div class="subtabs" id="st-answer">
+  <div class="tabrow">
+    <div class="subtabs" id="st-answer">
     <button type="button" data-k="fabric"><span class="dot fabric"></span>Power BI</button>
     <button type="button" data-k="snowflake"><span class="dot snowflake"></span>Snowflake</button>
     <button type="button" data-k="dbx"><span class="dot dbx"></span>Databricks</button>
     <button type="button" data-k="bigquery"><span class="dot bigquery"></span>BigQuery</button>
+    <button type="button" data-k="daxsql"><span class="dot daxsql"></span>dax-sql</button>
+    </div>
+    <div class="subtabs" id="st-part">
+      <button type="button" data-k="model">The model</button>
+      <button type="button" data-k="how">How it answers</button>
+      <button type="button" data-k="example">The example</button>
+    </div>
   </div>
-  <div id="graphs"></div>
-  <div class="card stack demo" style="margin-top:16px">
-    <div id="how" class="how"></div>
+  <div id="graphs" data-pane-of="st-part" data-k="model"></div>
+  <div class="card" data-pane-of="st-part" data-k="how"><div id="how" class="how"></div></div>
+  <div class="card stack demo" data-pane-of="st-part" data-k="example">
     <div id="ctx" class="stack" hidden></div>
     <div id="lod" class="stack" hidden></div>
+    <div id="dx-example" class="stack" hidden></div>
     <div id="walk" class="stack">
     <p class="sub">The example: days in the calendar and sales, by year. The calendar runs to 2023; sales stop at 2022. Follow 2023.</p>
     <div class="demo-bar">
@@ -523,7 +529,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 </section>
 
-<!-- ============================== 4. industry support -->
+<!-- ============================== industry support (top bar) -->
 <section id="support" class="view">
   <div class="card stack">
     <header class="stack" style="gap:6px"><h3>What each platform does with an Ossie file</h3>
@@ -583,7 +589,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   var NAME = { ossie: "Ossie", fabric: "Power BI", snowflake: "Snowflake", dbx: "Databricks", bigquery: "BigQuery", daxsql: "Reference (dax-sql)" };
   var ICON = { match: "✓", differs: "≠", partial: "◐", refused: "✕", na: "–", reference: "★" };
   var PLATS = ["fabric", "snowflake", "dbx", "bigquery", "daxsql"];   // the clients that answer the questions
-  var MODELS = ["fabric", "snowflake", "dbx", "bigquery"];             // the vendors' models (Implementation tab)
+  var MODELS = ["fabric", "snowflake", "dbx", "bigquery", "daxsql"];  // the implementations' models (Implementations tab)
   var GH = "https://github.com/djouallah/ossie_bench/blob/main/";
   var REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
   function $(id) { return document.getElementById(id); }
@@ -900,7 +906,9 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       dbx: { cap: "Five metric views, each one table with its dimensions joined on. Nothing relates them.",
         leg: [["k-fact", "Base table"], ["k-dim", "Dimension"], ["gulf", "No relationship"]] },
       bigquery: { cap: "One property graph, drawn as BigQuery draws it: the 7 tables are node tables, the 8 relationships are edge tables, each an arrow to the one side. The 3 measures, the sums, sit on their facts. The two facts are the graph's two roots: a query starts from one, and follows the arrows.",
-        leg: [["bqn", "Node table"], ["bqe", "Edge table, many to one"]] }
+        leg: [["bqn", "Node table"], ["bqe", "Edge table, many to one"]] },
+      daxsql: { g: OSS, cap: "No model of its own: dax-sql reads the baseline Ossie file as it is, 7 tables, 8 relationships, the 4 SQL measures and the 12 DAX ones.",
+        leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Shared by both facts"], ["k-measures", "Model-level metric"]] }
     };
     function legend(items) {
       return items.map(function (x) { return '<span><i class="k ' + x[0] + '">' + (x[0] === "gulf" ? "✕" : "") + "</i>" + x[1] + "</span>"; }).join("");
@@ -908,13 +916,13 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     // A graph card; pane: the sub-tab bar it belongs to (the vendors' cards), or none (the Ossie card).
     function card(p, pane) {
       return '<div class="card graphcard"' + (pane ? ' data-pane-of="' + pane + '" data-k="' + p + '"' : "") + '><div class="gc-head"><h3><span class="dot ' + p + '"></span>' +
-        (p === "ossie" ? "The baseline file" : "The model on " + NAME[p]) + '</h3><p class="caption">' + PLAT[p].cap + "</p></div>" +
+        (p === "ossie" ? "The baseline file" : p === "daxsql" ? "The model it reads: the baseline Ossie file" : "The model on " + NAME[p]) + '</h3><p class="caption">' + PLAT[p].cap + "</p></div>" +
         '<div class="graphwrap" id="gw-' + p + '"><svg id="g-' + p + '" class="graph" role="img" aria-label="The model on ' + NAME[p] + '"></svg><div class="tip" id="tip-' + p + '" hidden></div></div>' +
         '<div class="gc-foot"><div class="legend">' + legend(PLAT[p].leg) + "</div></div></div>";
     }
     $("graphs").innerHTML = MODELS.map(function (p) { return card(p, "st-answer"); }).join("");
-    $("graphs-ossie").innerHTML = card("ossie") +
-      '<div class="card stack"><header class="stack" style="gap:6px"><h3>The 16 metrics in the file</h3>' +
+    $("ossie-graph").innerHTML = card("ossie");
+    $("ossie-metrics").innerHTML = '<div class="card stack"><header class="stack" style="gap:6px"><h3>The 16 metrics in the file</h3>' +
       '<p class="sub" id="os-std-sub"></p></header><div class="tw"><table id="os-std" class="wrapcell"></table></div></div>';
     var phoneLayout = null;
     // BigQuery: the property graph as its console draws it, node tables as circles, edge tables as arrows to the one side.
@@ -957,11 +965,13 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       if (p === "dbx") phoneLayout = phone;
       drawGraph($("g-" + p), p === "dbx" ? DBX(phone) : PLAT[p].g, $("tip-" + p), wrap);
     }
-    window.__plot = plot;   // the Ossie tab plots "ossie"; the Implementation tab plots its sub-tab's vendor
+    window.__plot = plot;   // a graph is drawn when its pane is shown
+    var selOssie = subtabs("st-ossie", function (k) { if (k === "model" && $("ossie").classList.contains("on")) plot("ossie"); });
+    window.__ossie = function () { selOssie(selOssie.current() || "model"); };
     var rt;
     window.addEventListener("resize", function () {
       clearTimeout(rt);
-      rt = setTimeout(function () { if ($("answer").classList.contains("on") && demo.plat === "dbx" && ($("gw-dbx").clientWidth < 640) !== phoneLayout) plot("dbx"); }, 150);
+      rt = setTimeout(function () { if ($("gw-dbx").offsetParent && ($("gw-dbx").clientWidth < 640) !== phoneLayout) plot("dbx"); }, 150);
     });
   })();
 
@@ -1021,7 +1031,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
   // ---------- 2. how they answer: the drill-across walkthrough (q13), two facts (q12)
   var demo = { plat: "fabric", mode: "drill", step: 1, timer: null, played: false };
-  var MODE = { fabric: "drill", snowflake: "drill", dbx: "single", bigquery: "single" };
+  var MODE = { fabric: "drill", snowflake: "drill", dbx: "single", bigquery: "single", daxsql: "drill" };
   var STEPS = {
     fabric: ["Two tables", "Each measure in its own filter context", "Keep a year if any value"],
     snowflake: ["Two logical tables", "Aggregate each on its own", "Full outer join on year"],
@@ -1053,7 +1063,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       "The file holds datasets, relationships, fields and metrics, in a portable SQL. The specification says what a query on it returns, including that a measure is never counted twice when tables join." + src("Ossie spec", OSPEC + "core-spec/relational_semantics.md"),
       "What that SQL can't say yet: last year, all customers, a total that ignores a filter. The specification calls them evaluation controls and defers them to a later extension. A metric may still be written in another dialect, which the file carries and the standard does not read: here, DAX." + src("Ossie spec", OSPEC + "core-spec/relational_semantics.md#53-evaluation-controls") + src("dialects", OSPEC + "extensions/dialects.md"),
       "Ossie has no engine. Its test tool, <code>ost</code>, expands a query on a model into plain SQL for the compliance cases; it reads only the SQL measures." + src("ost", OSPEC + "ost/README.md"),
-      "A vendor that supports Ossie imports the file into its own semantic model, and its engine answers (Industry support). This repo's file needs an engine that reads SQL and DAX together; dax-sql, below, is the one used here." + tag("this repo")
+      "A vendor that supports Ossie imports the file into its own semantic model, and its engine answers (Industry support). This repo's file needs an engine that reads SQL and DAX together; dax-sql, a toy implementation (<a href=\"#answer\">Implementations</a>), is the one used here." + tag("this repo")
     ] },
     fabric: { appr: "Drill across, by filter context", who: "Each measure is evaluated on its own table; the engine does the drill-across.", facts: [
       "A query is <code>SUMMARIZECOLUMNS</code>: the group-by columns are combined, and a row is kept when at least one expression is non-blank." + src("Microsoft Learn", MS + "summarizecolumns-function-dax"),
@@ -1080,6 +1090,13 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       "Malloy (a source extends one table, left joins, aggregate locality) and Looker (the Explore's base view in FROM, left outer joins, symmetric aggregates) work the same way." + src("Malloy", "https://docs.malloydata.dev/documentation/language/join") + src("Looker", "https://docs.cloud.google.com/looker/docs/reference/param-explore-explore"),
       "Last year is a window measure ordered by one column. Grouped by another date field, it returns another number, with no error." + src("Databricks docs", DBXD + "metric-views/data-modeling/window-measures"),
       "A second fact is a second view joined in the query, or a <code>one_to_many</code> join from a dimension source (Runtime 18.1+), which aggregates each fact on its own and blends them: <code>bridge_mv</code> here." + src("Databricks docs", DBXD + "uc-semantics/metric-views/joins")
+    ] },
+    daxsql: { appr: "A toy implementation of Ossie", who: "The one tool that reads this repo's Ossie file as it is. It shows the file is enough to answer the 15 questions; it is not how an engine should be built.", facts: [
+      "It reads the baseline file, the 4 SQL measures and the 12 DAX ones together, and compiles a SQL query on the model (<code>SELECT ... AGG(measure) FROM model</code>) into one DuckDB query on the same parquet files." + src("dax-sql", "https://github.com/djouallah/dax-sql"),
+      "Each measure is computed over its own table, then joined on the query's groups: drill-across, as Power BI and Snowflake do. The DAX measures are compiled to SQL with their filter context, so <code>CALCULATE</code>, <code>ALL</code> and <code>SAMEPERIODLASTYEAR</code> work as in DAX.",
+      "Totals are <code>GROUP BY ROLLUP</code>, and a blank reads as 0 in <code>+</code> and <code>-</code>, as in DAX.",
+      "Its answers are the reference every platform is judged against (<a href=\"#results\">Results</a>).",
+      "Open source (MIT), started by N.S. Devaraj and worked on by me. Not a product, and not Ossie's." + tag("toy")
     ] }
   };
   // The Snowflake example: q09, three metrics, three routes to the same rows, merged on country.
@@ -1183,15 +1200,25 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     $("d-merged").innerHTML = table(q.columns, q.measures, ref, { hot: is2023 });
     function single(k) { $("d-single").innerHTML = runTable(q, run(q, k === "bigquery" ? "bigquery" : "dbx")); }
     single("dbx");
+    // Two bars: the vendor, and the part of it shown (its model, how it answers, its example). Only the shown part is
+    // drawn or animated.
+    var BOX = { fabric: "ctx", snowflake: "lod", daxsql: "dx-example" };   // each one's own example; the others walk through q13
+    function showPart() {
+      if (!demo.plat || !$("answer").classList.contains("on")) return;
+      var part = selPart.current(), box = BOX[demo.plat];
+      stopDemo();
+      if (part === "model") window.__plot(demo.plat);
+      if (part === "example") { if (box) playLod(box); else playDemo(); }
+    }
+    var selPart = subtabs("st-part", showPart);
     var selAnswer = subtabs("st-answer", function (k) {
-      var again = k !== demo.plat; demo.plat = k; demo.mode = MODE[k]; paintHow(k, $("how")); single(k);
-      if ($("answer").classList.contains("on")) window.__plot(k);
-      var box = { fabric: "ctx", snowflake: "lod" }[k];
-      $("ctx").hidden = k !== "fabric"; $("lod").hidden = k !== "snowflake"; $("walk").hidden = !!box;
-      if (box) { stopDemo(); playLod(box); } else if (again) playDemo();
+      demo.plat = k; demo.mode = MODE[k]; paintHow(k, $("how")); single(k);
+      each(["ctx", "lod", "dx-example"], function (id) { $(id).hidden = BOX[k] !== id; });
+      $("walk").hidden = !!BOX[k];
+      showPart();
     });
-    window.__answer = selAnswer;
-    demo.plat = null; selAnswer("fabric");
+    window.__showPart = showPart;
+    demo.plat = null; selPart("model"); selAnswer("fabric");
     $("stepper").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { stopDemo(); demo.step = +b.dataset.step; paintDemo(); } });
     $("play").addEventListener("click", playDemo);
     paintDemo();
@@ -1240,7 +1267,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   selResults("q");
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
 
-  // ---------- routing: the 4 tabs, and About
+  // ---------- routing: the 3 tabs, and Industry support and About in the top bar
   var VIEWS = ["ossie", "answer", "results", "support", "about"];
   var nav = $("nav"), ind = nav.querySelector(".ind");
   function moveInd() {
@@ -1253,15 +1280,13 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     if (h === "model") { history.replaceState(null, "", "#ossie"); h = "ossie"; }  // the old model tab
     var v = VIEWS.indexOf(h) >= 0 ? h : "ossie";
     VIEWS.forEach(function (x) { $(x).classList.toggle("on", x === v); });
-    each(nav.querySelectorAll("a"), function (a) {
+    each(document.querySelectorAll("#nav a, .toplinks a[href^='#']"), function (a) {
       if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
-    if (v === "about") $("aboutlink").setAttribute("aria-current", "page"); else $("aboutlink").removeAttribute("aria-current");
     moveInd();
     window.scrollTo(0, 0);
-    if (v === "ossie" && shown !== "ossie") window.__plot("ossie");
-    if (v === "answer" && shown !== "answer") window.__answer(demo.plat);  // draws its graph, replays its example
-    if (v === "answer" && !demo.played && demo.mode === "single") playDemo();
+    if (v === "ossie" && shown !== "ossie") window.__ossie();
+    if (v === "answer" && shown !== "answer") window.__showPart();
     if (v !== "answer") stopDemo();
     shown = v;
   }
