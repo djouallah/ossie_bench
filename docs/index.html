@@ -985,10 +985,13 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     var fv = E.fabric_version.split(":")[1].trim(), sv = E.sf_export_version.split(":")[1].trim();
     function ev(path) { return ' <a href="' + GH + path + '">response</a>'; }
     var F = [
-      ["Imports this repo's Ossie file (<code>" + esc(O.version) + "</code>, SQL and DAX)", ["no", "No support for Ossie's SQL: its SQL measures are ignored, even in <code>0.2.0.dev0</code>, the version it reads. Its model is built from a rewrite with all 16 in DAX, below." + ev("semantic_model/fabric/ossie_sql_response.txt")],
-        ["no", "<em>Unsupported OSI specification version</em>; and it reads no DAX." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["no", "No Ossie import."], ["no", "No Ossie import found."]],
       ["Imports an Ossie file", ["yes", "Publish compiles it into a Direct Lake model." + ev("semantic_model/fabric/publish_response.json")],
         ["yes", "<code>SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML</code>" + ev("semantic_model/snowflake/tests/import_response.txt")], ["no", "No Ossie import."], ["no", "No Ossie import found. Knowledge Catalog reads the graph and its measures as metadata."]],
+      ["Exports Ossie", ["no", "No way back: the semantic views API lists views and publishes them; reading one returns 404." + ev("semantic_model/fabric/export_response.txt")],
+        ["yes", "As <code>" + sv + "</code>."],
+        ["no", "<code>export_to_ossie</code> exists but is disabled, and the SQL warehouse refuses the flag that enables it." + ev("semantic_model/dbx/export_to_ossie_response.txt")], ["na", ""]],
+      ["Imports this repo's Ossie file (<code>" + esc(O.version) + "</code>, SQL and DAX)", ["no", "No support for Ossie's SQL: its SQL measures are ignored, even in <code>0.2.0.dev0</code>, the version it reads. Its model is built from a rewrite with all 16 in DAX, below." + ev("semantic_model/fabric/ossie_sql_response.txt")],
+        ["no", "<em>Unsupported OSI specification version</em>; and it reads no DAX." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["no", "No Ossie import."], ["no", "No Ossie import found."]],
       ["Ossie version it reads", ["part", "<code>" + fv + "</code>, a development version. <code>" + esc(O.version) + "</code> is refused: <em>OSSIE_VERSION_MISMATCH</em>." + ev("semantic_model/fabric/ossie_sql_response.txt")],
         ["part", "<code>0.1.1</code>, the released version. <code>" + esc(O.version) + "</code> is refused: <em>Unsupported OSI specification version</em>." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["na", ""], ["na", ""]],
       ["Measures in Ossie's own SQL", ["no", "<code>ANSI_SQL</code> metrics are ignored, with the warning <em>Non-DAX metric expressions are not supported</em>." + ev("semantic_model/fabric/ossie_sql_response.txt")],
@@ -998,9 +1001,6 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
           " An LOD as a field (a view-level fact) is refused: <code>FIXED</code>, <code>EXCLUDE DIMENSIONS</code>." + ev("semantic_model/snowflake/tests/lod_via_ossie_response.txt")], ["na", ""], ["na", ""]],
       ["Vendor extensions", ["part", "Its own <code>POWER_BI</code> format strings are dropped without a warning."],
         ["part", "Its own <code>SNOWFLAKE</code> extension: a table metric is applied, an access modifier is kept but not applied. Another vendor's is dropped without a warning." + ev("semantic_model/snowflake/tests/extensions_response.txt")], ["na", ""], ["na", ""]],
-      ["Exports Ossie", ["no", "No way back: the semantic views API lists views and publishes them; reading one returns 404." + ev("semantic_model/fabric/export_response.txt")],
-        ["yes", "As <code>" + sv + "</code>."],
-        ["no", "<code>export_to_ossie</code> exists but is disabled, and the SQL warehouse refuses the flag that enables it." + ev("semantic_model/dbx/export_to_ossie_response.txt")], ["na", ""]],
       ["Re-imports its own export", ["na", ""], ["no", "<em>invalid identifier 'SALES.SALES_QUANTITY'</em>" + ev("semantic_model/snowflake/tests/export_reimport_response.txt")], ["na", ""], ["na", ""]],
       ["This repo's model is in Ossie", ["yes", "<a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">Ossie with the DAX dialect</a>, a rewrite in <code>" + fv + "</code>, all 16 measures in DAX"],
         ["no", "<a href=\"" + GH + "semantic_model/snowflake/semantic_view.sql\">Semantic view DDL</a>"], ["no", "<a href=\"" + GH + "semantic_model/dbx/\">Metric view YAML</a>"],
