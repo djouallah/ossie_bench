@@ -15,3 +15,11 @@ dbx,match,Germany,3164939,3164939,36203407
 dbx,match,Poland,2686210,2686210,30755062
 dbx,match,UK,1031214,1931716,22111689
 dbx,match,,6882363,7782865,89070158
+bigquery,partial,Germany,3164939,,
+bigquery,partial,Poland,2686210,,
+bigquery,partial,UK,1031214,,
+bigquery,partial,,6882363,,
+bigquery (workaround),match,Germany,3164939,3164939,36203407
+bigquery (workaround),match,Poland,2686210,2686210,30755062
+bigquery (workaround),match,UK,1031214,1931716,22111689
+bigquery (workaround),match,,6882363,7782865,89070158

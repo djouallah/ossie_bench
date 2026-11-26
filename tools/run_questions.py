@@ -23,7 +23,7 @@ from pathlib import Path
 warnings.filterwarnings("ignore")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 ROOT = Path(__file__).resolve().parents[1]
-PLAIN = [("fabric", "fabric.dax"), ("snowflake", "snowflake.sql"), ("dbx", "dbx.sql"), ("daxsql", "daxsql.sql")]
+PLAIN = [("fabric", "fabric.dax"), ("snowflake", "snowflake.sql"), ("dbx", "dbx.sql"), ("bigquery", "bigquery.sql"), ("daxsql", "daxsql.sql")]
 REF = "daxsql"  # the reference: the Ossie baseline, compiled by dax-sql; every other answer is judged against it
 
 
@@ -48,7 +48,7 @@ def runners(only=None):
         return sf.query(conn["c"], q)
     def lazy(mod, fn):
         return lambda q: getattr(__import__(mod), fn)(q)
-    run = {"fabric": lazy("fabric", "dax"), "snowflake": snow, "dbx": lazy("dbx", "sql"), "daxsql": lazy("daxsql", "query")}
+    run = {"fabric": lazy("fabric", "dax"), "snowflake": snow, "dbx": lazy("dbx", "sql"), "bigquery": lazy("bq", "sql"), "daxsql": lazy("daxsql", "query")}
     return {k: v for k, v in run.items() if not only or k in only}
 
 

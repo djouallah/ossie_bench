@@ -553,6 +553,108 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "SELECT country_country AS country, calendar_year AS year, AGG(sales_sales_quantity) AS sales_quantity\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\nWHERE calendar_year <= 2022\nGROUP BY ALL\nORDER BY country, year",
+     "status": "match",
+     "rows": [
+      [
+       "Germany",
+       "2020",
+       "33714072"
+      ],
+      [
+       "Germany",
+       "2021",
+       "36203407"
+      ],
+      [
+       "Germany",
+       "2022",
+       "38577436"
+      ],
+      [
+       "Poland",
+       "2020",
+       "28584270"
+      ],
+      [
+       "Poland",
+       "2021",
+       "30755062"
+      ],
+      [
+       "Poland",
+       "2022",
+       "32717852"
+      ],
+      [
+       "UK",
+       "2020",
+       "20499603"
+      ],
+      [
+       "UK",
+       "2021",
+       "22111689"
+      ],
+      [
+       "UK",
+       "2022",
+       "23496958"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -659,6 +761,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match",
     "dbx": "match",
+    "bigquery": "match",
     "daxsql": "reference"
    }
   },
@@ -997,6 +1100,98 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "SELECT product_product_name AS product_name, AGG(sales_sales_quantity) AS sales_quantity\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\nWHERE calendar_year = 2021\nGROUP BY ALL\nORDER BY sales_quantity DESC\nLIMIT 10",
+     "status": "match",
+     "rows": [
+      [
+       "Persil SKU 5",
+       "2241203"
+      ],
+      [
+       "Tide SKU 5",
+       "2236090"
+      ],
+      [
+       "Signal SKU 5",
+       "2235736"
+      ],
+      [
+       "Signal SKU 1",
+       "2235406"
+      ],
+      [
+       "Signal SKU 3",
+       "2234314"
+      ],
+      [
+       "Persil SKU 1",
+       "2233483"
+      ],
+      [
+       "Persil SKU 3",
+       "2231938"
+      ],
+      [
+       "Dove SKU 4",
+       "2231607"
+      ],
+      [
+       "Oral-B SKU 1",
+       "2231300"
+      ],
+      [
+       "Dove SKU 3",
+       "2231090"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -1093,6 +1288,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match",
     "dbx": "match",
+    "bigquery": "match",
     "daxsql": "reference"
    }
   },
@@ -1480,6 +1676,170 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- The graph has no last-year measure: a measure can't shift dates or hold a window.\nSELECT calendar_date_key AS date_key, AGG(sales_sales_quantity) AS sales_quantity\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\nWHERE calendar_date_key BETWEEN DATE '2021-02-25' AND DATE '2021-03-03'\nGROUP BY ALL\nORDER BY date_key",
+     "status": "partial",
+     "rows": [
+      [
+       "2021-02-25",
+       "286490",
+       ""
+      ],
+      [
+       "2021-02-26",
+       "283269",
+       ""
+      ],
+      [
+       "2021-02-27",
+       "285994",
+       ""
+      ],
+      [
+       "2021-02-28",
+       "288291",
+       ""
+      ],
+      [
+       "2021-03-01",
+       "284680",
+       ""
+      ],
+      [
+       "2021-03-02",
+       "283910",
+       ""
+      ],
+      [
+       "2021-03-03",
+       "284445",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       true
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- Last year in the query: a second GRAPH_EXPAND over last year's days, joined on the date a year back.\n-- Joined that way, Feb 29 2020 has no day a year later and drops out, as in DAX.\nWITH cur AS (\n    SELECT calendar_date_key AS d, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_date_key BETWEEN DATE '2021-02-25' AND DATE '2021-03-03'\n    GROUP BY ALL\n), ly AS (\n    SELECT calendar_date_key AS d, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_date_key BETWEEN DATE '2020-02-25' AND DATE '2020-03-03'\n    GROUP BY ALL\n)\nSELECT cur.d AS date_key, cur.q AS sales_quantity, ly.q AS sales_qty_ly\nFROM cur LEFT JOIN ly ON ly.d = DATE_SUB(cur.d, INTERVAL 1 YEAR)\nORDER BY date_key",
+     "status": "match",
+     "rows": [
+      [
+       "2021-02-25",
+       "286490",
+       "266431"
+      ],
+      [
+       "2021-02-26",
+       "283269",
+       "260203"
+      ],
+      [
+       "2021-02-27",
+       "285994",
+       "266208"
+      ],
+      [
+       "2021-02-28",
+       "288291",
+       "262565"
+      ],
+      [
+       "2021-03-01",
+       "284680",
+       "264495"
+      ],
+      [
+       "2021-03-02",
+       "283910",
+       "269724"
+      ],
+      [
+       "2021-03-03",
+       "284445",
+       "267063"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -1566,6 +1926,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "**differs**: Feb 28 gets Feb 28 + Feb 29. Matches with a second copy of the fact without Feb 29 (`sales_ly_day`). Both use a copy of the fact with the date moved a year (`sales_ly`).",
     "dbx": "match",
+    "bigquery": "**partial**: no last-year measure (a measure can't shift dates or hold a window). Matches with a second `GRAPH_EXPAND` over last year's days, joined in the query.",
     "daxsql": "reference"
    }
   },
@@ -1982,6 +2343,150 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- No last-year measure; the total row is a second query (ROLLUP is refused with AGG).\nSELECT * FROM (\n    SELECT calendar_month_start AS month_start, AGG(sales_sales_quantity) AS sales_quantity\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\n    GROUP BY ALL\n    UNION ALL\n    SELECT NULL, AGG(sales_sales_quantity)\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\n)\nORDER BY month_start NULLS LAST",
+     "status": "partial",
+     "rows": [
+      [
+       "2021-01-01",
+       "7988145",
+       "",
+       ""
+      ],
+      [
+       "2021-02-01",
+       "7782865",
+       "",
+       ""
+      ],
+      [
+       "2021-03-01",
+       "8975512",
+       "",
+       ""
+      ],
+      [
+       "2021-04-01",
+       "8731733",
+       "",
+       ""
+      ],
+      [
+       "",
+       "33478255",
+       "",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- Last year in the query: a second GRAPH_EXPAND over last year's months, moved a year; the total is a third part.\nWITH cur AS (\n    SELECT calendar_month_start AS m, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\n    GROUP BY ALL\n), ly AS (\n    SELECT DATE_ADD(calendar_month_start, INTERVAL 1 YEAR) AS m, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_month_start BETWEEN DATE '2020-01-01' AND DATE '2020-04-01'\n    GROUP BY ALL\n), r AS (\n    SELECT cur.m, cur.q, ly.q AS qly FROM cur LEFT JOIN ly USING (m)\n    UNION ALL\n    SELECT NULL, (SELECT SUM(q) FROM cur), (SELECT SUM(q) FROM ly)\n)\nSELECT m AS month_start, q AS sales_quantity, qly AS sales_qty_ly, SAFE_DIVIDE(q - qly, qly) AS sales_qty_yoy_pct\nFROM r\nORDER BY month_start NULLS LAST",
+     "status": "match",
+     "rows": [
+      [
+       "2021-01-01",
+       "7988145",
+       "7397227",
+       "0.0798837185881"
+      ],
+      [
+       "2021-02-01",
+       "7782865",
+       "7500387",
+       "0.037661789985"
+      ],
+      [
+       "2021-03-01",
+       "8975512",
+       "8366772",
+       "0.0727568529416"
+      ],
+      [
+       "2021-04-01",
+       "8731733",
+       "8069044",
+       "0.0821273251205"
+      ],
+      [
+       "",
+       "33478255",
+       "31333430",
+       "0.0684516505215"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -2058,6 +2563,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match, with `sales_ly`; the total row is a second query (no ROLLUP)",
     "dbx": "**differs**: each month gets one day's value. A measure per grain: months match, total differs. Matches with a second view of the shifted fact (`sales_ly_mv`), joined in the query.",
+    "bigquery": "**partial**: no last-year measure; the total row is a second query (ROLLUP is refused with `AGG`). Matches with a second `GRAPH_EXPAND`, months moved a year, joined in the query.",
     "daxsql": "reference"
    }
   },
@@ -2408,6 +2914,126 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- No last-year measure; the total row is a second query (ROLLUP is refused with AGG).\nSELECT * FROM (\n    SELECT calendar_year AS year, AGG(sales_sales_quantity) AS sales_quantity\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year <= 2022\n    GROUP BY ALL\n    UNION ALL\n    SELECT NULL, AGG(sales_sales_quantity)\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year <= 2022\n)\nORDER BY year NULLS LAST",
+     "status": "partial",
+     "rows": [
+      [
+       "2020",
+       "82797945",
+       "",
+       ""
+      ],
+      [
+       "2021",
+       "89070158",
+       "",
+       ""
+      ],
+      [
+       "2022",
+       "94792246",
+       "",
+       ""
+      ],
+      [
+       "",
+       "266660349",
+       "",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- Last year in the query: a second GRAPH_EXPAND, years moved by one; the total is a third part.\nWITH cur AS (\n    SELECT calendar_year AS y, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year <= 2022\n    GROUP BY ALL\n), ly AS (\n    SELECT calendar_year + 1 AS y, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year <= 2021\n    GROUP BY ALL\n), r AS (\n    SELECT cur.y, cur.q, ly.q AS qly FROM cur LEFT JOIN ly USING (y)\n    UNION ALL\n    SELECT NULL, (SELECT SUM(q) FROM cur), (SELECT SUM(q) FROM ly)\n)\nSELECT y AS year, q AS sales_quantity, qly AS sales_qty_ly, SAFE_DIVIDE(q - qly, qly) AS sales_qty_yoy_pct\nFROM r\nORDER BY year NULLS LAST",
+     "status": "match",
+     "rows": [
+      [
+       "2020",
+       "82797945",
+       "",
+       ""
+      ],
+      [
+       "2021",
+       "89070158",
+       "82797945",
+       "0.075753244842"
+      ],
+      [
+       "2022",
+       "94792246",
+       "89070158",
+       "0.0642424817524"
+      ],
+      [
+       "",
+       "266660349",
+       "171868103",
+       "0.551540654405"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -2472,6 +3098,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match, with `sales_ly`; the total row is a second query",
     "dbx": "**differs**. A measure per grain: years match, total differs. Matches with `sales_ly_mv`, joined in the query.",
+    "bigquery": "**partial**, as q04. Matches with a second `GRAPH_EXPAND`, years moved by one, joined in the query.",
     "daxsql": "reference"
    }
   },
@@ -2816,6 +3443,150 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- No last-fiscal-year measure.\nSELECT calendar_fiscal_period_name AS fiscal_period_name, calendar_fiscal_period_start AS fiscal_period_start,\n       AGG(sales_sales_quantity) AS sales_quantity\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\nWHERE calendar_fiscal_period_start BETWEEN DATE '2021-01-25' AND DATE '2021-05-24'\nGROUP BY ALL\nORDER BY fiscal_period_start",
+     "status": "partial",
+     "rows": [
+      [
+       "FY2021 P02",
+       "2021-01-25",
+       "7670122",
+       ""
+      ],
+      [
+       "FY2021 P03",
+       "2021-02-22",
+       "10088929",
+       ""
+      ],
+      [
+       "FY2021 P04",
+       "2021-03-29",
+       "8170304",
+       ""
+      ],
+      [
+       "FY2021 P05",
+       "2021-04-26",
+       "7922491",
+       ""
+      ],
+      [
+       "FY2021 P06",
+       "2021-05-24",
+       "9156415",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- Last fiscal year in the query: a second GRAPH_EXPAND, periods moved 364 days (4-4-5, 52 weeks).\nWITH cur AS (\n    SELECT calendar_fiscal_period_name AS n, calendar_fiscal_period_start AS s, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_fiscal_period_start BETWEEN DATE '2021-01-25' AND DATE '2021-05-24'\n    GROUP BY ALL\n), ly AS (\n    SELECT DATE_ADD(calendar_fiscal_period_start, INTERVAL 364 DAY) AS s, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE DATE_ADD(calendar_fiscal_period_start, INTERVAL 364 DAY) BETWEEN DATE '2021-01-25' AND DATE '2021-05-24'\n    GROUP BY ALL\n)\nSELECT cur.n AS fiscal_period_name, cur.s AS fiscal_period_start, cur.q AS sales_quantity, ly.q AS sales_qty_fly\nFROM cur LEFT JOIN ly USING (s)\nORDER BY fiscal_period_start",
+     "status": "match",
+     "rows": [
+      [
+       "FY2021 P02",
+       "2021-01-25",
+       "7670122",
+       "7155035"
+      ],
+      [
+       "FY2021 P03",
+       "2021-02-22",
+       "10088929",
+       "9405334"
+      ],
+      [
+       "FY2021 P04",
+       "2021-03-29",
+       "8170304",
+       "7550820"
+      ],
+      [
+       "FY2021 P05",
+       "2021-04-26",
+       "7922491",
+       "7290218"
+      ],
+      [
+       "FY2021 P06",
+       "2021-05-24",
+       "9156415",
+       "8424597"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -2892,6 +3663,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match, with a copy of the fact, date moved 364 days (`sales_fly`)",
     "dbx": "**differs**. Matches with a second measure ordered by fiscal period.",
+    "bigquery": "**partial**: no last-fiscal-year measure. Matches with a second `GRAPH_EXPAND`, periods moved 364 days.",
     "daxsql": "reference"
    }
   },
@@ -3144,6 +3916,110 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- No last-year measure.\nSELECT calendar_month_start AS month_start, AGG(sales_net_profit_total) AS net_profit_total\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\nWHERE category_category = 'Clearance'\n  AND calendar_month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\nGROUP BY ALL\nORDER BY month_start",
+     "status": "partial",
+     "rows": [
+      [
+       "2021-01-01",
+       "-1317217.69",
+       ""
+      ],
+      [
+       "2021-02-01",
+       "-1282598.66",
+       ""
+      ],
+      [
+       "2021-03-01",
+       "-1478052.7",
+       ""
+      ],
+      [
+       "2021-04-01",
+       "-1438620.61",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       true
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- Last year in the query: a second GRAPH_EXPAND over last year's months, moved a year.\nWITH cur AS (\n    SELECT calendar_month_start AS m, AGG(sales_net_profit_total) AS p\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE category_category = 'Clearance' AND calendar_month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\n    GROUP BY ALL\n), ly AS (\n    SELECT DATE_ADD(calendar_month_start, INTERVAL 1 YEAR) AS m, AGG(sales_net_profit_total) AS p\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE category_category = 'Clearance' AND calendar_month_start BETWEEN DATE '2020-01-01' AND DATE '2020-04-01'\n    GROUP BY ALL\n)\nSELECT cur.m AS month_start, cur.p AS net_profit_total, ly.p AS net_profit_ly\nFROM cur LEFT JOIN ly USING (m)\nORDER BY month_start",
+     "status": "match",
+     "rows": [
+      [
+       "2021-01-01",
+       "-1317217.69",
+       "-1218381.18"
+      ],
+      [
+       "2021-02-01",
+       "-1282598.66",
+       "-1235702.25"
+      ],
+      [
+       "2021-03-01",
+       "-1478052.7",
+       "-1379603.66"
+      ],
+      [
+       "2021-04-01",
+       "-1438620.61",
+       "-1333741.88"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -3200,6 +4076,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match, with `sales_ly`",
     "dbx": "**differs**. Matches with `sales_ly_mv`, joined in the query.",
+    "bigquery": "**partial**: no last-year measure. Matches with a second `GRAPH_EXPAND`, joined in the query.",
     "daxsql": "reference"
    }
   },
@@ -3780,6 +4657,254 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- No measure ignores a filter (ALL) or reads the rows shown (ALLSELECTED).\nSELECT country_country AS country, store_customer AS customer, AGG(sales_sales_quantity) AS sales_quantity\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\nWHERE store_customer NOT IN ('Zabka', 'Rewe', 'Superdrug')\n  AND calendar_month_start = DATE '2021-02-01'\n  AND product_brand <> 'Somat'\nGROUP BY ALL\nORDER BY country, customer",
+     "status": "partial",
+     "rows": [
+      [
+       "Germany",
+       "Edeka",
+       "599134",
+       "",
+       ""
+      ],
+      [
+       "Germany",
+       "Rossmann DE",
+       "721869",
+       "",
+       ""
+      ],
+      [
+       "Germany",
+       "dm",
+       "906513",
+       "",
+       ""
+      ],
+      [
+       "Poland",
+       "Biedronka",
+       "845866",
+       "",
+       ""
+      ],
+      [
+       "Poland",
+       "Lidl PL",
+       "659874",
+       "",
+       ""
+      ],
+      [
+       "Poland",
+       "Rossmann PL",
+       "480196",
+       "",
+       ""
+      ],
+      [
+       "UK",
+       "Boots",
+       "540694",
+       "",
+       ""
+      ],
+      [
+       "UK",
+       "Tesco",
+       "788473",
+       "",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- All customers: a second GRAPH_EXPAND without the customer filter. The customers shown: a window in the query.\nWITH cur AS (\n    SELECT country_country AS country, store_customer AS customer, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE store_customer NOT IN ('Zabka', 'Rewe', 'Superdrug')\n      AND calendar_month_start = DATE '2021-02-01' AND product_brand <> 'Somat'\n    GROUP BY ALL\n), every_customer AS (\n    SELECT country_country AS country, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_month_start = DATE '2021-02-01' AND product_brand <> 'Somat'\n    GROUP BY ALL\n)\nSELECT cur.country, cur.customer, cur.q AS sales_quantity,\n       cur.q / a.q AS customer_share_all,\n       cur.q / SUM(cur.q) OVER (PARTITION BY cur.country) AS customer_share_allselected\nFROM cur JOIN every_customer AS a USING (country)\nORDER BY country, customer",
+     "status": "match",
+     "rows": [
+      [
+       "Germany",
+       "Edeka",
+       "599134",
+       "0.216475952697",
+       "0.268969560712"
+      ],
+      [
+       "Germany",
+       "Rossmann DE",
+       "721869",
+       "0.260821918798",
+       "0.324069052703"
+      ],
+      [
+       "Germany",
+       "dm",
+       "906513",
+       "0.327536519889",
+       "0.406961386585"
+      ],
+      [
+       "Poland",
+       "Biedronka",
+       "845866",
+       "0.359804721845",
+       "0.425928126586"
+      ],
+      [
+       "Poland",
+       "Lidl PL",
+       "659874",
+       "0.28068959034",
+       "0.332273547587"
+      ],
+      [
+       "Poland",
+       "Rossmann PL",
+       "480196",
+       "0.204260235322",
+       "0.241798325827"
+      ],
+      [
+       "UK",
+       "Boots",
+       "540694",
+       "0.319720095462",
+       "0.406791622121"
+      ],
+      [
+       "UK",
+       "Tesco",
+       "788473",
+       "0.466235362014",
+       "0.593208377879"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -3908,6 +5033,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match. All customers: a copy of the fact through a copy of the store table (`store_geo`). Customers shown: LOD.",
     "dbx": "**partial**: all customers by a window; customers shown has no metric-view form. Matches with a window function in the query.",
+    "bigquery": "**partial**: no measure ignores a filter. Matches with a second `GRAPH_EXPAND` without the customer filter, and a window in the query.",
     "daxsql": "reference"
    }
   },
@@ -4138,6 +5264,126 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- No measure ignores a filter; the total row is a second query.\nSELECT * FROM (\n    SELECT country_country AS country, AGG(sales_sales_quantity) AS sales_quantity\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_month_start = DATE '2021-02-01' AND store_customer <> 'Tesco'\n    GROUP BY ALL\n    UNION ALL\n    SELECT NULL, AGG(sales_sales_quantity)\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_month_start = DATE '2021-02-01' AND store_customer <> 'Tesco'\n)\nORDER BY country NULLS LAST",
+     "status": "partial",
+     "rows": [
+      [
+       "Germany",
+       "3164939",
+       "",
+       ""
+      ],
+      [
+       "Poland",
+       "2686210",
+       "",
+       ""
+      ],
+      [
+       "UK",
+       "1031214",
+       "",
+       ""
+      ],
+      [
+       "",
+       "6882363",
+       "",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- All customers: a second GRAPH_EXPAND without the customer filter. Fixed at country and year: a third, on the\n-- year of the month asked (2021), with no other filter. The total row is a fourth part.\nWITH cur AS (\n    SELECT country_country AS country, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_month_start = DATE '2021-02-01' AND store_customer <> 'Tesco'\n    GROUP BY ALL\n), every_customer AS (\n    SELECT country_country AS country, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_month_start = DATE '2021-02-01'\n    GROUP BY ALL\n), fixed AS (\n    SELECT country_country AS country, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year = 2021\n    GROUP BY ALL\n), r AS (\n    SELECT cur.country, cur.q, a.q AS qa, f.q AS qf\n    FROM cur JOIN every_customer AS a USING (country) JOIN fixed AS f USING (country)\n)\nSELECT * FROM (\n    SELECT country, q AS sales_quantity, qa AS country_qty_all_customers, qf AS country_total_fixed FROM r\n    UNION ALL\n    SELECT NULL, SUM(q), SUM(qa), SUM(qf) FROM r\n)\nORDER BY country NULLS LAST",
+     "status": "match",
+     "rows": [
+      [
+       "Germany",
+       "3164939",
+       "3164939",
+       "36203407"
+      ],
+      [
+       "Poland",
+       "2686210",
+       "2686210",
+       "30755062"
+      ],
+      [
+       "UK",
+       "1031214",
+       "1931716",
+       "22111689"
+      ],
+      [
+       "",
+       "6882363",
+       "7782865",
+       "89070158"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -4202,6 +5448,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match (LOD; the total row is a second query)",
     "dbx": "match",
+    "bigquery": "**partial**: no measure ignores a filter; the total row is a second query. Matches with two more `GRAPH_EXPAND`s (no customer filter; the whole year), joined in the query.",
     "daxsql": "reference"
    }
   },
@@ -4367,6 +5614,90 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- No measure ignores a filter.\nSELECT country_country AS country, AGG(sales_sales_quantity) AS sales_quantity\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\nWHERE calendar_year = 2021\n  AND product_brand IN ('Tide', 'Dove')\n  AND category_category = 'Laundry'\n  AND store_customer <> 'Tesco'\nGROUP BY ALL\nORDER BY country",
+     "status": "partial",
+     "rows": [
+      [
+       "Germany",
+       "4521959",
+       ""
+      ],
+      [
+       "Poland",
+       "3837141",
+       ""
+      ],
+      [
+       "UK",
+       "1482182",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       true
+      ],
+      [
+       false,
+       false,
+       true
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- All customers and categories: a second GRAPH_EXPAND without the customer and category filters.\nWITH cur AS (\n    SELECT country_country AS country, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year = 2021 AND product_brand IN ('Tide', 'Dove')\n      AND category_category = 'Laundry' AND store_customer <> 'Tesco'\n    GROUP BY ALL\n), every_customer_category AS (\n    SELECT country_country AS country, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year = 2021 AND product_brand IN ('Tide', 'Dove')\n    GROUP BY ALL\n)\nSELECT cur.country, cur.q AS sales_quantity, cur.q / a.q AS cust_cat_share_all\nFROM cur JOIN every_customer_category AS a USING (country)\nORDER BY country",
+     "status": "match",
+     "rows": [
+      [
+       "Germany",
+       "4521959",
+       "0.499347485395"
+      ],
+      [
+       "Poland",
+       "3837141",
+       "0.498927222365"
+      ],
+      [
+       "UK",
+       "1482182",
+       "0.26811639164"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -4413,6 +5744,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match, with a copy of the fact through a one-row `all_members` table",
     "dbx": "match",
+    "bigquery": "**partial**: no measure ignores a filter. Matches with a second `GRAPH_EXPAND` without the customer and category filters.",
     "daxsql": "reference"
    }
   },
@@ -5245,6 +6577,366 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- One query has one root: from sales, the budget is not reachable. A derived measure only reads its own table.\nSELECT country_country AS country, category_category AS category, AGG(sales_sales_quantity) AS sales_quantity\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\nWHERE calendar_year = 2021\nGROUP BY ALL\nORDER BY country, category",
+     "status": "partial",
+     "rows": [
+      [
+       "Germany",
+       "Clearance",
+       "9037851",
+       "",
+       ""
+      ],
+      [
+       "Germany",
+       "Hair Care",
+       "9055308",
+       "",
+       ""
+      ],
+      [
+       "Germany",
+       "Laundry",
+       "9061647",
+       "",
+       ""
+      ],
+      [
+       "Germany",
+       "Oral Care",
+       "9048601",
+       "",
+       ""
+      ],
+      [
+       "Poland",
+       "Clearance",
+       "7674383",
+       "",
+       ""
+      ],
+      [
+       "Poland",
+       "Hair Care",
+       "7693248",
+       "",
+       ""
+      ],
+      [
+       "Poland",
+       "Laundry",
+       "7688170",
+       "",
+       ""
+      ],
+      [
+       "Poland",
+       "Oral Care",
+       "7699261",
+       "",
+       ""
+      ],
+      [
+       "UK",
+       "Clearance",
+       "5534210",
+       "",
+       ""
+      ],
+      [
+       "UK",
+       "Hair Care",
+       "5512252",
+       "",
+       ""
+      ],
+      [
+       "UK",
+       "Laundry",
+       "5535746",
+       "",
+       ""
+      ],
+      [
+       "UK",
+       "Oral Care",
+       "5529481",
+       "",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       false,
+       true,
+       true
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- Two roots, two GRAPH_EXPANDs joined on the shared dimensions (the docs' pattern); the ratio is in the query.\nWITH s AS (\n    SELECT country_country AS country, category_category AS category, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year = 2021\n    GROUP BY ALL\n), b AS (\n    SELECT country_country AS country, category_category AS category, AGG(budget_budget_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"budget\")\n    WHERE calendar_year = 2021\n    GROUP BY ALL\n)\nSELECT country, category, s.q AS sales_quantity, b.q AS budget_quantity, SAFE_DIVIDE(s.q - b.q, b.q) AS sales_vs_budget_pct\nFROM s FULL JOIN b USING (country, category)\nORDER BY country, category",
+     "status": "match",
+     "rows": [
+      [
+       "Germany",
+       "Clearance",
+       "9037851",
+       "9019629",
+       "0.00202026047856"
+      ],
+      [
+       "Germany",
+       "Hair Care",
+       "9055308",
+       "9096916",
+       "-0.00457385777773"
+      ],
+      [
+       "Germany",
+       "Laundry",
+       "9061647",
+       "9124124",
+       "-0.00684745187593"
+      ],
+      [
+       "Germany",
+       "Oral Care",
+       "9048601",
+       "9083304",
+       "-0.00382052609931"
+      ],
+      [
+       "Poland",
+       "Clearance",
+       "7674383",
+       "7664571",
+       "0.00128017602029"
+      ],
+      [
+       "Poland",
+       "Hair Care",
+       "7693248",
+       "7666825",
+       "0.00344640708507"
+      ],
+      [
+       "Poland",
+       "Laundry",
+       "7688170",
+       "7732939",
+       "-0.00578939003657"
+      ],
+      [
+       "Poland",
+       "Oral Care",
+       "7699261",
+       "7709646",
+       "-0.00134701385771"
+      ],
+      [
+       "UK",
+       "Clearance",
+       "5534210",
+       "5575135",
+       "-0.00734062941974"
+      ],
+      [
+       "UK",
+       "Hair Care",
+       "5512252",
+       "5523247",
+       "-0.00199067686091"
+      ],
+      [
+       "UK",
+       "Laundry",
+       "5535746",
+       "5480303",
+       "0.0101167763899"
+      ],
+      [
+       "UK",
+       "Oral Care",
+       "5529481",
+       "5572849",
+       "-0.007782015985"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -5429,6 +7121,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match",
     "dbx": "match, with two views joined in the query, or with a bridge view over both facts",
+    "bigquery": "**partial**: a query has one root, and from sales the budget is out of reach. Matches with a second `GRAPH_EXPAND` from the budget, joined in the query (the docs' pattern).",
     "daxsql": "reference"
    }
   },
@@ -5867,6 +7560,190 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- From sales the budget is not reachable, and there is no last-year measure; the total row is a second query.\nSELECT * FROM (\n    SELECT category_category AS category, AGG(sales_sales_quantity) AS sales_quantity\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year = 2021\n    GROUP BY ALL\n    UNION ALL\n    SELECT NULL, AGG(sales_sales_quantity)\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year = 2021\n)\nORDER BY category NULLS LAST",
+     "status": "partial",
+     "rows": [
+      [
+       "Clearance",
+       "22246444",
+       "",
+       "",
+       "",
+       ""
+      ],
+      [
+       "Hair Care",
+       "22260808",
+       "",
+       "",
+       "",
+       ""
+      ],
+      [
+       "Laundry",
+       "22285563",
+       "",
+       "",
+       "",
+       ""
+      ],
+      [
+       "Oral Care",
+       "22277343",
+       "",
+       "",
+       "",
+       ""
+      ],
+      [
+       "",
+       "89070158",
+       "",
+       "",
+       "",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       true,
+       true,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true,
+       true,
+       true
+      ],
+      [
+       false,
+       false,
+       true,
+       true,
+       true,
+       true
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- Three GRAPH_EXPANDs joined on category: sales, sales a year back, budget. The total row is a fourth part.\nWITH s AS (\n    SELECT category_category AS category, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year = 2021\n    GROUP BY ALL\n), ly AS (\n    SELECT category_category AS category, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    WHERE calendar_year = 2020\n    GROUP BY ALL\n), b AS (\n    SELECT category_category AS category, AGG(budget_budget_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"budget\")\n    WHERE calendar_year = 2021\n    GROUP BY ALL\n), r AS (\n    SELECT category, s.q, b.q AS qb, ly.q AS qly FROM s FULL JOIN b USING (category) LEFT JOIN ly USING (category)\n    UNION ALL\n    SELECT NULL, (SELECT SUM(q) FROM s), (SELECT SUM(q) FROM b), (SELECT SUM(q) FROM ly)\n)\nSELECT category, q AS sales_quantity, qb AS budget_quantity, SAFE_DIVIDE(q - qb, qb) AS sales_vs_budget_pct,\n       qly AS sales_qty_ly, SAFE_DIVIDE(q - qly, qly) AS sales_qty_yoy_pct\nFROM r\nORDER BY category NULLS LAST",
+     "status": "match",
+     "rows": [
+      [
+       "Clearance",
+       "22246444",
+       "22259335",
+       "-0.000579127813118",
+       "20698730",
+       "0.0747733798161"
+      ],
+      [
+       "Hair Care",
+       "22260808",
+       "22286988",
+       "-0.00117467645247",
+       "20682058",
+       "0.0763342796931"
+      ],
+      [
+       "Laundry",
+       "22285563",
+       "22337366",
+       "-0.00231911855677",
+       "20720113",
+       "0.075552194141"
+      ],
+      [
+       "Oral Care",
+       "22277343",
+       "22365799",
+       "-0.00395496713531",
+       "20697044",
+       "0.0763538503373"
+      ],
+      [
+       "",
+       "89070158",
+       "89249488",
+       "-0.00200931124669",
+       "82797945",
+       "0.075753244842"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -5963,6 +7840,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match; the total row is a second query",
     "dbx": "**differs**: last year is one day's value. Matches with three views joined in the query (sales, `sales_ly_mv`, budget).",
+    "bigquery": "**partial**, as q11. Matches with three `GRAPH_EXPAND`s joined in the query (sales, a year back, budget).",
     "daxsql": "reference"
    }
   },
@@ -6211,6 +8089,106 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- From sales, the calendar is reached only through sales rows.\nSELECT calendar_year AS year, COUNT(DISTINCT calendar_date_key) AS day_count, AGG(sales_sales_quantity) AS sales_quantity\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\nGROUP BY ALL\nORDER BY year",
+     "status": "differs",
+     "rows": [
+      [
+       "2020",
+       "366",
+       "82797945"
+      ],
+      [
+       "2021",
+       "365",
+       "89070158"
+      ],
+      [
+       "2022",
+       "365",
+       "94792246"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": [
+      [
+       "2023",
+       "365",
+       ""
+      ]
+     ]
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- The calendar as its own root, joined to the sales by year.\nWITH c AS (\n    SELECT calendar_year AS year, COUNT(*) AS day_count\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"calendar\")\n    GROUP BY ALL\n), s AS (\n    SELECT calendar_year AS year, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    GROUP BY ALL\n)\nSELECT year, c.day_count, s.q AS sales_quantity\nFROM c LEFT JOIN s USING (year)\nORDER BY year",
+     "status": "match",
+     "rows": [
+      [
+       "2020",
+       "366",
+       "82797945"
+      ],
+      [
+       "2021",
+       "365",
+       "89070158"
+      ],
+      [
+       "2022",
+       "365",
+       "94792246"
+      ],
+      [
+       "2023",
+       "365",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -6267,6 +8245,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match",
     "dbx": "**differs**: 2023 is missing. Matches with a calendar view, joined in the query.",
+    "bigquery": "**differs**: 2023 is missing (from sales, the calendar is reached only through sales rows). Matches with the calendar as its own root, joined in the query.",
     "daxsql": "reference"
    }
   },
@@ -6643,6 +8622,139 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "-- No last-year measure, and from sales the calendar is reached only through sales rows (no 2023).\nSELECT calendar_year AS year, AGG(sales_sales_quantity) AS sales_quantity\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\nGROUP BY ALL\nORDER BY year",
+     "status": "differs",
+     "rows": [
+      [
+       "2020",
+       "82797945",
+       "",
+       ""
+      ],
+      [
+       "2021",
+       "89070158",
+       "",
+       ""
+      ],
+      [
+       "2022",
+       "94792246",
+       "",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       true,
+       true,
+       false
+      ],
+      [
+       false,
+       true,
+       true,
+       false
+      ],
+      [
+       false,
+       true,
+       true,
+       false
+      ]
+     ],
+     "missing": [
+      [
+       "2020",
+       "82797945",
+       "",
+       "82797945"
+      ],
+      [
+       "2021",
+       "89070158",
+       "82797945",
+       "6272213"
+      ],
+      [
+       "2022",
+       "94792246",
+       "89070158",
+       "5722088"
+      ],
+      [
+       "2023",
+       "",
+       "94792246",
+       "-94792246"
+      ]
+     ]
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- The calendar as its own root (so 2023 stays), sales and sales a year back joined by year; a missing side counts as\n-- 0, as DAX reads a blank.\nWITH c AS (\n    SELECT DISTINCT calendar_year AS year\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"calendar\")\n), s AS (\n    SELECT calendar_year AS year, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    GROUP BY ALL\n), ly AS (\n    SELECT calendar_year + 1 AS year, AGG(sales_sales_quantity) AS q\n    FROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"sales\")\n    GROUP BY ALL\n)\nSELECT year, s.q AS sales_quantity, ly.q AS sales_qty_ly, COALESCE(s.q, 0) - COALESCE(ly.q, 0) AS sales_qty_growth\nFROM c LEFT JOIN s USING (year) LEFT JOIN ly USING (year)\nORDER BY year",
+     "status": "match",
+     "rows": [
+      [
+       "2020",
+       "82797945",
+       "",
+       "82797945"
+      ],
+      [
+       "2021",
+       "89070158",
+       "82797945",
+       "6272213"
+      ],
+      [
+       "2022",
+       "94792246",
+       "89070158",
+       "5722088"
+      ],
+      [
+       "2023",
+       "",
+       "94792246",
+       "-94792246"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -6707,6 +8819,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "**differs**: 2020 and 2023 are NULL (SQL's `x - NULL`; DAX reads a blank as 0). Matches with `COALESCE(..., 0)` on each side.",
     "dbx": "**differs**: NULL at both ends, 2023 missing, and last year is one day's value. Matches with `sales_ly_mv`, joined in the query, and `COALESCE`.",
+    "bigquery": "**differs**: no last-year measure, and 2023 is missing. Matches with the calendar as root, sales and a year back joined, and `COALESCE`.",
     "daxsql": "reference"
    }
   },
@@ -6959,6 +9072,91 @@ window.DATA = {
      "missing": []
     },
     {
+     "label": "bigquery",
+     "platform": "bigquery",
+     "file": "bigquery.sql",
+     "code": "SELECT category_category AS category, AGG(budget_budget_quantity) AS budget_quantity\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"budget\")\nWHERE calendar_year = 2022 AND category_category <> 'Laundry'\nGROUP BY ALL\nORDER BY category",
+     "status": "differs",
+     "rows": [
+      [
+       "Clearance",
+       "23984711"
+      ],
+      [
+       "Hair Care",
+       "23839126"
+      ],
+      [
+       "Oral Care",
+       "23494372"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ]
+     ],
+     "missing": [
+      [
+       "",
+       "600000"
+      ]
+     ]
+    },
+    {
+     "label": "bigquery (workaround)",
+     "platform": "bigquery",
+     "file": "bigquery_workaround.sql",
+     "code": "-- The rows without a category are not Laundry either, as DAX reads its blank row.\nSELECT category_category AS category, AGG(budget_budget_quantity) AS budget_quantity\nFROM GRAPH_EXPAND(\"ossie_bench.sales_graph\", start_node => \"budget\")\nWHERE calendar_year = 2022 AND (category_category <> 'Laundry' OR category_category IS NULL)\nGROUP BY ALL\nORDER BY category",
+     "status": "match",
+     "rows": [
+      [
+       "",
+       "600000"
+      ],
+      [
+       "Clearance",
+       "23984711"
+      ],
+      [
+       "Hair Care",
+       "23839126"
+      ],
+      [
+       "Oral Care",
+       "23494372"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
      "label": "daxsql",
      "platform": "daxsql",
      "file": "daxsql.sql",
@@ -7007,6 +9205,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "**differs**: the 600,000 of budget without a category are dropped (`NULL <> 'Laundry'` isn't true; DAX's blank row is not Laundry). Matches with `OR category IS NULL`.",
     "dbx": "**differs**, as Snowflake. Matches with `OR category IS NULL`.",
+    "bigquery": "**differs**, as Snowflake. Matches with `OR category IS NULL`.",
     "daxsql": "reference"
    }
   }

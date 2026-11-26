@@ -21,7 +21,7 @@ MEASURES = {
     "country_total_allselected", "customer_share_allselected", "country_total_allexcept", "country_total_fixed",
     "country_qty_all_cust_cat", "cust_cat_share_all", "day_count",
 }
-PLATFORMS = ["fabric", "snowflake", "dbx", "daxsql"]
+PLATFORMS = ["fabric", "snowflake", "dbx", "bigquery", "daxsql"]
 
 
 def grid_notes():

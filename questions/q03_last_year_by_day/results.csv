@@ -34,3 +34,17 @@ dbx,match,2021-02-28,288291,262565
 dbx,match,2021-03-01,284680,264495
 dbx,match,2021-03-02,283910,269724
 dbx,match,2021-03-03,284445,267063
+bigquery,partial,2021-02-25,286490,
+bigquery,partial,2021-02-26,283269,
+bigquery,partial,2021-02-27,285994,
+bigquery,partial,2021-02-28,288291,
+bigquery,partial,2021-03-01,284680,
+bigquery,partial,2021-03-02,283910,
+bigquery,partial,2021-03-03,284445,
+bigquery (workaround),match,2021-02-25,286490,266431
+bigquery (workaround),match,2021-02-26,283269,260203
+bigquery (workaround),match,2021-02-27,285994,266208
+bigquery (workaround),match,2021-02-28,288291,262565
+bigquery (workaround),match,2021-03-01,284680,264495
+bigquery (workaround),match,2021-03-02,283910,269724
+bigquery (workaround),match,2021-03-03,284445,267063

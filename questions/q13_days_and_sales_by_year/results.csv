@@ -18,3 +18,10 @@ dbx (workaround),match,2020,366,82797945
 dbx (workaround),match,2021,365,89070158
 dbx (workaround),match,2022,365,94792246
 dbx (workaround),match,2023,365,
+bigquery,differs,2020,366,82797945
+bigquery,differs,2021,365,89070158
+bigquery,differs,2022,365,94792246
+bigquery (workaround),match,2020,366,82797945
+bigquery (workaround),match,2021,365,89070158
+bigquery (workaround),match,2022,365,94792246
+bigquery (workaround),match,2023,365,

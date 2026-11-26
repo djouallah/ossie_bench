@@ -21,3 +21,10 @@ dbx (workaround),match,,600000
 dbx (workaround),match,Clearance,23984711
 dbx (workaround),match,Hair Care,23839126
 dbx (workaround),match,Oral Care,23494372
+bigquery,differs,Clearance,23984711
+bigquery,differs,Hair Care,23839126
+bigquery,differs,Oral Care,23494372
+bigquery (workaround),match,,600000
+bigquery (workaround),match,Clearance,23984711
+bigquery (workaround),match,Hair Care,23839126
+bigquery (workaround),match,Oral Care,23494372

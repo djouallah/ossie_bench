@@ -35,3 +35,12 @@ dbx,match,Poland,2022,32717852
 dbx,match,UK,2020,20499603
 dbx,match,UK,2021,22111689
 dbx,match,UK,2022,23496958
+bigquery,match,Germany,2020,33714072
+bigquery,match,Germany,2021,36203407
+bigquery,match,Germany,2022,38577436
+bigquery,match,Poland,2020,28584270
+bigquery,match,Poland,2021,30755062
+bigquery,match,Poland,2022,32717852
+bigquery,match,UK,2020,20499603
+bigquery,match,UK,2021,22111689
+bigquery,match,UK,2022,23496958

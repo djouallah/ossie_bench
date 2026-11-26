@@ -39,3 +39,19 @@ dbx (workaround),match,Poland,Lidl PL,659874,0.2806895903403926,0.33227354758662
 dbx (workaround),match,Poland,Rossmann PL,480196,0.20426023532234208,0.241798325827217
 dbx (workaround),match,UK,Boots,540694,0.319720095461781,0.4067916221212233
 dbx (workaround),match,UK,Tesco,788473,0.46623536201444227,0.5932083778787767
+bigquery,partial,Germany,Edeka,599134,,
+bigquery,partial,Germany,Rossmann DE,721869,,
+bigquery,partial,Germany,dm,906513,,
+bigquery,partial,Poland,Biedronka,845866,,
+bigquery,partial,Poland,Lidl PL,659874,,
+bigquery,partial,Poland,Rossmann PL,480196,,
+bigquery,partial,UK,Boots,540694,,
+bigquery,partial,UK,Tesco,788473,,
+bigquery (workaround),match,Germany,Edeka,599134,0.216475952697,0.268969560712
+bigquery (workaround),match,Germany,Rossmann DE,721869,0.260821918798,0.324069052703
+bigquery (workaround),match,Germany,dm,906513,0.327536519889,0.406961386585
+bigquery (workaround),match,Poland,Biedronka,845866,0.359804721845,0.425928126586
+bigquery (workaround),match,Poland,Lidl PL,659874,0.28068959034,0.332273547587
+bigquery (workaround),match,Poland,Rossmann PL,480196,0.204260235322,0.241798325827
+bigquery (workaround),match,UK,Boots,540694,0.319720095462,0.406791622121
+bigquery (workaround),match,UK,Tesco,788473,0.466235362014,0.593208377879

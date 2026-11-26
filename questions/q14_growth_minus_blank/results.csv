@@ -22,3 +22,10 @@ dbx (workaround),match,2020,82797945,,82797945
 dbx (workaround),match,2021,89070158,82797945,6272213
 dbx (workaround),match,2022,94792246,89070158,5722088
 dbx (workaround),match,2023,,94792246,-94792246
+bigquery,differs,2020,82797945,,
+bigquery,differs,2021,89070158,,
+bigquery,differs,2022,94792246,,
+bigquery (workaround),match,2020,82797945,,82797945
+bigquery (workaround),match,2021,89070158,82797945,6272213
+bigquery (workaround),match,2022,94792246,89070158,5722088
+bigquery (workaround),match,2023,,94792246,-94792246

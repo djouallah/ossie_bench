@@ -59,3 +59,27 @@ dbx (workaround),match,UK,Clearance,5534210,5575135,-0.007340629419736024
 dbx (workaround),match,UK,Hair Care,5512252,5523247,-0.0019906768609117063
 dbx (workaround),match,UK,Laundry,5535746,5480303,0.010116776389918586
 dbx (workaround),match,UK,Oral Care,5529481,5572849,-0.007782015985001567
+bigquery,partial,Germany,Clearance,9037851,,
+bigquery,partial,Germany,Hair Care,9055308,,
+bigquery,partial,Germany,Laundry,9061647,,
+bigquery,partial,Germany,Oral Care,9048601,,
+bigquery,partial,Poland,Clearance,7674383,,
+bigquery,partial,Poland,Hair Care,7693248,,
+bigquery,partial,Poland,Laundry,7688170,,
+bigquery,partial,Poland,Oral Care,7699261,,
+bigquery,partial,UK,Clearance,5534210,,
+bigquery,partial,UK,Hair Care,5512252,,
+bigquery,partial,UK,Laundry,5535746,,
+bigquery,partial,UK,Oral Care,5529481,,
+bigquery (workaround),match,Germany,Clearance,9037851,9019629,0.00202026047856
+bigquery (workaround),match,Germany,Hair Care,9055308,9096916,-0.00457385777773
+bigquery (workaround),match,Germany,Laundry,9061647,9124124,-0.00684745187593
+bigquery (workaround),match,Germany,Oral Care,9048601,9083304,-0.00382052609931
+bigquery (workaround),match,Poland,Clearance,7674383,7664571,0.00128017602029
+bigquery (workaround),match,Poland,Hair Care,7693248,7666825,0.00344640708507
+bigquery (workaround),match,Poland,Laundry,7688170,7732939,-0.00578939003657
+bigquery (workaround),match,Poland,Oral Care,7699261,7709646,-0.00134701385771
+bigquery (workaround),match,UK,Clearance,5534210,5575135,-0.00734062941974
+bigquery (workaround),match,UK,Hair Care,5512252,5523247,-0.00199067686091
+bigquery (workaround),match,UK,Laundry,5535746,5480303,0.0101167763899
+bigquery (workaround),match,UK,Oral Care,5529481,5572849,-0.007782015985
