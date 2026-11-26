@@ -21,7 +21,7 @@ MEASURES = {
     "country_total_allselected", "customer_share_allselected", "country_total_allexcept", "country_total_fixed",
     "country_qty_all_cust_cat", "cust_cat_share_all", "day_count",
 }
-PLATFORMS = ["fabric", "snowflake", "dbx"]
+PLATFORMS = ["fabric", "snowflake", "dbx", "daxsql"]
 
 
 def grid_notes():
@@ -46,14 +46,21 @@ def measures():
 
 
 def ossie():
-    """The baseline Ossie file, and each measure it holds: {yaml, expr: {name: {sql, home}}}."""
+    """The baseline Ossie file, and each measure it holds: {yaml, expr: {name: {lang, code, home}}}.
+    lang is "sql" (expression.sql, the standard's portable SQL) or the dialect it is written in (DAX)."""
     import yaml
     path = ROOT / "semantic_model" / "a_baseline" / "model.ossie.yaml"
     text = path.read_text(encoding="utf-8")
     doc = yaml.safe_load(text)
-    expr = {m["name"]: {"sql": m["expression"]["sql"], "home": d["name"]}
-            for d in doc["datasets"] for m in d.get("metrics", [])}
-    expr.update({m["name"]: {"sql": m["expression"]["sql"], "home": "model"} for m in doc.get("metrics", [])})
+
+    def one(m, home):
+        e = m["expression"]
+        if "sql" in e:
+            return {"lang": "sql", "code": e["sql"], "home": home}
+        d = e["dialects"][0]
+        return {"lang": d["dialect"].lower(), "code": d["expression"], "home": home}
+    expr = {m["name"]: one(m, d["name"]) for d in doc["datasets"] for m in d.get("metrics", [])}
+    expr.update({m["name"]: one(m, "model") for m in doc.get("metrics", [])})
     return {"version": doc["version"], "yaml": text.strip(), "expr": expr}
 
 
@@ -65,6 +72,7 @@ def evidence():
         "sf_import": sm / "snowflake" / "tests" / "import_response.txt",
         "sf_reimport": sm / "snowflake" / "tests" / "export_reimport_response.txt",
         "sf_dialect": sm / "snowflake" / "tests" / "lod_via_ossie_response.txt",
+        "sf_dialect_inline": sm / "snowflake" / "tests" / "lod_inline_via_ossie_response.txt",
         "sf_extensions": sm / "snowflake" / "tests" / "extensions_response.txt",
         "fabric_export": sm / "fabric" / "export_response.txt",
         "dbx_export": sm / "dbx" / "export_to_ossie_response.txt",
@@ -73,6 +81,12 @@ def evidence():
     head = lambda p: next(x for x in p.read_text(encoding="utf-8").splitlines() if x.startswith("version:"))  # noqa: E731
     out["fabric_version"] = head(sm / "fabric" / "oss_dax_dialect.ossie.yaml")
     out["sf_export_version"] = head(sm / "snowflake" / "tests" / "export_from_semantic_view.ossie.yaml")
+    # What dax-sql writes for q09's query on the Ossie file (it needs node and tools/daxsql/node_modules).
+    try:
+        import daxsql
+        out["daxsql_q09"] = daxsql.compile_sql((ROOT / "questions" / "q09_country_all_vs_fixed" / "daxsql.sql").read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001 - the page then shows the query without its SQL
+        print(f"dax-sql's SQL for q09 left out: {e}")
     return out
 
 

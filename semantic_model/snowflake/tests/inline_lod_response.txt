@@ -1,0 +1,12 @@
+The LOD written inline in the metrics of semantic_view.sql (scratch view SEMANTIC_VIEW_INLINE, dropped after), 2026-11-26:
+
+Inline, the semantic view as it is now (no view-level LOD facts; each metric holds its LOD, with no table prefix):
+  country_total_allexcept AS AVG(SUM(sales.sales_qty) FIXED DIMENSIONS (country.country, calendar.year)), ...
+  CREATE: accepted
+  every question: the same status as with the view-level facts (q03 plain differs, as before; the rest match)
+
+Inline, and the three "last year" copies folded into sales (sale_date_ly, sale_date_fly, sale_date_ly_day as facts of
+sales, a relationship from each to calendar, and the metrics choosing one with USING):
+  CREATE: 010949 (42601): SQL compilation error: error line 104 at position 4 Invalid LOD definition for 'COUNTRY_TOTAL_ALLEXCEPT': The entity in expression 'CALENDAR.YEAR' does not have a valid join path to the entity in expression 'SALES.SALES_QTY'. Such a join path in multi-path relationships is not supported.
+
+So the LOD can be inline, but a table an LOD reads has one path to the calendar: "last year" stays a copy of the fact.

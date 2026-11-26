@@ -6,6 +6,10 @@
     python tools/sf.py export      # the tables -> data/<table>.parquet (what Fabric and Databricks load)
     python tools/sf.py ossie-out   # SYSTEM$READ_OSSIE_YAML_FROM_SEMANTIC_VIEW
                                           #   -> semantic_model/snowflake/tests/export_from_semantic_view.ossie.yaml
+    python tools/sf.py ossie-reimport  # the export above, imported back into a scratch view (then dropped)
+                                          #   -> semantic_model/snowflake/tests/export_reimport_response.txt
+    python tools/sf.py ossie-lod   # the import with the LOD inline in a model metric (SNOWFLAKE dialect), on a scratch view
+                                          #   -> semantic_model/snowflake/tests/lod_inline_via_ossie_response.txt
     python tools/sf.py ossie-in    # SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML(semantic_model/snowflake/tests/dax_context.ossie.yaml)
     python tools/sf.py ossie-ext   # the same import with vendor extensions, on a scratch view that is then dropped
                                           #   -> semantic_model/snowflake/tests/extensions_response.txt
@@ -202,9 +206,62 @@ def ossie_ext(conn):
     print(p.read_text(encoding="utf-8"))
 
 
+def ossie_reimport(conn):
+    """Can Snowflake import its own Ossie export? tests/export_from_semantic_view.ossie.yaml, renamed, into a scratch view."""
+    import yaml
+    cur, name = conn.cursor(), "OSSIE_REIMPORT_TEST"
+    doc = yaml.safe_load((ROOT / "semantic_model" / "snowflake" / "tests" / "export_from_semantic_view.ossie.yaml").read_text(encoding="utf-8"))
+    doc["semantic_model"][0]["name"] = name
+    try:
+        r = cur.execute("CALL SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML(%s, %s)", (FQ, yaml.safe_dump(doc, sort_keys=False))).fetchone()[0]
+        q = cur.execute(f"SELECT * FROM SEMANTIC_VIEW({FQ}.{name} DIMENSIONS country METRICS country_total_allselected) ORDER BY 1").fetchall()
+        out = f"{r}\nquery country_total_allselected by country: {q}"
+    except snowflake.connector.errors.ProgrammingError as e:
+        out = "ERROR " + " ".join(str(e).split())
+    finally:
+        cur.execute(f"DROP SEMANTIC VIEW IF EXISTS {FQ}.{name}")
+    p = ROOT / "semantic_model" / "snowflake" / "tests" / "export_reimport_response.txt"
+    p.write_text(out + "\n", encoding="utf-8")
+    print(out)
+
+
+LOD_INLINE = {  # model-level metrics of tests/dax_context.ossie.yaml, in the SNOWFLAKE dialect, the LOD inline
+    "country_total_allselected": "AVG(SUM(fact_sales.sales_qty) EXCLUDE DIMENSIONS (dim_store.customer))",
+    "country_total_fixed": "SUM(DISTINCT SUM(fact_sales.sales_qty) FIXED DIMENSIONS (dim_country.country, dim_calendar.year))",
+}
+
+
+def ossie_lod(conn):
+    """Does the import take an LOD written inline in a model metric? tests/dax_context.ossie.yaml with LOD_INLINE,
+    into a scratch view, queried as q09 asks (February 2021, without Tesco), then dropped."""
+    import yaml
+    cur, name = conn.cursor(), "LOD_INLINE_TEST"
+    doc = yaml.safe_load((ROOT / "semantic_model" / "snowflake" / "tests" / "dax_context.ossie.yaml").read_text(encoding="utf-8"))
+    for d in doc["datasets"]:
+        d["source"] = d["source"].replace("DAX_CONTEXT_DEMO", SCHEMA)
+    doc["name"] = name
+    doc["metrics"] = [m for m in doc["metrics"] if m["name"] not in LOD_INLINE] + [
+        {"name": n, "expression": {"dialects": [{"dialect": "SNOWFLAKE", "expression": e}]}} for n, e in LOD_INLINE.items()]
+    out = ("SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML, tests/dax_context.ossie.yaml (0.1.1) with two model metrics in the\n"
+           "SNOWFLAKE dialect, the LOD inline (scratch view, dropped after):\n" +
+           "".join(f"  {n}: {e}\n" for n, e in LOD_INLINE.items()))
+    try:
+        out += "import: " + cur.execute("CALL SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML(%s, %s)", (FQ, yaml.safe_dump(doc, sort_keys=False))).fetchone()[0]
+        q = cur.execute(f"SELECT * FROM SEMANTIC_VIEW({FQ}.{name} DIMENSIONS dim_country.country METRICS country_total_allselected, "
+                        "country_total_fixed WHERE dim_calendar.month_start = DATE '2021-02-01' AND dim_store.customer <> 'Tesco') ORDER BY 1").fetchall()
+        out += f"\nquery by country, February 2021 without Tesco (country_total_allselected, country_total_fixed): {q}"
+    except snowflake.connector.errors.ProgrammingError as e:
+        out += "ERROR " + " ".join(str(e).split())
+    finally:
+        cur.execute(f"DROP SEMANTIC VIEW IF EXISTS {FQ}.{name}")
+    p = ROOT / "semantic_model" / "snowflake" / "tests" / "lod_inline_via_ossie_response.txt"
+    p.write_text(out + "\n", encoding="utf-8")
+    print(out)
+
+
 def ossie_sql(conn):
     """Does the import take Ossie's own SQL? The 0.1.1 test file (every expression in ANSI_SQL) and the baseline in
-    0.3.0.dev0 (expression.sql), each imported into a scratch view, queried, then dropped. -> tests/ossie_sql_response.txt"""
+    0.3.0.dev0 (SQL and DAX), each imported into a scratch view, queried, then dropped. -> tests/ossie_sql_response.txt"""
     import yaml
     name, cur, out = "OSSIE_SQL_TEST", conn.cursor(), []
     t011 = yaml.safe_load((ROOT / "semantic_model" / "snowflake" / "tests" / "dax_context.ossie.yaml").read_text(encoding="utf-8"))
@@ -214,7 +271,7 @@ def ossie_sql(conn):
     for d in base["datasets"]:
         d["source"] = f"{FQ}.{d['source'].upper()}"
     for label, doc in [(f"{t011['version']}, every expression in the ANSI_SQL dialect", t011),
-                       (f"{base['version']}, the baseline as it is (expression.sql)", base)]:
+                       (f"{base['version']}, the baseline as it is (4 measures in expression.sql, 12 in the DAX dialect)", base)]:
         doc["name"] = name
         line = f"{label}:\n  import: "
         try:
@@ -238,7 +295,7 @@ def main(argv):
         return
     conn = connect()
     for cmd in argv:
-        {"setup": setup, "view": view, "export": export, "ossie-out": ossie_out, "ossie-in": ossie_in, "ossie-ext": ossie_ext, "ossie-sql": ossie_sql}[cmd](conn)
+        {"setup": setup, "view": view, "export": export, "ossie-out": ossie_out, "ossie-in": ossie_in, "ossie-ext": ossie_ext, "ossie-sql": ossie_sql, "ossie-reimport": ossie_reimport, "ossie-lod": ossie_lod}[cmd](conn)
 
 
 if __name__ == "__main__":

@@ -4,5 +4,5 @@ SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML of Ossie in its own SQL (scratch vie
   import: Semantic view was successfully created from OSI YAML.
   query sales_quantity: [(266660349,)]
 
-0.3.0.dev0, the baseline as it is (expression.sql):
+0.3.0.dev0, the baseline as it is (4 measures in expression.sql, 12 in the DAX dialect):
   import: ERROR 392418 (22023): Uncaught exception of type 'EXPRESSION_ERROR' on line 3 at position 23 : Unsupported OSI specification version '0.3.0.dev0'. Currently supported version is '[0.1.1]'.

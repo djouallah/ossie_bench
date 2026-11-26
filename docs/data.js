@@ -3,102 +3,166 @@ window.DATA = {
   {
    "name": "sales_quantity",
    "meaning": "Units sold.",
-   "standard": "yes"
+   "standard": "SQL"
   },
   {
    "name": "net_profit_total",
    "meaning": "Net profit (negative for Clearance).",
-   "standard": "yes"
+   "standard": "SQL"
   },
   {
    "name": "budget_quantity",
    "meaning": "Budgeted units, by month, country and category.",
-   "standard": "yes"
+   "standard": "SQL"
   },
   {
    "name": "sales_vs_budget_pct",
    "meaning": "(sales - budget) / budget. Each side is summed at its own table's grain first.",
-   "standard": "yes: `AGG()` of the two measures above"
+   "standard": "SQL: `AGG()` of the two measures above"
   },
   {
    "name": "sales_qty_ly",
    "meaning": "Units sold in the same period one calendar year earlier, at whatever grain is asked (day, month, year, total).",
-   "standard": "no: period over period"
+   "standard": "DAX: period over period"
   },
   {
    "name": "net_profit_ly",
    "meaning": "Net profit in the same period one calendar year earlier.",
-   "standard": "no: period over period"
+   "standard": "DAX: period over period"
   },
   {
    "name": "sales_qty_fly",
    "meaning": "Units sold in the same period of the last fiscal year: 364 days earlier (4-4-5, 52 weeks).",
-   "standard": "no: period over period"
+   "standard": "DAX: period over period"
   },
   {
    "name": "sales_qty_yoy_pct",
    "meaning": "(sales - last year) / last year.",
-   "standard": "no: period over period"
+   "standard": "DAX: period over period"
   },
   {
    "name": "country_qty_all_customers",
    "meaning": "Units sold to every customer, whatever customers the query filters or shows. Every other filter is kept.",
-   "standard": "no: fields included in or excluded from the grouping"
+   "standard": "DAX: fields in or out of the grouping"
   },
   {
    "name": "customer_share_all",
    "meaning": "sales / `country_qty_all_customers`.",
-   "standard": "no: fields included in or excluded from the grouping"
+   "standard": "DAX: fields in or out of the grouping"
   },
   {
    "name": "country_total_allselected",
    "meaning": "Units sold to the customers the query shows, taken together.",
-   "standard": "no: fields included in or excluded from the grouping"
+   "standard": "DAX: fields in or out of the grouping"
   },
   {
    "name": "customer_share_allselected",
    "meaning": "sales / `country_total_allselected`.",
-   "standard": "no: fields included in or excluded from the grouping"
+   "standard": "DAX: fields in or out of the grouping"
   },
   {
    "name": "country_total_allexcept",
    "meaning": "Units sold with every filter removed except those on country and year.",
-   "standard": "no: fields included in or excluded from the grouping"
+   "standard": "DAX: fields in or out of the grouping"
   },
   {
    "name": "country_total_fixed",
    "meaning": "Units sold for the country and the year shown, whatever else is filtered.",
-   "standard": "no: fields included in or excluded from the grouping"
+   "standard": "DAX: fields in or out of the grouping"
   },
   {
    "name": "country_qty_all_cust_cat",
    "meaning": "Units sold to every customer in every category. Every other filter is kept.",
-   "standard": "no: fields included in or excluded from the grouping"
+   "standard": "DAX: fields in or out of the grouping"
   },
   {
    "name": "cust_cat_share_all",
    "meaning": "sales / `country_qty_all_cust_cat`.",
-   "standard": "no: fields included in or excluded from the grouping"
+   "standard": "DAX: fields in or out of the grouping"
   }
  ],
  "ossie": {
   "version": "0.3.0.dev0",
-  "yaml": "# The baseline: the model in standard Ossie, portable SQL only (expression.sql), no vendor dialect and no extension.\n# Version 0.3.0.dev0 is the unreleased development version on apache/ossie main (read 2026-11-20); it can still change.\n# 7 datasets, 8 relationships, and the 4 measures the standard can express: three sums, each declared on its own\n# dataset, and one ratio across the two facts that reads them with AGG(). The other 12 are defined in words in\n# measures.md; each platform writes them in its own language. Sources are bare table names: each platform\n# prefixes its own schema.\nversion: 0.3.0.dev0\nname: sales_and_budget\ndescription: Sales by day, store and product, and a monthly budget by country and category (2020-2022).\ndatasets:\n- name: fact_sales\n  source: fact_sales\n  primary_key:\n  - sale_date\n  - store_id\n  - product_id\n  description: One row per day, store and product.\n  fields:\n  - name: sale_date\n    expression:\n      sql: sale_date\n    datatype: Date\n  - name: store_id\n    expression:\n      sql: store_id\n    datatype: Integer\n  - name: product_id\n    expression:\n      sql: product_id\n    datatype: Integer\n  - name: sales_qty\n    expression:\n      sql: sales_qty\n    datatype: Integer\n  - name: net_profit\n    expression:\n      sql: net_profit\n    datatype: Float\n  metrics:\n  - name: sales_quantity\n    description: Units sold.\n    expression:\n      sql: SUM(sales_qty)\n  - name: net_profit_total\n    description: Net profit (negative for Clearance).\n    expression:\n      sql: SUM(net_profit)\n- name: fact_budget\n  source: fact_budget\n  primary_key:\n  - month_start\n  - country\n  - category\n  description: One row per month, country and category. month_start is the first day of the month.\n  fields:\n  - name: month_start\n    expression:\n      sql: month_start\n    datatype: Date\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n  - name: budget_qty\n    expression:\n      sql: budget_qty\n    datatype: Integer\n  metrics:\n  - name: budget_quantity\n    description: Budgeted units (month x country x category).\n    expression:\n      sql: SUM(budget_qty)\n- name: dim_calendar\n  source: dim_calendar\n  primary_key:\n  - date_key\n  description: Calendar 2020-2023, with 4-4-5 fiscal periods (52-week fiscal years starting 2019-12-30).\n  fields:\n  - name: date_key\n    expression:\n      sql: date_key\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: year\n    expression:\n      sql: year\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: year_month_num\n    expression:\n      sql: year_month_num\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: year_month_name\n    expression:\n      sql: year_month_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: month_start\n    expression:\n      sql: month_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: year_start\n    expression:\n      sql: year_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: fiscal_year\n    expression:\n      sql: fiscal_year\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: fiscal_period\n    expression:\n      sql: fiscal_period\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: fiscal_period_name\n    expression:\n      sql: fiscal_period_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: fiscal_period_start\n    expression:\n      sql: fiscal_period_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: fiscal_year_start\n    expression:\n      sql: fiscal_year_start\n    datatype: Date\n    dimension:\n      is_time: true\n- name: dim_product\n  source: dim_product\n  primary_key:\n  - product_id\n  description: 40 products, 8 brands. Its category is a key to dim_category (Clearance has negative margins).\n  fields:\n  - name: product_id\n    expression:\n      sql: product_id\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: product_name\n    expression:\n      sql: product_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: brand\n    expression:\n      sql: brand\n    datatype: String\n    dimension:\n      is_time: false\n  - name: manufacturer\n    expression:\n      sql: manufacturer\n    datatype: String\n    dimension:\n      is_time: false\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n- name: dim_category\n  source: dim_category\n  primary_key:\n  - category\n  description: 4 categories, shared by sales (through product) and budget.\n  fields:\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n    dimension:\n      is_time: false\n- name: dim_store\n  source: dim_store\n  primary_key:\n  - store_id\n  description: 55 stores; a customer is a store chain within one country. Its country is a key to dim_country.\n  fields:\n  - name: store_id\n    expression:\n      sql: store_id\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: store_name\n    expression:\n      sql: store_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: customer\n    expression:\n      sql: customer\n    datatype: String\n    dimension:\n      is_time: false\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n- name: dim_country\n  source: dim_country\n  primary_key:\n  - country\n  description: 3 countries, shared by sales (through store) and budget.\n  fields:\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n    dimension:\n      is_time: false\nrelationships:\n- name: sales_to_calendar\n  from: fact_sales\n  to: dim_calendar\n  from_columns:\n  - sale_date\n  to_columns:\n  - date_key\n- name: sales_to_product\n  from: fact_sales\n  to: dim_product\n  from_columns:\n  - product_id\n  to_columns:\n  - product_id\n- name: sales_to_store\n  from: fact_sales\n  to: dim_store\n  from_columns:\n  - store_id\n  to_columns:\n  - store_id\n- name: product_to_category\n  from: dim_product\n  to: dim_category\n  from_columns:\n  - category\n  to_columns:\n  - category\n- name: store_to_country\n  from: dim_store\n  to: dim_country\n  from_columns:\n  - country\n  to_columns:\n  - country\n- name: budget_to_calendar\n  from: fact_budget\n  to: dim_calendar\n  from_columns:\n  - month_start\n  to_columns:\n  - date_key\n- name: budget_to_category\n  from: fact_budget\n  to: dim_category\n  from_columns:\n  - category\n  to_columns:\n  - category\n- name: budget_to_country\n  from: fact_budget\n  to: dim_country\n  from_columns:\n  - country\n  to_columns:\n  - country\nmetrics:\n- name: sales_vs_budget_pct\n  description: (sales - budget) / budget. Each side is summed over its own table first.\n  expression:\n    sql: (AGG(fact_sales.sales_quantity) - AGG(fact_budget.budget_quantity)) / AGG(fact_budget.budget_quantity)",
+  "yaml": "# The baseline: the model in Ossie, with all 16 measures. No extension.\n# Version 0.3.0.dev0 is the unreleased development version on apache/ossie main (read 2026-11-26, commit 7fb92a7);\n# it can still change. An open proposal (apache/ossie#817) would rename expression.dialects to nonportable_dialects.\n# 7 datasets and 8 relationships. 4 measures are in portable SQL (expression.sql): three sums, each declared on its\n# own dataset, and one ratio across the two facts that reads them with AGG(). The other 12 have no portable form\n# yet, so they are in the DAX dialect, and they read the SQL ones by name ([sales_quantity]). measures.md defines\n# all 16 in words. Sources are bare table names: each platform prefixes its own schema.\nversion: 0.3.0.dev0\nname: sales_and_budget\ndescription: Sales by day, store and product, and a monthly budget by country and category (2020-2022).\ndatasets:\n- name: fact_sales\n  source: fact_sales\n  primary_key:\n  - sale_date\n  - store_id\n  - product_id\n  description: One row per day, store and product.\n  fields:\n  - name: sale_date\n    expression:\n      sql: sale_date\n    datatype: Date\n  - name: store_id\n    expression:\n      sql: store_id\n    datatype: Integer\n  - name: product_id\n    expression:\n      sql: product_id\n    datatype: Integer\n  - name: sales_qty\n    expression:\n      sql: sales_qty\n    datatype: Integer\n  - name: net_profit\n    expression:\n      sql: net_profit\n    datatype: Float\n  metrics:\n  - name: sales_quantity\n    description: Units sold.\n    expression:\n      sql: SUM(sales_qty)\n  - name: net_profit_total\n    description: Net profit (negative for Clearance).\n    expression:\n      sql: SUM(net_profit)\n  # The 12 below have no SQL form in the standard: period over period, and fields taken out of the grouping, are\n  # its \"evaluation controls\", deferred to a later extension. They are written in the DAX dialect instead.\n  - name: sales_qty_ly\n    description: Units sold in the same period one calendar year earlier, at any grain.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], SAMEPERIODLASTYEAR(dim_calendar[date_key]))\n  - name: net_profit_ly\n    description: Net profit in the same period one calendar year earlier.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([net_profit_total], SAMEPERIODLASTYEAR(dim_calendar[date_key]))\n  - name: sales_qty_fly\n    description: Units sold in the same period of the last fiscal year (4-4-5, 52 weeks, so 364 days earlier).\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], DATEADD(dim_calendar[date_key], -364, DAY))\n  - name: sales_qty_yoy_pct\n    description: (sales - last year) / last year.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity] - [sales_qty_ly], [sales_qty_ly])\n  - name: country_qty_all_customers\n    description: Units sold to every customer, whatever customers the query filters or shows. Every other filter is kept.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], ALL(dim_store[customer]))\n  - name: customer_share_all\n    description: sales / country_qty_all_customers.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity], [country_qty_all_customers])\n  - name: country_total_allselected\n    description: Units sold to the customers the query shows, taken together.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], ALLSELECTED(dim_store[customer]))\n  - name: customer_share_allselected\n    description: sales / country_total_allselected.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity], [country_total_allselected])\n  - name: country_total_allexcept\n    description: Units sold with every filter removed except those on country and year.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], ALLEXCEPT(fact_sales, dim_country[country], dim_calendar[year]))\n  - name: country_total_fixed\n    description: Units sold for the country and the year shown, whatever else is filtered.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], REMOVEFILTERS(), VALUES(dim_country[country]), VALUES(dim_calendar[year]))\n  - name: country_qty_all_cust_cat\n    description: Units sold to every customer in every category. Every other filter is kept.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], REMOVEFILTERS(dim_store[customer]), REMOVEFILTERS(dim_category[category]))\n  - name: cust_cat_share_all\n    description: sales / country_qty_all_cust_cat.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity], [country_qty_all_cust_cat])\n- name: fact_budget\n  source: fact_budget\n  primary_key:\n  - month_start\n  - country\n  - category\n  description: One row per month, country and category. month_start is the first day of the month.\n  fields:\n  - name: month_start\n    expression:\n      sql: month_start\n    datatype: Date\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n  - name: budget_qty\n    expression:\n      sql: budget_qty\n    datatype: Integer\n  metrics:\n  - name: budget_quantity\n    description: Budgeted units (month x country x category).\n    expression:\n      sql: SUM(budget_qty)\n- name: dim_calendar\n  source: dim_calendar\n  primary_key:\n  - date_key\n  description: Calendar 2020-2023, with 4-4-5 fiscal periods (52-week fiscal years starting 2019-12-30).\n  fields:\n  - name: date_key\n    expression:\n      sql: date_key\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: year\n    expression:\n      sql: year\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: year_month_num\n    expression:\n      sql: year_month_num\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: year_month_name\n    expression:\n      sql: year_month_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: month_start\n    expression:\n      sql: month_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: year_start\n    expression:\n      sql: year_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: fiscal_year\n    expression:\n      sql: fiscal_year\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: fiscal_period\n    expression:\n      sql: fiscal_period\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: fiscal_period_name\n    expression:\n      sql: fiscal_period_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: fiscal_period_start\n    expression:\n      sql: fiscal_period_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: fiscal_year_start\n    expression:\n      sql: fiscal_year_start\n    datatype: Date\n    dimension:\n      is_time: true\n- name: dim_product\n  source: dim_product\n  primary_key:\n  - product_id\n  description: 40 products, 8 brands. Its category is a key to dim_category (Clearance has negative margins).\n  fields:\n  - name: product_id\n    expression:\n      sql: product_id\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: product_name\n    expression:\n      sql: product_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: brand\n    expression:\n      sql: brand\n    datatype: String\n    dimension:\n      is_time: false\n  - name: manufacturer\n    expression:\n      sql: manufacturer\n    datatype: String\n    dimension:\n      is_time: false\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n- name: dim_category\n  source: dim_category\n  primary_key:\n  - category\n  description: 4 categories, shared by sales (through product) and budget.\n  fields:\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n    dimension:\n      is_time: false\n- name: dim_store\n  source: dim_store\n  primary_key:\n  - store_id\n  description: 55 stores; a customer is a store chain within one country. Its country is a key to dim_country.\n  fields:\n  - name: store_id\n    expression:\n      sql: store_id\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: store_name\n    expression:\n      sql: store_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: customer\n    expression:\n      sql: customer\n    datatype: String\n    dimension:\n      is_time: false\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n- name: dim_country\n  source: dim_country\n  primary_key:\n  - country\n  description: 3 countries, shared by sales (through store) and budget.\n  fields:\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n    dimension:\n      is_time: false\nrelationships:\n- name: sales_to_calendar\n  from: fact_sales\n  to: dim_calendar\n  from_columns:\n  - sale_date\n  to_columns:\n  - date_key\n- name: sales_to_product\n  from: fact_sales\n  to: dim_product\n  from_columns:\n  - product_id\n  to_columns:\n  - product_id\n- name: sales_to_store\n  from: fact_sales\n  to: dim_store\n  from_columns:\n  - store_id\n  to_columns:\n  - store_id\n- name: product_to_category\n  from: dim_product\n  to: dim_category\n  from_columns:\n  - category\n  to_columns:\n  - category\n- name: store_to_country\n  from: dim_store\n  to: dim_country\n  from_columns:\n  - country\n  to_columns:\n  - country\n- name: budget_to_calendar\n  from: fact_budget\n  to: dim_calendar\n  from_columns:\n  - month_start\n  to_columns:\n  - date_key\n- name: budget_to_category\n  from: fact_budget\n  to: dim_category\n  from_columns:\n  - category\n  to_columns:\n  - category\n- name: budget_to_country\n  from: fact_budget\n  to: dim_country\n  from_columns:\n  - country\n  to_columns:\n  - country\nmetrics:\n- name: sales_vs_budget_pct\n  description: (sales - budget) / budget. Each side is summed over its own table first.\n  expression:\n    sql: (AGG(fact_sales.sales_quantity) - AGG(fact_budget.budget_quantity)) / AGG(fact_budget.budget_quantity)",
   "expr": {
    "sales_quantity": {
-    "sql": "SUM(sales_qty)",
+    "lang": "sql",
+    "code": "SUM(sales_qty)",
     "home": "fact_sales"
    },
    "net_profit_total": {
-    "sql": "SUM(net_profit)",
+    "lang": "sql",
+    "code": "SUM(net_profit)",
+    "home": "fact_sales"
+   },
+   "sales_qty_ly": {
+    "lang": "dax",
+    "code": "CALCULATE([sales_quantity], SAMEPERIODLASTYEAR(dim_calendar[date_key]))",
+    "home": "fact_sales"
+   },
+   "net_profit_ly": {
+    "lang": "dax",
+    "code": "CALCULATE([net_profit_total], SAMEPERIODLASTYEAR(dim_calendar[date_key]))",
+    "home": "fact_sales"
+   },
+   "sales_qty_fly": {
+    "lang": "dax",
+    "code": "CALCULATE([sales_quantity], DATEADD(dim_calendar[date_key], -364, DAY))",
+    "home": "fact_sales"
+   },
+   "sales_qty_yoy_pct": {
+    "lang": "dax",
+    "code": "DIVIDE([sales_quantity] - [sales_qty_ly], [sales_qty_ly])",
+    "home": "fact_sales"
+   },
+   "country_qty_all_customers": {
+    "lang": "dax",
+    "code": "CALCULATE([sales_quantity], ALL(dim_store[customer]))",
+    "home": "fact_sales"
+   },
+   "customer_share_all": {
+    "lang": "dax",
+    "code": "DIVIDE([sales_quantity], [country_qty_all_customers])",
+    "home": "fact_sales"
+   },
+   "country_total_allselected": {
+    "lang": "dax",
+    "code": "CALCULATE([sales_quantity], ALLSELECTED(dim_store[customer]))",
+    "home": "fact_sales"
+   },
+   "customer_share_allselected": {
+    "lang": "dax",
+    "code": "DIVIDE([sales_quantity], [country_total_allselected])",
+    "home": "fact_sales"
+   },
+   "country_total_allexcept": {
+    "lang": "dax",
+    "code": "CALCULATE([sales_quantity], ALLEXCEPT(fact_sales, dim_country[country], dim_calendar[year]))",
+    "home": "fact_sales"
+   },
+   "country_total_fixed": {
+    "lang": "dax",
+    "code": "CALCULATE([sales_quantity], REMOVEFILTERS(), VALUES(dim_country[country]), VALUES(dim_calendar[year]))",
+    "home": "fact_sales"
+   },
+   "country_qty_all_cust_cat": {
+    "lang": "dax",
+    "code": "CALCULATE([sales_quantity], REMOVEFILTERS(dim_store[customer]), REMOVEFILTERS(dim_category[category]))",
+    "home": "fact_sales"
+   },
+   "cust_cat_share_all": {
+    "lang": "dax",
+    "code": "DIVIDE([sales_quantity], [country_qty_all_cust_cat])",
     "home": "fact_sales"
    },
    "budget_quantity": {
-    "sql": "SUM(budget_qty)",
+    "lang": "sql",
+    "code": "SUM(budget_qty)",
     "home": "fact_budget"
    },
    "sales_vs_budget_pct": {
-    "sql": "(AGG(fact_sales.sales_quantity) - AGG(fact_budget.budget_quantity)) / AGG(fact_budget.budget_quantity)",
+    "lang": "sql",
+    "code": "(AGG(fact_sales.sales_quantity) - AGG(fact_budget.budget_quantity)) / AGG(fact_budget.budget_quantity)",
     "home": "model"
    }
   }
@@ -106,13 +170,15 @@ window.DATA = {
  "evidence": {
   "fabric_publish": "{\n \"semanticModel\": {\n  \"workspaceId\": \"8c945c1a-f25e-4f19-a7ad-c3a7bfbd0fc9\",\n  \"id\": \"b029eb6e-e318-4904-acfe-18f32bf069bd\"\n },\n \"summary\": {\n  \"errorCount\": 0,\n  \"warningCount\": 0\n },\n \"warnings\": []\n}",
   "sf_import": "Semantic view was successfully created from OSI YAML.",
-  "sf_reimport": "ERROR 000904 (42000): Uncaught exception of type 'EXPRESSION_ERROR' on line 3 at position 23 : SQL compilation error: error line 15 at position 489 invalid identifier 'SALES.SALES_QUANTITY'",
+  "sf_reimport": "ERROR 000904 (42000): Uncaught exception of type 'EXPRESSION_ERROR' on line 3 at position 23 : SQL compilation error: error line 15 at position 719 invalid identifier 'SALES.SALES_QUANTITY'",
   "sf_dialect": "SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML, with FIXED / EXCLUDE DIMENSIONS in the SNOWFLAKE dialect:\n  as a metric:           ERROR 001003 (42000): Uncaught exception of type 'EXPRESSION_ERROR' on line 3 at position 23 : SQL compilation error: syntax error line 15 at position 350 unexpected 'FIXED'.\n  as a field + metric:   ERROR 001003 (42000): Uncaught exception of type 'EXPRESSION_ERROR' on line 3 at position 23 : SQL compilation error: syntax error line 9 at position 268 unexpected 'FIXED'. syntax error line 9 at position 305 unexpected ','. syntax error line 9 at position 324 unexpected ')'. syntax error line 9 at position 325 unexpected ','.\n\nThe same expressions in hand-written CREATE SEMANTIC VIEW DDL:\n  view-level fact (no table prefix, the notebook's way):  accepted\n  table-scoped fact (sales.x AS SUM(...) FIXED ...):       syntax error, unexpected 'FIXED'\n  metric (sales.m AS SUM(...) FIXED ...):                  syntax error, unexpected 'FIXED'\n\nAn LOD fact exists only at view level; Ossie has no place for a view-level fact (a field belongs to a dataset).",
+  "sf_dialect_inline": "SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML, tests/dax_context.ossie.yaml (0.1.1) with two model metrics in the\nSNOWFLAKE dialect, the LOD inline (scratch view, dropped after):\n  country_total_allselected: AVG(SUM(fact_sales.sales_qty) EXCLUDE DIMENSIONS (dim_store.customer))\n  country_total_fixed: SUM(DISTINCT SUM(fact_sales.sales_qty) FIXED DIMENSIONS (dim_country.country, dim_calendar.year))\nimport: Semantic view was successfully created from OSI YAML.\nquery by country, February 2021 without Tesco (country_total_allselected, country_total_fixed): [('Germany', Decimal('3164939.000000'), 36203407), ('Poland', Decimal('2686210.000000'), 30755062), ('UK', Decimal('1031214.000000'), 22111689)]",
   "sf_extensions": "SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML with vendor extensions (tests/dax_context.ossie.yaml, one at a time):\n\nSNOWFLAKE extension on a dataset, a table metric {metrics: [BUDGET_QTY_EXT]}:\n  import: Semantic view was successfully created from OSI YAML.\n  applied: DESCRIBE lists metric BUDGET_QTY_EXT\n\nSNOWFLAKE extension on a field, {access_modifier: private_access} on sales_qty:\n  import: Semantic view was successfully created from OSI YAML.\n  kept in the export: True; applied: False (DESCRIBE: FACT SALES_QTY FACT_SALES ACCESS_MODIFIER PUBLIC)\n\nPOWER_BI extension on a metric, {formatString: #,##0}:\n  import: Semantic view was successfully created from OSI YAML.\n  kept in the export: False; no warning",
   "fabric_export": "Fabric semantic views API (beta), lakehouse ossie:\n\nGET list the semantic views: HTTP 200 {\"data\": [{\"name\": \"dax_context\"}]}\nGET read the semantic view dax_context: HTTP 404 EntityNotFound: The requested resource could not be found\n\nThe API publishes a view into a semantic model; it has no call that writes a model back out as Ossie.",
   "dbx_export": "On the SQL warehouse (2x-small):\n\nSELECT * FROM export_to_ossie(TABLE(databricks_ne.ossie_demo.sales_mv))\n  [EXPORT_TO_OSSIE.FEATURE_DISABLED] Cannot read Apache Ossie YAML from the metric view. The export_to_ossie function is disabled. Please make sure \"spark.databricks.sql.metricView.exportToOssie.enabled\" is set to true. SQLSTATE: 42K0E == SQL == SELECT * FROM export_to_ossie(TABLE(databricks_ne.ossie_demo.sales_mv))\n\nSET spark.databricks.sql.metricView.exportToOssie.enabled = true\n  [CONFIG_NOT_AVAILABLE.WITHOUT_SUGGESTION] Configuration spark.databricks.sql.metricView.exportToOssie.enabled is not available. SQLSTATE: 42K0I",
   "fabric_version": "version: 0.2.0.dev0",
-  "sf_export_version": "version: 0.1.1"
+  "sf_export_version": "version: 0.1.1",
+  "daxsql_q09": "WITH f5 AS MATERIALIZED (SELECT j6.\"country\" AS \"g0\", SUM(t2.\"sales_qty\") FILTER (WHERE (((j4.\"customer\" <> 'Tesco' OR j4.\"customer\" IS NULL)))) AS \"a0\", SUM(t2.\"sales_qty\") AS \"a1\" FROM read_parquet('data/fact_sales.parquet') AS t2 LEFT JOIN read_parquet('data/dim_calendar.parquet') AS j3 ON j3.\"date_key\" = t2.\"sale_date\" LEFT JOIN read_parquet('data/dim_store.parquet') AS j4 ON j4.\"store_id\" = t2.\"store_id\" LEFT JOIN read_parquet('data/dim_country.parquet') AS j6 ON j6.\"country\" = j4.\"country\" WHERE ((j3.\"month_start\" = DATE '2021-02-01')) GROUP BY j6.\"country\"),\nf13 AS (SELECT j15.\"country\" AS \"g0\", SUM(t9.\"sales_qty\") AS \"a0\" FROM read_parquet('data/fact_sales.parquet') AS t9 LEFT JOIN read_parquet('data/dim_calendar.parquet') AS j12 ON j12.\"date_key\" = t9.\"sale_date\" LEFT JOIN read_parquet('data/dim_store.parquet') AS j14 ON j14.\"store_id\" = t9.\"store_id\" LEFT JOIN read_parquet('data/dim_country.parquet') AS j15 ON j15.\"country\" = j14.\"country\" WHERE j12.\"year\" IN (SELECT r11.\"year\" FROM (SELECT DISTINCT t10.\"year\" FROM read_parquet('data/dim_calendar.parquet') AS t10 WHERE ((t10.\"month_start\" = DATE '2021-02-01'))) AS r11) GROUP BY j15.\"country\"),\nf22 AS (SELECT SUM(f5.a0) AS a0 FROM f5),\nf25 AS (SELECT SUM(t23.\"sales_qty\") FILTER (WHERE (((j24.\"month_start\" = DATE '2021-02-01')))) AS \"a0\", SUM(t23.\"sales_qty\") FILTER (WHERE (j41.\"country\" IN (SELECT r39.\"country\" FROM (SELECT DISTINCT t38.\"country\" FROM read_parquet('data/dim_country.parquet') AS t38) AS r39)) AND (j24.\"year\" IN (SELECT r43.\"year\" FROM (SELECT DISTINCT t42.\"year\" FROM read_parquet('data/dim_calendar.parquet') AS t42 WHERE ((t42.\"month_start\" = DATE '2021-02-01'))) AS r43))) AS \"a1\" FROM read_parquet('data/fact_sales.parquet') AS t23 LEFT JOIN read_parquet('data/dim_calendar.parquet') AS j24 ON j24.\"date_key\" = t23.\"sale_date\" LEFT JOIN read_parquet('data/dim_store.parquet') AS j40 ON j40.\"store_id\" = t23.\"store_id\" LEFT JOIN read_parquet('data/dim_country.parquet') AS j41 ON j41.\"country\" = j40.\"country\")\nSELECT q46.\"country\" AS \"country\", q46.\"is_total\" AS \"is_total\", CAST(q46.\"sales_quantity\" AS BIGINT) AS \"sales_quantity\", CAST(q46.\"country_qty_all_customers\" AS BIGINT) AS \"country_qty_all_customers\", CAST(q46.\"country_total_fixed\" AS BIGINT) AS \"country_total_fixed\" FROM (SELECT s45.\"country\", s45.\"is_total\", s45.\"sales_quantity\", s45.\"country_qty_all_customers\", s45.\"country_total_fixed\" FROM (SELECT * FROM (SELECT k1.\"country\" AS \"country\", FALSE AS \"is_total\", f5.a0 AS \"sales_quantity\", f5.a1 AS \"country_qty_all_customers\", CASE WHEN (EXISTS (SELECT t16.\"country\" FROM read_parquet('data/dim_country.parquet') AS t16 WHERE t16.\"country\" = k1.\"country\")) THEN f13.a0 END AS \"country_total_fixed\" FROM (SELECT f5.g0 AS \"country\" FROM f5 UNION SELECT f13.g0 AS \"country\" FROM f13) AS k1 LEFT JOIN f5 ON f5.g0 IS NOT DISTINCT FROM k1.\"country\" LEFT JOIN f13 ON f13.g0 IS NOT DISTINCT FROM k1.\"country\") AS z17 WHERE z17.\"sales_quantity\" IS NOT NULL OR z17.\"country_qty_all_customers\" IS NOT NULL OR z17.\"country_total_fixed\" IS NOT NULL UNION ALL SELECT * FROM (SELECT NULL AS \"country\", TRUE AS \"is_total\", f22.a0 AS \"sales_quantity\", f25.a0 AS \"country_qty_all_customers\", f25.a1 AS \"country_total_fixed\" FROM (SELECT 1 AS one) AS k18 LEFT JOIN f22 ON TRUE LEFT JOIN f25 ON TRUE) AS z44 WHERE z44.\"sales_quantity\" IS NOT NULL OR z44.\"country_qty_all_customers\" IS NOT NULL OR z44.\"country_total_fixed\" IS NOT NULL) AS s45) AS q46 ORDER BY q46.\"is_total\" ASC NULLS FIRST, q46.\"country\" ASC NULLS FIRST"
  },
  "questions": [
   {
@@ -486,12 +552,115 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_country.country, dim_calendar.year, AGG(sales_quantity) AS sales_quantity\nFROM model\nWHERE dim_calendar.year <= 2022\nGROUP BY ALL\nORDER BY country, year",
+     "status": "match",
+     "rows": [
+      [
+       "Germany",
+       "2020",
+       "33714072"
+      ],
+      [
+       "Germany",
+       "2021",
+       "36203407"
+      ],
+      [
+       "Germany",
+       "2022",
+       "38577436"
+      ],
+      [
+       "Poland",
+       "2020",
+       "28584270"
+      ],
+      [
+       "Poland",
+       "2021",
+       "30755062"
+      ],
+      [
+       "Poland",
+       "2022",
+       "32717852"
+      ],
+      [
+       "UK",
+       "2020",
+       "20499603"
+      ],
+      [
+       "UK",
+       "2021",
+       "22111689"
+      ],
+      [
+       "UK",
+       "2022",
+       "23496958"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match",
-    "dbx": "match"
+    "dbx": "match",
+    "daxsql": "match"
    }
   },
   {
@@ -828,12 +997,105 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_product.product_name, AGG(sales_quantity) AS sales_quantity\nFROM model\nWHERE dim_calendar.year = 2021\nGROUP BY ALL\nORDER BY sales_quantity DESC\nLIMIT 10",
+     "status": "match",
+     "rows": [
+      [
+       "Persil SKU 5",
+       "2241203"
+      ],
+      [
+       "Tide SKU 5",
+       "2236090"
+      ],
+      [
+       "Signal SKU 5",
+       "2235736"
+      ],
+      [
+       "Signal SKU 1",
+       "2235406"
+      ],
+      [
+       "Signal SKU 3",
+       "2234314"
+      ],
+      [
+       "Persil SKU 1",
+       "2233483"
+      ],
+      [
+       "Persil SKU 3",
+       "2231938"
+      ],
+      [
+       "Dove SKU 4",
+       "2231607"
+      ],
+      [
+       "Oral-B SKU 1",
+       "2231300"
+      ],
+      [
+       "Dove SKU 3",
+       "2231090"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match",
-    "dbx": "match"
+    "dbx": "match",
+    "daxsql": "match"
    }
   },
   {
@@ -1219,12 +1481,95 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_calendar.date_key, AGG(sales_quantity) AS sales_quantity, AGG(sales_qty_ly) AS sales_qty_ly\nFROM model\nWHERE dim_calendar.date_key BETWEEN DATE '2021-02-25' AND DATE '2021-03-03'\nGROUP BY ALL\nORDER BY date_key",
+     "status": "match",
+     "rows": [
+      [
+       "2021-02-25",
+       "286490",
+       "266431"
+      ],
+      [
+       "2021-02-26",
+       "283269",
+       "260203"
+      ],
+      [
+       "2021-02-27",
+       "285994",
+       "266208"
+      ],
+      [
+       "2021-02-28",
+       "288291",
+       "262565"
+      ],
+      [
+       "2021-03-01",
+       "284680",
+       "264495"
+      ],
+      [
+       "2021-03-02",
+       "283910",
+       "269724"
+      ],
+      [
+       "2021-03-03",
+       "284445",
+       "267063"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "**differs**: Feb 28 gets Feb 28 + Feb 29. Matches with a second copy of the fact without Feb 29 (`sales_ly_day`). Both use a copy of the fact with the date moved a year (`sales_ly`).",
-    "dbx": "match"
+    "dbx": "match",
+    "daxsql": "match"
    }
   },
   {
@@ -1639,12 +1984,85 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_calendar.month_start, GROUPING(dim_calendar.month_start) AS is_total,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(sales_qty_ly) AS sales_qty_ly,\n       AGG(sales_qty_yoy_pct) AS sales_qty_yoy_pct\nFROM model\nWHERE dim_calendar.month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\nGROUP BY ROLLUP(dim_calendar.month_start)\nORDER BY is_total, month_start",
+     "status": "match",
+     "rows": [
+      [
+       "2021-01-01",
+       "7988145",
+       "7397227",
+       "0.0798837185881"
+      ],
+      [
+       "2021-02-01",
+       "7782865",
+       "7500387",
+       "0.037661789985"
+      ],
+      [
+       "2021-03-01",
+       "8975512",
+       "8366772",
+       "0.0727568529416"
+      ],
+      [
+       "2021-04-01",
+       "8731733",
+       "8069044",
+       "0.0821273251205"
+      ],
+      [
+       "",
+       "33478255",
+       "31333430",
+       "0.0684516505215"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match, with `sales_ly`; the total row is a second query (no ROLLUP)",
-    "dbx": "**differs**: each month gets one day's value. A measure per grain: months match, total differs. Matches with a second view of the shifted fact (`sales_ly_mv`), joined in the query."
+    "dbx": "**differs**: each month gets one day's value. A measure per grain: months match, total differs. Matches with a second view of the shifted fact (`sales_ly_mv`), joined in the query.",
+    "daxsql": "match"
    }
   },
   {
@@ -1993,12 +2411,73 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_calendar.year, GROUPING(dim_calendar.year) AS is_total,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(sales_qty_ly) AS sales_qty_ly,\n       AGG(sales_qty_yoy_pct) AS sales_qty_yoy_pct\nFROM model\nWHERE dim_calendar.year <= 2022\nGROUP BY ROLLUP(dim_calendar.year)\nORDER BY is_total, year",
+     "status": "match",
+     "rows": [
+      [
+       "2020",
+       "82797945",
+       "",
+       ""
+      ],
+      [
+       "2021",
+       "89070158",
+       "82797945",
+       "0.075753244842"
+      ],
+      [
+       "2022",
+       "94792246",
+       "89070158",
+       "0.0642424817524"
+      ],
+      [
+       "",
+       "266660349",
+       "171868103",
+       "0.551540654405"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match, with `sales_ly`; the total row is a second query",
-    "dbx": "**differs**. A measure per grain: years match, total differs. Matches with `sales_ly_mv`, joined in the query."
+    "dbx": "**differs**. A measure per grain: years match, total differs. Matches with `sales_ly_mv`, joined in the query.",
+    "daxsql": "match"
    }
   },
   {
@@ -2341,12 +2820,85 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_calendar.fiscal_period_name, dim_calendar.fiscal_period_start,\n       AGG(sales_quantity) AS sales_quantity, AGG(sales_qty_fly) AS sales_qty_fly\nFROM model\nWHERE dim_calendar.fiscal_period_start BETWEEN DATE '2021-01-25' AND DATE '2021-05-24'\nGROUP BY ALL\nORDER BY fiscal_period_start",
+     "status": "match",
+     "rows": [
+      [
+       "FY2021 P02",
+       "2021-01-25",
+       "7670122",
+       "7155035"
+      ],
+      [
+       "FY2021 P03",
+       "2021-02-22",
+       "10088929",
+       "9405334"
+      ],
+      [
+       "FY2021 P04",
+       "2021-03-29",
+       "8170304",
+       "7550820"
+      ],
+      [
+       "FY2021 P05",
+       "2021-04-26",
+       "7922491",
+       "7290218"
+      ],
+      [
+       "FY2021 P06",
+       "2021-05-24",
+       "9156415",
+       "8424597"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match, with a copy of the fact, date moved 364 days (`sales_fly`)",
-    "dbx": "**differs**. Matches with a second measure ordered by fiscal period."
+    "dbx": "**differs**. Matches with a second measure ordered by fiscal period.",
+    "daxsql": "match"
    }
   },
   {
@@ -2597,12 +3149,65 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_calendar.month_start, AGG(net_profit_total) AS net_profit_total, AGG(net_profit_ly) AS net_profit_ly\nFROM model\nWHERE dim_category.category = 'Clearance'\n  AND dim_calendar.month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\nGROUP BY ALL\nORDER BY month_start",
+     "status": "match",
+     "rows": [
+      [
+       "2021-01-01",
+       "-1317217.69",
+       "-1218381.18"
+      ],
+      [
+       "2021-02-01",
+       "-1282598.66",
+       "-1235702.25"
+      ],
+      [
+       "2021-03-01",
+       "-1478052.7",
+       "-1379603.66"
+      ],
+      [
+       "2021-04-01",
+       "-1438620.61",
+       "-1333741.88"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match, with `sales_ly`",
-    "dbx": "**differs**. Matches with `sales_ly_mv`, joined in the query."
+    "dbx": "**differs**. Matches with `sales_ly_mv`, joined in the query.",
+    "daxsql": "match"
    }
   },
   {
@@ -3181,12 +3786,137 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_country.country, dim_store.customer,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(customer_share_all) AS customer_share_all,\n       AGG(customer_share_allselected) AS customer_share_allselected\nFROM model\nWHERE dim_store.customer NOT IN ('Zabka', 'Rewe', 'Superdrug')\n  AND dim_calendar.month_start = DATE '2021-02-01'\n  AND dim_product.brand <> 'Somat'\nGROUP BY ALL\nORDER BY country, customer",
+     "status": "match",
+     "rows": [
+      [
+       "Germany",
+       "Edeka",
+       "599134",
+       "0.216475952697",
+       "0.268969560712"
+      ],
+      [
+       "Germany",
+       "Rossmann DE",
+       "721869",
+       "0.260821918798",
+       "0.324069052703"
+      ],
+      [
+       "Germany",
+       "dm",
+       "906513",
+       "0.327536519889",
+       "0.406961386585"
+      ],
+      [
+       "Poland",
+       "Biedronka",
+       "845866",
+       "0.359804721845",
+       "0.425928126586"
+      ],
+      [
+       "Poland",
+       "Lidl PL",
+       "659874",
+       "0.28068959034",
+       "0.332273547587"
+      ],
+      [
+       "Poland",
+       "Rossmann PL",
+       "480196",
+       "0.204260235322",
+       "0.241798325827"
+      ],
+      [
+       "UK",
+       "Boots",
+       "540694",
+       "0.319720095462",
+       "0.406791622121"
+      ],
+      [
+       "UK",
+       "Tesco",
+       "788473",
+       "0.466235362014",
+       "0.593208377879"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match. All customers: a copy of the fact through a copy of the store table (`store_geo`). Customers shown: LOD.",
-    "dbx": "**partial**: all customers by a window; customers shown has no metric-view form. Matches with a window function in the query."
+    "dbx": "**partial**: all customers by a window; customers shown has no metric-view form. Matches with a window function in the query.",
+    "daxsql": "match"
    }
   },
   {
@@ -3415,12 +4145,73 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_country.country, GROUPING(dim_country.country) AS is_total,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(country_qty_all_customers) AS country_qty_all_customers,\n       AGG(country_total_fixed) AS country_total_fixed\nFROM model\nWHERE dim_calendar.month_start = DATE '2021-02-01'\n  AND dim_store.customer <> 'Tesco'\nGROUP BY ROLLUP(dim_country.country)\nORDER BY is_total, country",
+     "status": "match",
+     "rows": [
+      [
+       "Germany",
+       "3164939",
+       "3164939",
+       "36203407"
+      ],
+      [
+       "Poland",
+       "2686210",
+       "2686210",
+       "30755062"
+      ],
+      [
+       "UK",
+       "1031214",
+       "1931716",
+       "22111689"
+      ],
+      [
+       "",
+       "6882363",
+       "7782865",
+       "89070158"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match (LOD; the total row is a second query)",
-    "dbx": "match"
+    "dbx": "match",
+    "daxsql": "match"
    }
   },
   {
@@ -3584,12 +4375,55 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_country.country, AGG(sales_quantity) AS sales_quantity, AGG(cust_cat_share_all) AS cust_cat_share_all\nFROM model\nWHERE dim_calendar.year = 2021\n  AND dim_product.brand IN ('Tide', 'Dove')\n  AND dim_category.category = 'Laundry'\n  AND dim_store.customer <> 'Tesco'\nGROUP BY ALL\nORDER BY country",
+     "status": "match",
+     "rows": [
+      [
+       "Germany",
+       "4521959",
+       "0.499347485395"
+      ],
+      [
+       "Poland",
+       "3837141",
+       "0.498927222365"
+      ],
+      [
+       "UK",
+       "1482182",
+       "0.26811639164"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match, with a copy of the fact through a one-row `all_members` table",
-    "dbx": "match"
+    "dbx": "match",
+    "daxsql": "match"
    }
   },
   {
@@ -4420,12 +5254,193 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_country.country, dim_category.category,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(budget_quantity) AS budget_quantity,\n       AGG(sales_vs_budget_pct) AS sales_vs_budget_pct\nFROM model\nWHERE dim_calendar.year = 2021\nGROUP BY ALL\nORDER BY country, category",
+     "status": "match",
+     "rows": [
+      [
+       "Germany",
+       "Clearance",
+       "9037851",
+       "9019629",
+       "0.00202026047856"
+      ],
+      [
+       "Germany",
+       "Hair Care",
+       "9055308",
+       "9096916",
+       "-0.00457385777773"
+      ],
+      [
+       "Germany",
+       "Laundry",
+       "9061647",
+       "9124124",
+       "-0.00684745187593"
+      ],
+      [
+       "Germany",
+       "Oral Care",
+       "9048601",
+       "9083304",
+       "-0.00382052609931"
+      ],
+      [
+       "Poland",
+       "Clearance",
+       "7674383",
+       "7664571",
+       "0.00128017602029"
+      ],
+      [
+       "Poland",
+       "Hair Care",
+       "7693248",
+       "7666825",
+       "0.00344640708507"
+      ],
+      [
+       "Poland",
+       "Laundry",
+       "7688170",
+       "7732939",
+       "-0.00578939003657"
+      ],
+      [
+       "Poland",
+       "Oral Care",
+       "7699261",
+       "7709646",
+       "-0.00134701385771"
+      ],
+      [
+       "UK",
+       "Clearance",
+       "5534210",
+       "5575135",
+       "-0.00734062941974"
+      ],
+      [
+       "UK",
+       "Hair Care",
+       "5512252",
+       "5523247",
+       "-0.00199067686091"
+      ],
+      [
+       "UK",
+       "Laundry",
+       "5535746",
+       "5480303",
+       "0.0101167763899"
+      ],
+      [
+       "UK",
+       "Oral Care",
+       "5529481",
+       "5572849",
+       "-0.007782015985"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match",
-    "dbx": "match, with two views joined in the query, or with a bridge view over both facts"
+    "dbx": "match, with two views joined in the query, or with a bridge view over both facts",
+    "daxsql": "match"
    }
   },
   {
@@ -4862,12 +5877,105 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_category.category, GROUPING(dim_category.category) AS is_total,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(budget_quantity) AS budget_quantity,\n       AGG(sales_vs_budget_pct) AS sales_vs_budget_pct,\n       AGG(sales_qty_ly) AS sales_qty_ly,\n       AGG(sales_qty_yoy_pct) AS sales_qty_yoy_pct\nFROM model\nWHERE dim_calendar.year = 2021\nGROUP BY ROLLUP(dim_category.category)\nORDER BY is_total, category",
+     "status": "match",
+     "rows": [
+      [
+       "Clearance",
+       "22246444",
+       "22259335",
+       "-0.000579127813118",
+       "20698730",
+       "0.0747733798161"
+      ],
+      [
+       "Hair Care",
+       "22260808",
+       "22286988",
+       "-0.00117467645247",
+       "20682058",
+       "0.0763342796931"
+      ],
+      [
+       "Laundry",
+       "22285563",
+       "22337366",
+       "-0.00231911855677",
+       "20720113",
+       "0.075552194141"
+      ],
+      [
+       "Oral Care",
+       "22277343",
+       "22365799",
+       "-0.00395496713531",
+       "20697044",
+       "0.0763538503373"
+      ],
+      [
+       "",
+       "89070158",
+       "89249488",
+       "-0.00200931124669",
+       "82797945",
+       "0.075753244842"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match; the total row is a second query",
-    "dbx": "**differs**: last year is one day's value. Matches with three views joined in the query (sales, `sales_ly_mv`, budget)."
+    "dbx": "**differs**: last year is one day's value. Matches with three views joined in the query (sales, `sales_ly_mv`, budget).",
+    "daxsql": "match"
    }
   },
   {
@@ -5114,12 +6222,65 @@ window.DATA = {
       ]
      ],
      "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_calendar.year, COUNT(dim_calendar.date_key) AS day_count, AGG(sales_quantity) AS sales_quantity\nFROM model\nGROUP BY ALL\nORDER BY year",
+     "status": "match",
+     "rows": [
+      [
+       "2020",
+       "366",
+       "82797945"
+      ],
+      [
+       "2021",
+       "365",
+       "89070158"
+      ],
+      [
+       "2022",
+       "365",
+       "94792246"
+      ],
+      [
+       "2023",
+       "365",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
     }
    ],
    "notes": {
     "fabric": "match",
     "snowflake": "match",
-    "dbx": "**differs**: 2023 is missing. Matches with a calendar view, joined in the query."
+    "dbx": "**differs**: 2023 is missing. Matches with a calendar view, joined in the query.",
+    "daxsql": "match"
    }
   }
  ]

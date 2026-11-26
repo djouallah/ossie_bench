@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ossie_bench</title>
-<meta name="description" content="One semantic model on Power BI, Snowflake and Databricks, and in Apache Ossie: how each holds it, how each answers the same 13 questions, and what Ossie carries between them.">
+<meta name="description" content="One semantic model in Apache Ossie and on Power BI, Snowflake and Databricks: how each holds it, how each answers the same 13 questions, and what each does with an Ossie file.">
 <script>try { document.documentElement.dataset.theme = localStorage.getItem("theme") || "dark"; } catch (e) { document.documentElement.dataset.theme = "dark"; }</script>
 <style>
 :root {
@@ -12,7 +12,7 @@
   --page: #08090c; --surface: #0f1117; --surface-2: #141721; --sunken: #1b1f2a;
   --ink: #eef0f6; --ink-2: #b3b8c7; --muted: #7c8294;
   --line: #21252f; --line-2: #323846; --ring: rgba(255,255,255,.07);
-  --p-fabric: #4d9cff; --p-snowflake: #ff7d47; --p-dbx: #2fd39a;
+  --p-fabric: #4d9cff; --p-snowflake: #ff7d47; --p-dbx: #2fd39a; --p-ossie: #b18cff; --p-daxsql: #f2c14e;
   --k-fact: #9085e9; --k-shared: #d55181; --k-helper: #c98500; --k-dim: #a7adbd;
   --good: #22c55e; --good-ink: #4ade80; --warn: #fbbf24; --warn-ink: #fbbf24; --crit: #f87171;
   --good-bg: rgba(34,197,94,.13); --warn-bg: rgba(251,191,36,.13); --crit-bg: rgba(248,113,113,.13); --note-bg: rgba(77,156,255,.12);
@@ -24,7 +24,7 @@
   --page: #f6f6f3; --surface: #ffffff; --surface-2: #fbfbf9; --sunken: #f0efea;
   --ink: #0d0e12; --ink-2: #4a4d57; --muted: #7f828c;
   --line: #e4e3dc; --line-2: #cfcec6; --ring: rgba(13,14,18,.08);
-  --p-fabric: #2a78d6; --p-snowflake: #e8622c; --p-dbx: #14996a;
+  --p-fabric: #2a78d6; --p-snowflake: #e8622c; --p-dbx: #14996a; --p-ossie: #7a4fd6; --p-daxsql: #a87800;
   --k-fact: #6250d6; --k-shared: #e87ba4; --k-helper: #eda100; --k-dim: #5d6170;
   --good: #0ca30c; --good-ink: #006300; --warn: #d99a00; --warn-ink: #8a6200; --crit: #d03b3b;
   --good-bg: #e7f5e7; --warn-bg: #fdf1d2; --crit-bg: #fae6e6; --note-bg: #eaf2fc;
@@ -240,6 +240,8 @@ tr.total td { font-weight: 650; }
 .dot.fabric { background: var(--p-fabric); box-shadow: 0 0 10px var(--p-fabric); }
 .dot.snowflake { background: var(--p-snowflake); box-shadow: 0 0 10px var(--p-snowflake); }
 .dot.dbx { background: var(--p-dbx); box-shadow: 0 0 10px var(--p-dbx); }
+.dot.ossie { background: var(--p-ossie); box-shadow: 0 0 10px var(--p-ossie); }
+.dot.daxsql { background: var(--p-daxsql); box-shadow: 0 0 10px var(--p-daxsql); }
 
 /* flow diagrams and engine cards */
 .lane { display: grid; gap: 10px; align-content: start; }
@@ -252,11 +254,11 @@ tr.total td { font-weight: 650; }
 .verdict.ok { background: var(--good-bg); } .verdict.no { background: var(--crit-bg); }
 .note { background: var(--note-bg); border: 1px solid color-mix(in srgb, var(--p-fabric) 30%, transparent); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; }
 .plat { --pc: var(--p-fabric); border-top: 2px solid color-mix(in srgb, var(--pc) 70%, transparent); }
-.plat.snowflake { --pc: var(--p-snowflake); } .plat.dbx { --pc: var(--p-dbx); }
+.plat.snowflake { --pc: var(--p-snowflake); } .plat.dbx { --pc: var(--p-dbx); } .plat.ossie { --pc: var(--p-ossie); } .plat.daxsql { --pc: var(--p-daxsql); }
 .plat > header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .how { display: grid; gap: 10px; }
 .how .appr { font-size: 22px; font-weight: 750; letter-spacing: -.02em; color: var(--pc); }
-.how.fabric { --pc: var(--p-fabric); } .how.snowflake { --pc: var(--p-snowflake); } .how.dbx { --pc: var(--p-dbx); }
+.how.fabric { --pc: var(--p-fabric); } .how.snowflake { --pc: var(--p-snowflake); } .how.dbx { --pc: var(--p-dbx); } .how.ossie { --pc: var(--p-ossie); }
 ul.facts { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; max-width: 110ch; }
 ul.facts li { position: relative; padding-left: 18px; font-size: 14.5px; color: var(--ink); }
 ul.facts li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 7px; height: 7px; border-radius: 50%;
@@ -388,7 +390,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     <span class="ind" aria-hidden="true"></span>
     <a href="#model">The model</a>
     <a href="#answer">How they work</a>
-    <a href="#ossie">Ossie</a>
+    <a href="#support">Industry support</a>
     <a href="#results">Results</a>
   </nav>
 </div></div>
@@ -404,12 +406,49 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 <!-- ============================== 2. how they work -->
 <section id="answer" class="view">
   <div class="subtabs" id="st-answer">
+    <button type="button" data-k="ossie"><span class="dot ossie"></span>Ossie</button>
     <button type="button" data-k="fabric"><span class="dot fabric"></span>Power BI</button>
     <button type="button" data-k="snowflake"><span class="dot snowflake"></span>Snowflake</button>
     <button type="button" data-k="dbx"><span class="dot dbx"></span>Databricks</button>
   </div>
   <div class="card stack demo">
     <div id="how" class="how"></div>
+    <div id="ossiebox" class="stack" hidden>
+      <div class="flow" role="img" aria-label="An Ossie model and a query go into a compiler, which writes plain SQL; any SQL engine runs it. Ossie's own compiler is a test tool; here dax-sql stands in.">
+        <div class="fbox"><h4>1 · Model</h4><p>The Ossie file: datasets, relationships, fields, metrics, written in a portable SQL expression language.</p>
+          <span class="ftag ok">spec, released in 0.1.1</span></div>
+        <div class="farrow" aria-hidden="true">+</div>
+        <div class="fbox"><h4>2 · Query</h4><p>SQL with measures, <code>SELECT AGG(sales) &hellip;</code>, or a wide table: dimensions + metrics + a filter, and the joins are picked for you.
+          Either way, nothing is counted twice.</p>
+          <a href="https://github.com/apache/ossie/blob/main/core-spec/spec_layers.md">the layers</a>
+          <span class="ftag dev">spec, in <code id="os-ver2"></code> only</span></div>
+        <div class="farrow" aria-hidden="true">&rarr;</div>
+        <div class="fbox todo"><h4>3 · Compiler</h4><p>Rewrites the query on the model into plain SQL on the tables. Ossie's own is a test tool: the view expander of <code>ost</code>, for the compliance cases, SQL measures only. Here, <b>dax-sql</b> stands in.</p>
+          <a href="https://github.com/apache/ossie/pull/769">ost view expander, PR #769</a>
+          <span class="ftag todo">no engine in Ossie</span></div>
+        <div class="farrow" aria-hidden="true"><small>SQL</small>&rarr;</div>
+        <div class="fbox"><h4>4 · Engine</h4><p>Any SQL engine runs that SQL and returns the answer. Here, DuckDB.</p>
+          <span class="ftag">exists</span></div>
+      </div>
+      <div class="today"><b>Today:</b> <span class="st">Ossie file</span><span class="farrow" aria-hidden="true">&rarr;</span>
+        <span>a platform that supports Ossie imports it into its own semantic model</span><span class="farrow" aria-hidden="true">&rarr;</span>
+        <span>its planner and engine answer the query (<a href="#support">Industry support</a>).</span></div>
+      <h4>What is open today</h4>
+      <ul class="facts" style="--pc: var(--p-ossie)">
+        <li>The specification and its JSON schema, a validator, and a Python SDK that parses a file. None of them runs a query. <a class="src" href="https://github.com/apache/ossie/tree/main/validation">validator</a></li>
+        <li>Compliance cases with expected results, and <code>ost</code>, the tool that runs them. Its view expander turns a query on a model into DuckDB SQL; it reads only the SQL measures, and it is there to test the spec. <a class="src" href="https://github.com/apache/ossie/blob/main/ost/README.md">ost</a></li>
+        <li>24 converters that move a model between Ossie and dbt, Cube, Snowflake, Microsoft and others. <a class="src" href="https://github.com/apache/ossie-converters">ossie-converters</a></li>
+        <li>A reference compiler from Ossie to SQL is on the roadmap. <a class="src" href="https://github.com/apache/ossie/blob/main/ROADMAP.md#semantic-query-language--reference-engine">roadmap</a></li>
+      </ul>
+      <div class="plat daxsql stack" style="padding-top:14px">
+        <header><h3><span class="dot daxsql"></span>The stand-in engine here: dax-sql</h3></header>
+        <p class="lead">A toy compiler, open source (MIT), started by N.S. Devaraj and worked on by me. It reads the baseline file as it is,
+          the 4 SQL measures and the 12 DAX ones together, and turns a SQL query on the model into one DuckDB query on the same
+          parquet files the reference reads. It answers all 13 questions (<a href="#results">Results</a>). That shows the file
+          is enough to answer them; it is not how an engine should be built. <a class="src" href="https://github.com/djouallah/dax-sql">dax-sql</a></p>
+        <div id="dx-example" class="stack"></div>
+      </div>
+    </div>
     <div id="ctx" class="stack" hidden></div>
     <div id="lod" class="stack" hidden></div>
     <div id="walk" class="stack">
@@ -467,53 +506,13 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 
 </section>
 
-<!-- ============================== 3. ossie -->
-<section id="ossie" class="view">
-  <div class="subtabs" id="st-ossie">
-    <button type="button" data-k="what">What Ossie is</button>
-    <button type="button" data-k="std">What Ossie supports</button>
-    <button type="button" data-k="plat">What each platform supports</button>
-  </div>
-  <div class="card stack" data-pane-of="st-ossie" data-k="what">
-    <header class="stack" style="gap:6px"><h3>What Ossie is</h3>
-      <p class="sub">An Apache specification (incubating), not software. <b>Released: <code>0.1.1</code></b> (December 2025), the only release.
-        In development: <code id="os-ver"></code> on main, unreleased and still changing; there will be no 0.2.0, the next release is planned as
+<!-- ============================== 3. industry support -->
+<section id="support" class="view">
+  <div class="card stack">
+    <header class="stack" style="gap:6px"><h3>What each platform does with an Ossie file</h3>
+      <p class="sub">As tried on this model. Each answer links to the platform's own response. Ossie <b>released <code>0.1.1</code></b> (December 2025), its only
+        release; <code id="os-ver"></code> is the development version on main, unreleased and still changing, and the next release is planned as
         <code>0.3.0-incubating</code>. <a href="https://github.com/apache/ossie/blob/main/core-spec/spec.md#version-history">version history</a></p></header>
-    <div class="flow" role="img" aria-label="An Ossie model and a query go into a compiler, which writes plain SQL; any SQL engine runs it. The compiler is in progress.">
-      <div class="fbox"><h4>1 · Model</h4><p>The Ossie file: datasets, relationships, fields, metrics, written in a portable SQL expression language.</p>
-        <span class="ftag ok">spec, released in 0.1.1</span></div>
-      <div class="farrow" aria-hidden="true">+</div>
-      <div class="fbox"><h4>2 · Query</h4><p>SQL with measures, <code>SELECT AGG(sales) &hellip;</code>, or a wide table: dimensions + metrics + a filter, and the joins are picked for you.
-        Either way, nothing is counted twice.</p>
-        <a href="https://github.com/apache/ossie/blob/main/core-spec/spec_layers.md">the layers</a>
-        <span class="ftag dev">spec, in <code id="os-ver2"></code> only</span></div>
-      <div class="farrow" aria-hidden="true">&rarr;</div>
-      <div class="fbox todo"><h4>3 · Compiler</h4><p>&ldquo;View expansion&rdquo;: rewrites the query on the model into plain SQL on the tables.</p>
-        <a href="https://github.com/apache/ossie/issues/707">issue #707</a> <a href="https://github.com/apache/ossie/pull/769">PR #769, open</a>
-        <span class="ftag todo">in progress</span></div>
-      <div class="farrow" aria-hidden="true"><small>SQL</small>&rarr;</div>
-      <div class="fbox"><h4>4 · Engine</h4><p>Any SQL engine runs that SQL and returns the answer.</p>
-        <span class="ftag">exists</span></div>
-    </div>
-    <div class="today"><b>Today:</b> <span class="st">Ossie file</span><span class="farrow" aria-hidden="true">&rarr;</span>
-      <span>a platform that supports Ossie imports it into its semantic model</span><span class="farrow" aria-hidden="true">&rarr;</span>
-      <span>its planner and engine answer the query.</span></div>
-    <h4>What is open today</h4>
-    <ul class="facts" style="--pc: var(--k-fact)">
-      <li>The specification and its JSON schema, and a Python SDK that parses and validates a file. It does not run queries.</li>
-      <li>Compliance cases with expected results. Their DuckDB SQL is written by hand, not generated. <a class="src" href="https://github.com/apache/ossie/blob/main/compliance/query/README.md">compliance</a></li>
-      <li>24 converters that move a model between Ossie and dbt, Cube, Snowflake, Microsoft and others. <a class="src" href="https://github.com/apache/ossie-converters">ossie-converters</a></li>
-      <li><b>Next: the compiler.</b> A reference compiler from Ossie to SQL is on the roadmap and in progress; until it lands there is no open-source implementation, as far as I found. <a class="src" href="https://github.com/apache/ossie/blob/main/ROADMAP.md#semantic-query-language--reference-engine">roadmap</a></li>
-    </ul>
-    <p class="sub">The next two tabs: what Ossie can say about this repo's measures, and what each vendor's import did with the file.</p>
-  </div>
-  <div class="card stack" data-pane-of="st-ossie" data-k="std">
-    <header class="stack" style="gap:6px"><h3>What Ossie supports</h3><p class="sub" id="os-std-sub"></p></header>
-    <div class="tw"><table id="os-std" class="wrapcell"></table></div>
-  </div>
-  <div class="card stack" data-pane-of="st-ossie" data-k="plat">
-    <header class="stack" style="gap:6px"><h3>What each platform supports</h3>
-      <p class="sub">What each platform does with an Ossie file, as tried on this model.</p></header>
     <div class="tw"><table id="sup-feat"></table></div>
   </div>
 </section>
@@ -523,12 +522,14 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   <div class="card about">
     <h2>About</h2>
     <p><b>ossie_bench is not a benchmark.</b> It is an educational repo about semantic modeling, something I care about
-    a lot. One small model, a retailer's daily sales and monthly budget, is built natively on Power BI, Snowflake and
-    Databricks and written in Apache Ossie, then asked the same 13 questions, to see how each one thinks.</p>
+    a lot. One small model, a retailer's daily sales and monthly budget, is written in Apache Ossie and built natively
+    on Power BI, Snowflake and Databricks, then asked the same 13 questions, to see how each one thinks.</p>
     <h3>How it was built</h3>
     <p>All the models here were built with AI. I have a decent conceptual understanding of Power BI, which is my main
     tool. I kind of understand Databricks, as its metric views remind me of Malloy. I am not sure I really get LOD in
     Snowflake. Every answer is checked against raw SQL over the same tables, but any mistake is still mine.</p>
+    <p>The Ossie file is answered by dax-sql, a toy compiler that N.S. Devaraj started and I work on; it is not a product,
+    and it is not Ossie's.</p>
     <h3>A personal project</h3>
     <p>This is a personal project. The views are mine, not my employer's, and nothing here is endorsed by Microsoft,
     Snowflake, Databricks or the Apache Software Foundation.</p>
@@ -561,9 +562,10 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 (function () {
   "use strict";
   var Q = {}; DATA.questions.forEach(function (q) { Q[q.id] = q; });
-  var NAME = { fabric: "Power BI", snowflake: "Snowflake", dbx: "Databricks" };
+  var NAME = { ossie: "Ossie", fabric: "Power BI", snowflake: "Snowflake", dbx: "Databricks", daxsql: "dax-sql" };
   var ICON = { match: "✓", differs: "≠", partial: "◐", refused: "✕", na: "–" };
-  var PLATS = ["fabric", "snowflake", "dbx"];
+  var PLATS = ["fabric", "snowflake", "dbx", "daxsql"];   // the clients that answer the questions
+  var MODELS = ["ossie", "fabric", "snowflake", "dbx"];    // the models, Ossie first
   var GH = "https://github.com/djouallah/ossie_bench/blob/main/";
   var REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
   function $(id) { return document.getElementById(id); }
@@ -797,6 +799,14 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       { a: "dim_category", b: "fact_budget", label: "category" }
     ] };
 
+    // Ossie, the baseline file: the same 7 datasets and 8 relationships; the metrics live on their datasets, one on the model.
+    var OSS = { w: PBI.w, h: PBI.h, minw: PBI.minw, card: true, nodes: {}, edges: PBI.edges };
+    Object.keys(PBI.nodes).forEach(function (k) { var n = PBI.nodes[k], m = {}; for (var f in n) m[f] = n[f]; OSS.nodes[k] = m; });
+    delete OSS.nodes.Metrics;
+    OSS.nodes.fact_sales.l = ["one row per day, store, product", "14 metrics: 2 SQL, 12 DAX"];
+    OSS.nodes.fact_budget.l = ["one row per month, country, category", "1 metric, SQL"];
+    OSS.nodes.model = { x: 480, y: 500, w: 220, k: "measures", t: "the model", rows: "1", l: ["1 metric, SQL: AGG() of both facts"] };
+
     // Snowflake, read with DESCRIBE SEMANTIC VIEW: 16 logical tables over 9 physical ones, 32 relationships.
     function sn(x, y, k, sub, badge, phys, t) { return { x: x, y: y, w: 158, k: k, compact: true, sub: sub, badge: badge, phys: phys, t: t }; }
     var SF = { w: 1190, h: 570, minw: 900, dense: true, labels: false, nodes: {
@@ -863,6 +873,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     }
 
     var PLAT = {
+      ossie: { g: OSS, cap: "The baseline, in Ossie <code>" + esc(DATA.ossie.version) + "</code>: 7 datasets, 8 relationships, 16 metrics. 4 are in the standard's SQL; 12 have no SQL form yet, so they are in the DAX dialect. This file is what dax-sql answers from.",
+        leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Shared by both facts"], ["k-measures", "Model-level metric"]] },
       fabric: { g: PBI, cap: "One model: 7 tables, 8 relationships, 16 measures.",
         leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Shared by both facts"], ["k-measures", "Measures"]] },
       snowflake: { g: SF, cap: "One semantic view: 16 logical tables over 9 physical ones, 32 relationships. FACT_SALES is in it six times.",
@@ -873,12 +885,14 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     function legend(items) {
       return items.map(function (x) { return '<span><i class="k ' + x[0] + '">' + (x[0] === "gulf" ? "✕" : "") + "</i>" + x[1] + "</span>"; }).join("");
     }
-    $("st-model").innerHTML = PLATS.map(function (p) { return '<button type="button" data-k="' + p + '"><span class="dot ' + p + '"></span>' + NAME[p] + "</button>"; }).join("");
-    $("graphs").innerHTML = PLATS.map(function (p) {
+    $("st-model").innerHTML = MODELS.map(function (p) { return '<button type="button" data-k="' + p + '"><span class="dot ' + p + '"></span>' + NAME[p] + "</button>"; }).join("");
+    $("graphs").innerHTML = MODELS.map(function (p) {
       return '<div class="card graphcard" data-pane-of="st-model" data-k="' + p + '"><div class="gc-head"><h3><span class="dot ' + p + '"></span>' + NAME[p] + '</h3><p class="caption">' + PLAT[p].cap + "</p></div>" +
         '<div class="graphwrap" id="gw-' + p + '"><svg id="g-' + p + '" class="graph" role="img" aria-label="The model on ' + NAME[p] + '"></svg><div class="tip" id="tip-' + p + '" hidden></div></div>' +
         '<div class="gc-foot"><div class="legend">' + legend(PLAT[p].leg) + "</div></div></div>";
-    }).join("");
+    }).join("") +
+      '<div class="card stack" data-pane-of="st-model" data-k="ossie" style="margin-top:16px"><header class="stack" style="gap:6px"><h3>The 16 metrics in the file</h3>' +
+      '<p class="sub" id="os-std-sub"></p></header><div class="tw"><table id="os-std" class="wrapcell"></table></div></div>';
     var phoneLayout = null;
     function plot(p) {
       var wrap = $("gw-" + p), phone = wrap.clientWidth < 640;
@@ -886,7 +900,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       drawGraph($("g-" + p), p === "dbx" ? DBX(phone) : PLAT[p].g, $("tip-" + p), wrap);
     }
     var selModel = subtabs("st-model", function (k) { if ($("model").classList.contains("on")) plot(k); });
-    window.__replot = function () { selModel(selModel.current() || "fabric"); };
+    window.__replot = function () { selModel(selModel.current() || "ossie"); };
     var rt;
     window.addEventListener("resize", function () {
       clearTimeout(rt);
@@ -894,19 +908,22 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     });
   })();
 
-  // ---------- 3. ossie: what the standard supports, then what each platform supports
+  // ---------- the Ossie file's metrics (the model tab), then what each platform does with an Ossie file (industry support)
   (function () {
     var SPEC = "https://github.com/apache/ossie/blob/main/core-spec/", O = DATA.ossie, M = DATA.measures;
     $("os-ver").textContent = $("os-ver2").textContent = O.version;
-    var yes = M.filter(function (m) { return /^yes/.test(m.standard); }).length;
-    $("os-std-sub").innerHTML = "<code>" + esc(O.version) + "</code>, unreleased, on apache/ossie main: <b>" + yes + " of " + M.length +
-      "</b> measures. The others need evaluation controls, which the specification defers (<a href=\"" + SPEC +
-      "relational_semantics.md#53-evaluation-controls\">section 5.3</a>, <a href=\"" + SPEC + "relational_semantics.md#appendix-d-relationship-to-measures-in-sql\">Appendix D</a>).";
+    var sqlN = Object.keys(O.expr).filter(function (k) { return O.expr[k].lang === "sql"; }).length;
+    $("os-std-sub").innerHTML = "<b>" + sqlN + " of " + M.length + "</b> in the standard's SQL. The other " + (M.length - sqlN) +
+      " need evaluation controls, which the specification defers (<a href=\"" + SPEC +
+      "relational_semantics.md#53-evaluation-controls\">section 5.3</a>, <a href=\"" + SPEC + "relational_semantics.md#appendix-d-relationship-to-measures-in-sql\">Appendix D</a>), " +
+      "so they are in the DAX dialect, which the standard carries but does not read. Ossie's validator passes the file: " +
+      "<a href=\"" + GH + "semantic_model/a_baseline/model.ossie.yaml\">model.ossie.yaml</a>.";
     function md(t) { return esc(t).replace(/`(.+?)`/g, "<code>$1</code>"); }
     function c(k, w) { return '<span class="chip ' + k + '"><i aria-hidden="true">' + ICON[k] + "</i>" + w + "</span>"; }
-    $("os-std").innerHTML = "<thead><tr><th>Measure</th><th>Meaning</th><th>Ossie</th></tr></thead><tbody>" + M.map(function (m) {
-      var x = O.expr[m.name], cell = x ? c("match", "yes") + '<span class="why"><code>' + esc(x.sql) + "</code> on " + esc(x.home === "model" ? "the model" : x.home) + "</span>" :
-        c("refused", "no") + '<span class="why">' + (/period over period/.test(m.standard) ? "period over period" : "fields included in or excluded from the grouping") + "</span>";
+    $("os-std").innerHTML = "<thead><tr><th>Metric</th><th>Meaning</th><th>In the file</th></tr></thead><tbody>" + M.map(function (m) {
+      var x = O.expr[m.name], sql = x.lang === "sql";
+      var cell = c(sql ? "match" : "partial", sql ? "SQL" : "DAX") + '<span class="why"><code>' + esc(x.code) + "</code> on " + esc(x.home === "model" ? "the model" : x.home) +
+        (sql ? "" : ". No SQL form: " + (/period over period/.test(m.standard) ? "period over period" : "fields in or out of the grouping")) + "</span>";
       return "<tr><td><code>" + esc(m.name) + "</code></td><td>" + md(m.meaning) + "</td><td>" + cell + "</td></tr>";
     }).join("") + "</tbody>";
 
@@ -914,26 +931,36 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     var W = { yes: ["match", "yes"], part: ["partial", "partly"], no: ["refused", "no"], na: ["na", "n/a"] };
     var fv = E.fabric_version.split(":")[1].trim(), sv = E.sf_export_version.split(":")[1].trim();
     function ev(path) { return ' <a href="' + GH + path + '">response</a>'; }
+    var BASE = "<a href=\"" + GH + "semantic_model/a_baseline/model.ossie.yaml\">the baseline</a>";
     var F = [
       ["Imports an Ossie file", ["yes", "Publish compiles it into a Direct Lake model." + ev("semantic_model/fabric/publish_response.json")],
-        ["yes", "<code>SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML</code>" + ev("semantic_model/snowflake/tests/import_response.txt")], ["no", "No Ossie import."]],
-      ["Ossie version it reads", ["yes", "<code>" + fv + "</code>, a development version"], ["yes", "<code>0.1.1</code>, the released version"], ["na", ""]],
+        ["yes", "<code>SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML</code>" + ev("semantic_model/snowflake/tests/import_response.txt")], ["no", "No Ossie import."],
+        ["yes", "It reads the file each time it compiles a query; there is no import step."]],
+      ["Ossie version it reads", ["part", "<code>" + fv + "</code>, a development version. <code>" + esc(O.version) + "</code> is refused: <em>OSSIE_VERSION_MISMATCH</em>." + ev("semantic_model/fabric/ossie_sql_response.txt")],
+        ["part", "<code>0.1.1</code>, the released version. <code>" + esc(O.version) + "</code> is refused: <em>Unsupported OSI specification version</em>." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["na", ""],
+        ["yes", "<code>" + esc(O.version) + "</code>, the version on main, and the earlier drafts."]],
       ["Measures in Ossie's own SQL", ["no", "<code>ANSI_SQL</code> metrics are ignored, with the warning <em>Non-DAX metric expressions are not supported</em>." + ev("semantic_model/fabric/ossie_sql_response.txt")],
-        ["yes", "<code>ANSI_SQL</code> metrics work in 0.1.1, the released version." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["na", ""]],
-      ["Its own dialect inside the file", ["yes", "DAX: all 16 measures, 0 errors."],
-        ["no", "The SNOWFLAKE dialect is refused: <code>FIXED</code>, <code>EXCLUDE DIMENSIONS</code>." + ev("semantic_model/snowflake/tests/lod_via_ossie_response.txt")], ["na", ""]],
+        ["yes", "<code>ANSI_SQL</code> metrics work in 0.1.1, the released version." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["na", ""],
+        ["yes", "<code>expression.sql</code>, read as a measure; <code>AGG()</code> across the two facts works."]],
+      ["A vendor dialect inside the file", ["yes", "DAX: all 16 measures, 0 errors."],
+        ["part", "The SNOWFLAKE dialect, the LOD inline in a model-level metric: imported, and q09's numbers come back." + ev("semantic_model/snowflake/tests/lod_inline_via_ossie_response.txt") +
+          " An LOD as a field (a view-level fact) is refused: <code>FIXED</code>, <code>EXCLUDE DIMENSIONS</code>." + ev("semantic_model/snowflake/tests/lod_via_ossie_response.txt")], ["na", ""],
+        ["yes", "DAX beside SQL in one file: the 12 DAX measures read the SQL ones by name, <code>[sales_quantity]</code>."]],
       ["Vendor extensions", ["part", "Its own <code>POWER_BI</code> format strings are dropped without a warning."],
-        ["part", "Its own <code>SNOWFLAKE</code> extension: a table metric is applied, an access modifier is kept but not applied. Another vendor's is dropped without a warning." + ev("semantic_model/snowflake/tests/extensions_response.txt")], ["na", ""]],
+        ["part", "Its own <code>SNOWFLAKE</code> extension: a table metric is applied, an access modifier is kept but not applied. Another vendor's is dropped without a warning." + ev("semantic_model/snowflake/tests/extensions_response.txt")], ["na", ""],
+        ["na", "Not tried here."]],
       ["Exports Ossie", ["no", "No way back: the semantic views API lists views and publishes them; reading one returns 404." + ev("semantic_model/fabric/export_response.txt")],
         ["yes", "As <code>" + sv + "</code>."],
-        ["no", "<code>export_to_ossie</code> exists but is disabled, and the SQL warehouse refuses the flag that enables it." + ev("semantic_model/dbx/export_to_ossie_response.txt")]],
-      ["Re-imports its own export", ["na", ""], ["no", "<em>invalid identifier 'SALES.SALES_QUANTITY'</em>" + ev("semantic_model/snowflake/tests/export_reimport_response.txt")], ["na", ""]],
-      ["This repo's model is in Ossie",["yes", "<a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">Ossie with the DAX dialect</a>"],
-        ["no", "<a href=\"" + GH + "semantic_model/snowflake/semantic_view.sql\">Semantic view DDL</a>"], ["no", "<a href=\"" + GH + "semantic_model/dbx/\">Metric view YAML</a>"]]
+        ["no", "<code>export_to_ossie</code> exists but is disabled, and the SQL warehouse refuses the flag that enables it." + ev("semantic_model/dbx/export_to_ossie_response.txt")],
+        ["na", "Not tried here."]],
+      ["Re-imports its own export", ["na", ""], ["no", "<em>invalid identifier 'SALES.SALES_QUANTITY'</em>" + ev("semantic_model/snowflake/tests/export_reimport_response.txt")], ["na", ""], ["na", ""]],
+      ["This repo's model is in Ossie", ["yes", "<a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">Ossie with the DAX dialect</a>, in <code>" + fv + "</code>"],
+        ["no", "<a href=\"" + GH + "semantic_model/snowflake/semantic_view.sql\">Semantic view DDL</a>"], ["no", "<a href=\"" + GH + "semantic_model/dbx/\">Metric view YAML</a>"],
+        ["yes", BASE + ", as it is"]]
     ];
     $("sup-feat").innerHTML = "<thead><tr><th></th>" + PLATS.map(function (p) { return '<th><span class="dot ' + p + '"></span>' + NAME[p] + "</th>"; }).join("") +
       "</tr></thead><tbody>" + F.map(function (f) {
-        return "<tr><td>" + f[0] + "</td>" + [1, 2, 3].map(function (j) {
+        return "<tr><td>" + f[0] + "</td>" + [1, 2, 3, 4].map(function (j) {
           var w = W[f[j][0]];
           return "<td>" + c(w[0], w[1]) + (f[j][1] ? '<span class="why">' + f[j][1] + "</span>" : "") + "</td>";
         }).join("") + "</tr>";
@@ -963,7 +990,14 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   function tag(t) { return '<span class="tag">' + t + "</span>"; }
   var MS = "https://learn.microsoft.com/en-us/dax/", SQLBI = "https://www.sqlbi.com/articles/",
       SF = "https://docs.snowflake.com/en/user-guide/views-semantic/", DBXD = "https://docs.databricks.com/aws/en/";
+  var OSPEC = "https://github.com/apache/ossie/blob/main/";
   var HOW = {
+    ossie: { appr: "A specification, not an engine", who: "Ossie says what the model is and what a query on it means. It runs nothing: an engine reads the file and answers.", facts: [
+      "The file holds datasets, relationships, fields and metrics, in a portable SQL. The specification says what a query on it returns, including that a measure is never counted twice when tables join." + src("Ossie spec", OSPEC + "core-spec/relational_semantics.md"),
+      "What that SQL can't say yet: last year, all customers, a total that ignores a filter. The specification calls them evaluation controls and defers them to a later extension. A metric may still be written in another dialect, which the file carries and the standard does not read: here, DAX." + src("Ossie spec", OSPEC + "core-spec/relational_semantics.md#53-evaluation-controls") + src("dialects", OSPEC + "extensions/dialects.md"),
+      "Ossie has no engine. Its test tool, <code>ost</code>, expands a query on a model into plain SQL for the compliance cases; it reads only the SQL measures." + src("ost", OSPEC + "ost/README.md"),
+      "A vendor that supports Ossie imports the file into its own semantic model, and its engine answers (Industry support). This repo's file needs an engine that reads SQL and DAX together; dax-sql, below, is the one used here." + tag("this repo")
+    ] },
     fabric: { appr: "Drill across, by filter context", who: "Each measure is evaluated on its own table; the engine does the drill-across.", facts: [
       "A query is <code>SUMMARIZECOLUMNS</code>: the group-by columns are combined, and a row is kept when at least one expression is non-blank." + src("Microsoft Learn", MS + "summarizecolumns-function-dax"),
       "Each measure runs in its row's filter context. The filter flows from the dimension along one-to-many relationships to that measure's own fact table." + src("SQLBI", SQLBI + "expanded-tables-in-dax/"),
@@ -974,7 +1008,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       "Everything is a logical table. A metric aggregates its own table; a derived metric combines metrics from several." + src("Snowflake docs", SF + "overview"),
       "A dimension can go with a metric only if its table is at the same or a coarser grain than the metric's table." + src("Snowflake docs", SF + "querying"),
       "One physical table can appear many times, each alias an independent logical table. This model uses it for last year, last fiscal year and the denominators that ignore the customer: FACT_SALES is in it six times." + src("Snowflake docs", SF + "sql"),
-      "LOD (<code>FIXED</code>, <code>EXCLUDE DIMENSIONS</code>, in preview) changes one metric's grain. <code>FIXED</code> is computed before the query's filters, so it ignores all of them. <code>time_shift</code> is in private preview." + src("Snowflake docs", SF + "sql"),
+      "LOD (<code>FIXED</code>, <code>EXCLUDE DIMENSIONS</code>, in preview) changes one metric's grain, written inline in the metric. <code>FIXED</code> is computed before the query's filters, so it ignores all of them. <code>time_shift</code> is in private preview." + src("Snowflake docs", SF + "sql"),
+      "Why the copies of the fact stay: an LOD needs one join path to the calendar, so last year can't be a second relationship on <code>sales</code> (refused: <em>multi-path relationships</em>). And DAX <code>ALL(customer)</code> drops one filter, where an LOD keeps them all (EXCLUDE) or drops them all (FIXED)." + tag("tried") + src("response", GH + "semantic_model/snowflake/tests/inline_lod_response.txt"),
       "How metrics from different tables meet is not documented. EXPLAIN shows each aggregated on its own, then full-outer-joined on the shared dimensions." + tag("observed")
     ] },
     dbx: { appr: "One base table, like Malloy and Looker", who: "The base table decides the rows; anything beyond it is a join you write.", facts: [
@@ -998,8 +1033,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       ["sales_quantity", "The logical table SALES, as asked.", "sales.sales_quantity AS SUM(sales.sales_qty)", true, true],
       ["country_qty_all_customers", "SALES_ALL_CUST, FACT_SALES again, reaches the country through STORE_GEO, DIM_STORE again. The customer filter is on STORE, so it has no path here.",
         "sales_all_cust AS FACT_SALES   -- again\nstore_geo AS DIM_STORE         -- again\nsales_all_cust (store_id) REFERENCES store_geo\nSUM(sales_all_cust.sales_qty)", true, false],
-      ["country_total_fixed", "An LOD on SALES. FIXED is computed at country × year before any filter, so the whole of 2021 counts.",
-        "country_qty_fixed AS SUM(sales.sales_qty)\n  FIXED DIMENSIONS (country.country, calendar.year)\ncountry_total_fixed AS SUM(DISTINCT country_qty_fixed)", false, false]
+      ["country_total_fixed", "An LOD on SALES, inline in the metric. FIXED is computed at country × year before any filter, so the whole of 2021 counts.",
+        "country_total_fixed AS SUM(DISTINCT\n  SUM(sales.sales_qty)\n    FIXED DIMENSIONS (country.country, calendar.year))", false, false]
     ];
     $("lod").innerHTML = '<p class="sub">The example: q09, February 2021 without Tesco, a UK chain. One query, three metrics, each on its own route.</p>' +
       "<pre><code>SELECT country, AGG(sales_quantity), AGG(country_qty_all_customers), AGG(country_total_fixed)\nFROM DAX_DEMO.MODEL.SEMANTIC_VIEW\nWHERE month_start = DATE '2021-02-01' AND customer &lt;&gt; 'Tesco'\nGROUP BY ALL</code></pre>" +
@@ -1009,6 +1044,16 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       '<div class="merge rv" data-i="3"><div class="arrow" aria-hidden="true">↳</div><div class="stack"><div class="oplabel">merged on <b>country</b>: three aggregates, one row each</div>' +
       table(q.columns, q.measures, rows, { hot: isUK }) +
       '<div class="verdict ok">Only the UK differs, by Tesco. Each number took its own route: a plain metric, a copy of the fact, an LOD. In DAX each is one <code>CALCULATE</code>.</div></div></div>';
+  })();
+  // The dax-sql example: q09, a SQL query on the Ossie file, the DuckDB SQL dax-sql writes for it, and the answer.
+  (function () {
+    var q = Q.q09, r = run(q, "daxsql");
+    if (!r) return;
+    $("dx-example").innerHTML = '<p class="sub">The example: q09 again, February 2021 without Tesco. A SQL query on the model; three of its metrics are DAX.</p>' +
+      "<pre><code>" + esc(r.code) + "</code></pre>" +
+      (DATA.evidence.daxsql_q09 ? "<details><summary>The DuckDB SQL dax-sql writes for it (" + DATA.evidence.daxsql_q09.length.toLocaleString("en-US") + " characters)</summary><pre><code>" +
+        esc(DATA.evidence.daxsql_q09) + "</code></pre></details>" : "") +
+      runTable(q, r) + '<div class="verdict ok">The same rows as the reference, and as Power BI: the DAX measures are compiled to SQL, filter context and all.</div>';
   })();
   // The Power BI example: the same q09, as filter contexts. One cell, the UK, and how each CALCULATE edits its filters.
   (function () {
@@ -1048,6 +1093,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       h.facts.map(function (f) { return "<li>" + f + "</li>"; }).join("") + "</ul>";
   }
   function paintDemo() {
+    if (!STEPS[demo.plat]) return;  // Ossie and the two examples have no walkthrough
     each($("stage").querySelectorAll("[data-from]"), function (el) {
       el.hidden = !!el.dataset.mode && el.dataset.mode !== demo.mode;
       el.classList.toggle("on", +el.dataset.from <= demo.step);
@@ -1074,11 +1120,12 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     $("d-single").innerHTML = runTable(q, run(q, "dbx"));
     var selAnswer = subtabs("st-answer", function (k) {
       var again = k !== demo.plat; demo.plat = k; demo.mode = MODE[k]; paintHow();
-      var box = { fabric: "ctx", snowflake: "lod" }[k];
-      $("ctx").hidden = k !== "fabric"; $("lod").hidden = k !== "snowflake"; $("walk").hidden = !!box;
-      if (box) { stopDemo(); playLod(box); } else if (again) playDemo();
+      var box = { fabric: "ctx", snowflake: "lod", ossie: "ossiebox" }[k];
+      $("ctx").hidden = k !== "fabric"; $("lod").hidden = k !== "snowflake"; $("ossiebox").hidden = k !== "ossie"; $("walk").hidden = !!box;
+      if (box === "ossiebox") stopDemo(); else if (box) { stopDemo(); playLod(box); } else if (again) playDemo();
     });
-    demo.plat = null; selAnswer("fabric");
+    window.__answer = selAnswer;
+    demo.plat = null; selAnswer("ossie");
     $("stepper").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { stopDemo(); demo.step = +b.dataset.step; paintDemo(); } });
     $("play").addEventListener("click", playDemo);
     paintDemo();
@@ -1128,12 +1175,12 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     return '<button type="button" role="tab" data-q="' + q.id + '"><b>' + q.id + "</b><span>" + esc(q.title) + "</span></button>";
   }).join("");
   $("qlist").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) show(b.dataset.q); });
-  var selResults = subtabs("st-results"), selOssie = subtabs("st-ossie");
-  selResults("q"); selOssie("what");
+  var selResults = subtabs("st-results");
+  selResults("q");
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
 
-  // ---------- routing: the 4 tabs
-  var VIEWS = ["model", "answer", "ossie", "results", "about"];
+  // ---------- routing: the 4 tabs, and About
+  var VIEWS = ["model", "answer", "support", "results", "about"];
   var nav = $("nav"), ind = nav.querySelector(".ind");
   function moveInd() {
     var a = nav.querySelector('a[aria-current="page"]'); ind.classList.toggle("off", !a); if (!a) return;
@@ -1141,7 +1188,9 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   }
   var shown = null;
   function route() {
-    var h = location.hash.slice(1), v = VIEWS.indexOf(h) >= 0 ? h : "model";
+    var h = location.hash.slice(1);
+    if (h === "ossie") { history.replaceState(null, "", "#answer"); h = "answer"; window.__answer("ossie"); }  // the old Ossie tab
+    var v = VIEWS.indexOf(h) >= 0 ? h : "model";
     VIEWS.forEach(function (x) { $(x).classList.toggle("on", x === v); });
     each(nav.querySelectorAll("a"), function (a) {
       if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
@@ -1150,7 +1199,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     moveInd();
     window.scrollTo(0, 0);
     if (v === "model" && shown !== "model") window.__replot();
-    if (v === "answer" && !demo.played) playDemo();
+    if (v === "answer" && !demo.played && demo.mode === "single") playDemo();
     if (v !== "answer") stopDemo();
     shown = v;
   }

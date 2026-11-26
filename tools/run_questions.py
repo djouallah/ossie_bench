@@ -2,9 +2,11 @@
 
     python tools/run_questions.py                 # all questions
     python tools/run_questions.py q04 q11         # some questions (by prefix)
+    python tools/run_questions.py --only=daxsql   # some platforms; the others' rows are kept from results.csv
 
 In questions/<question>/: expected.sql -> the reference answer (plain SQL over data/*.parquet, on DuckDB);
-fabric.dax -> Fabric (executeQueries), snowflake.sql -> Snowflake, dbx.sql -> Databricks; <platform>_<route>.sql,
+fabric.dax -> Fabric (executeQueries), snowflake.sql -> Snowflake, dbx.sql -> Databricks, daxsql.sql -> dax-sql (the
+baseline Ossie file compiled by dax-sql, run on DuckDB over data/*.parquet); <platform>_<route>.sql,
 where there is one, is another route on that platform (more model, or logic in the query), e.g. dbx_workaround.sql.
 results.csv has a `platform` column (`expected` first), a `status` column, then the columns of the answers.
 status, against the reference: match, partial (what it returned matches, but not every column could be asked),
@@ -21,7 +23,7 @@ from pathlib import Path
 warnings.filterwarnings("ignore")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 ROOT = Path(__file__).resolve().parents[1]
-PLAIN = [("fabric", "fabric.dax"), ("snowflake", "snowflake.sql"), ("dbx", "dbx.sql")]
+PLAIN = [("fabric", "fabric.dax"), ("snowflake", "snowflake.sql"), ("dbx", "dbx.sql"), ("daxsql", "daxsql.sql")]
 
 
 def files(qdir):
@@ -35,16 +37,18 @@ def files(qdir):
     return out
 
 
-def runners():
-    import dbx
-    import fabric
-    import sf
+def runners(only=None):
+    """{platform: run(query) -> (columns, rows)}, for the platforms asked (all by default)."""
     conn = {}
     def snow(q):
+        import sf
         if "c" not in conn:
             conn["c"] = sf.connect()
         return sf.query(conn["c"], q)
-    return {"fabric": fabric.dax, "snowflake": snow, "dbx": dbx.sql}
+    def lazy(mod, fn):
+        return lambda q: getattr(__import__(mod), fn)(q)
+    run = {"fabric": lazy("fabric", "dax"), "snowflake": snow, "dbx": lazy("dbx", "sql"), "daxsql": lazy("daxsql", "query")}
+    return {k: v for k, v in run.items() if not only or k in only}
 
 
 def cell(v):
@@ -110,13 +114,21 @@ def ask(run, plat, path):
 
 def main(argv):
     picks = [a for a in argv if not a.startswith("--")]
-    run = runners()
+    only = next((a.split("=", 1)[1].split(",") for a in argv if a.startswith("--only=")), None)
+    run = runners(only)
     for qdir in sorted(p for p in (ROOT / "questions").iterdir() if p.is_dir()):
         if picks and not any(qdir.name.startswith(p) for p in picks):
             continue
         ref = expected(qdir / "expected.sql")
         rows = [{"platform": "expected", "status": "", **r} for r in ref]
+        kept = {}
+        if only and (qdir / "results.csv").exists():
+            for r in csv.DictReader((qdir / "results.csv").open(encoding="utf-8")):
+                kept.setdefault(r["platform"], []).append({k: v for k, v in r.items() if v != "" or k in ref[0]})
         for plat, name in files(qdir):
+            if plat.split()[0] not in run:
+                rows += kept.get(plat, [])
+                continue
             answer = ask(run, plat.split()[0], qdir / name)
             st = status(answer, ref)
             rows += [{"platform": plat, "status": st, **r} for r in answer]

@@ -1,0 +1,6 @@
+SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML, tests/dax_context.ossie.yaml (0.1.1) with two model metrics in the
+SNOWFLAKE dialect, the LOD inline (scratch view, dropped after):
+  country_total_allselected: AVG(SUM(fact_sales.sales_qty) EXCLUDE DIMENSIONS (dim_store.customer))
+  country_total_fixed: SUM(DISTINCT SUM(fact_sales.sales_qty) FIXED DIMENSIONS (dim_country.country, dim_calendar.year))
+import: Semantic view was successfully created from OSI YAML.
+query by country, February 2021 without Tesco (country_total_allselected, country_total_fixed): [('Germany', Decimal('3164939.000000'), 36203407), ('Poland', Decimal('2686210.000000'), 30755062), ('UK', Decimal('1031214.000000'), 22111689)]

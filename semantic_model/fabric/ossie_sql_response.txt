@@ -1,9 +1,9 @@
-Fabric Publish of Ossie written in its own SQL, no DAX (scratch views, deleted after):
+Fabric Publish of Ossie written in its own SQL, and of the baseline (scratch views, deleted after):
 
 0.2.0.dev0, the 4 standard measures in the ANSI_SQL dialect:
   publish: {"errorCount": 0, "warningCount": 1}
   warning: OSSIE_COMPILATION_UNSUPPORTED_METRIC: Non-DAX metric expressions are not supported and are ignored.
   query [sales_quantity]: Query (1, 32) The value for '<oii>sales_quantity</oii>' cannot be determined. Either the column doesn't exist, or there is no current row for this column.
 
-0.3.0.dev0, the baseline as it is (expression.sql):
-  publish: HTTP 400 {"requestId":"b36a3b35-a340-4d36-b7b7-5e511cd123ad","errorCode":"SemanticViewCompilationFailed","moreDetails":[{"errorCode":"SemanticViewDiagnostics","message":"{\"summary\":{\"errorCount\":1,\"warningCount\":0},\"diagnostics\":[{\"code\":\"OSSIE_VERSION_MISMATCH\",\"severity\":\"Error\",\"stage\":\"Composition\",\"message\":\"The Ossie document declares an unsupported schema version for this compilation path.\",\"messageArguments\":{},\"source\":{\"path\":\"ossie_v03_test.yaml\",\"semanticPath\":\"/version\",\"start\":{\"line\":1,\"column\":10}},\"relatedSources\":[]}]}"}],"message":"PowerBI service client received error HTTP response. HttpStatus: 400. PowerBIErrorCode: SemanticViewCompilationFailed","isRetriable":false}
+0.3.0.dev0, the baseline as it is (4 measures in expression.sql, 12 in the DAX dialect):
+  publish: HTTP 400 {"requestId":"3cacd4ad-0efd-4a82-b603-1b5b766c7558","errorCode":"SemanticViewCompilationFailed","moreDetails":[{"errorCode":"SemanticViewDiagnostics","message":"{\"summary\":{\"errorCount\":1,\"warningCount\":0},\"diagnostics\":[{\"code\":\"OSSIE_VERSION_MISMATCH\",\"severity\":\"Error\",\"stage\":\"Composition\",\"message\":\"The Ossie document declares an unsupported schema version for this compilation path.\",\"messageArguments\":{},\"source\":{\"path\":\"ossie_v03_test.yaml\",\"semanticPath\":\"/version\",\"start\":{\"line\":1,\"column\":10}},\"relatedSources\":[]}]}"}],"message":"PowerBI service client received error HTTP response. HttpStatus: 400. PowerBIErrorCode: SemanticViewCompilationFailed","isRetriable":false}

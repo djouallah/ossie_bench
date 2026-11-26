@@ -1,0 +1,10 @@
+{
+  "name": "ossie-bench-daxsql",
+  "private": true,
+  "type": "module",
+  "description": "The dax-sql client: compiles a query on the baseline Ossie file to DuckDB SQL.",
+  "dependencies": {
+    "dax-sql": "0.2.4",
+    "yaml": "2.8.1"
+  }
+}

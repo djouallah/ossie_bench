@@ -154,7 +154,7 @@ def ossie_out():
 def ossie_sql():
     """Does Publish take Ossie's own SQL instead of the DAX dialect? Two scratch views, each published, queried, then
     deleted (the model and the YAML): the Fabric file with its 4 standard measures in ANSI_SQL (0.2.0.dev0), and the
-    baseline in 0.3.0.dev0 (expression.sql). -> semantic_model/fabric/ossie_sql_response.txt"""
+    baseline in 0.3.0.dev0 (SQL and DAX). -> semantic_model/fabric/ossie_sql_response.txt"""
     import yaml
     ws = workspace_id()
     lh = lakehouse_id(ws)
@@ -168,7 +168,7 @@ def ossie_sql():
         d["source"] = "dbo." + d["source"]
     out = []
     for view, label, doc in [("ossie_sql_test", f"{fab['version']}, the 4 standard measures in the ANSI_SQL dialect", fab),
-                             ("ossie_v03_test", f"{base['version']}, the baseline as it is (expression.sql)", base)]:
+                             ("ossie_v03_test", f"{base['version']}, the baseline as it is (4 measures in expression.sql, 12 in the DAX dialect)", base)]:
         y = yaml.safe_dump(doc, sort_keys=False).encode()
         upload(ws, lh, f"Context/Semantic Views/{view}/{view}.yaml", y)
         line = f"{label}:\n  publish: "
@@ -199,7 +199,7 @@ def ossie_sql():
         except urllib.error.HTTPError:
             pass
     p = ROOT / "semantic_model" / "fabric" / "ossie_sql_response.txt"
-    p.write_text("Fabric Publish of Ossie written in its own SQL, no DAX (scratch views, deleted after):\n\n" + "\n\n".join(out) + "\n", encoding="utf-8")
+    p.write_text("Fabric Publish of Ossie written in its own SQL, and of the baseline (scratch views, deleted after):\n\n" + "\n\n".join(out) + "\n", encoding="utf-8")
     print(p.read_text(encoding="utf-8"))
 
 

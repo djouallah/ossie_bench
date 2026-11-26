@@ -4,6 +4,11 @@
 --   + product_name, and country_total_fixed (the neutral name of the notebook's FIXED metric)
 --   + sales_ly_day, a third copy of the fact for "last year" by day (Feb 29 dropped, as DAX does)
 --   - the two time_shift metrics (Private Preview, not on this account)
+--   ~ the LOD written inline in its metrics, not as three view-level facts
+-- The copies of the fact stay. Last year: a copy joined to the calendar on a shifted date. Folding it into sales
+-- (a second relationship to the calendar, metrics with USING) is refused: an LOD needs one join path to the
+-- calendar (tests/inline_lod_response.txt). DAX ALL(customer): LOD keeps every filter (EXCLUDE) or drops every one
+-- (FIXED), and ALL drops one, so a copy of the fact with no path from the customer.
 -- {FQ} is filled by tools/sf.py (DAX_DEMO.MODEL).
 CREATE OR REPLACE SEMANTIC VIEW {FQ}.SEMANTIC_VIEW
   TABLES (
@@ -81,10 +86,7 @@ CREATE OR REPLACE SEMANTIC VIEW {FQ}.SEMANTIC_VIEW
     sales_all_cust.sales_qty     AS sales_qty,
     sales_all_cust_cat.sales_qty AS sales_qty,
     sales_all_cust_cat.all_key   AS 1,
-    budget.budget_qty            AS budget_qty,
-    country_qty_fixed AS SUM(sales.sales_qty) FIXED DIMENSIONS (country.country, calendar.year),
-    country_qty_excl_customer AS SUM(sales.sales_qty) EXCLUDE DIMENSIONS (store.customer),
-    country_qty_excl_customer_category AS SUM(sales.sales_qty) EXCLUDE DIMENSIONS (store.customer, category.category)
+    budget.budget_qty            AS budget_qty
   )
   DIMENSIONS (
     calendar.date_key            AS date_key,
@@ -126,16 +128,17 @@ CREATE OR REPLACE SEMANTIC VIEW {FQ}.SEMANTIC_VIEW
     customer_share_all AS DIV0(sales.sales_quantity, sales_all_cust.country_qty_all_customers),
     cust_cat_share_all AS DIV0(sales.sales_quantity, sales_all_cust_cat.country_qty_all_cust_cat),
 
-    -- DAX ALLEXCEPT (FIXED) and ALLSELECTED (EXCLUDE): LOD metrics (Public Preview)
-    country_total_allexcept   AS AVG(country_qty_fixed),
-    country_total_allselected AS AVG(country_qty_excl_customer),
-    customer_share_allexcept   AS SUM(sales.sales_qty) / AVG(country_qty_fixed),
-    customer_share_allselected AS SUM(sales.sales_qty) / AVG(country_qty_excl_customer),
-    cust_cat_share_allselected AS SUM(sales.sales_qty) / AVG(country_qty_excl_customer_category),
+    -- DAX ALLEXCEPT (FIXED) and ALLSELECTED (EXCLUDE): LOD (Preview), written inline in each metric. [changed] The
+    -- notebook declares each LOD once as a view-level fact; inline, a metric has no table prefix.
+    country_total_allexcept   AS AVG(SUM(sales.sales_qty) FIXED DIMENSIONS (country.country, calendar.year)),
+    country_total_allselected AS AVG(SUM(sales.sales_qty) EXCLUDE DIMENSIONS (store.customer)),
+    customer_share_allexcept   AS SUM(sales.sales_qty) / AVG(SUM(sales.sales_qty) FIXED DIMENSIONS (country.country, calendar.year)),
+    customer_share_allselected AS SUM(sales.sales_qty) / AVG(SUM(sales.sales_qty) EXCLUDE DIMENSIONS (store.customer)),
+    cust_cat_share_allselected AS SUM(sales.sales_qty) / AVG(SUM(sales.sales_qty) EXCLUDE DIMENSIONS (store.customer, category.category)),
     -- [added] the neutral name for FIXED (country, year); the notebook calls it country_total_allexcept
     -- SUM(DISTINCT): one value per country-year in the query, so the total row is a sum (AVG would average them).
     -- It assumes no two country-years have exactly the same total.
-    country_total_fixed AS SUM(DISTINCT country_qty_fixed),
+    country_total_fixed AS SUM(DISTINCT SUM(sales.sales_qty) FIXED DIMENSIONS (country.country, calendar.year)),
 
     -- [added] budget, and actual vs budget across the two facts
     budget.budget_quantity AS SUM(budget.budget_qty),

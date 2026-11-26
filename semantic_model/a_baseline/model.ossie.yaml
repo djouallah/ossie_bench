@@ -1,9 +1,10 @@
-# The baseline: the model in standard Ossie, portable SQL only (expression.sql), no vendor dialect and no extension.
-# Version 0.3.0.dev0 is the unreleased development version on apache/ossie main (read 2026-11-20); it can still change.
-# 7 datasets, 8 relationships, and the 4 measures the standard can express: three sums, each declared on its own
-# dataset, and one ratio across the two facts that reads them with AGG(). The other 12 are defined in words in
-# measures.md; each platform writes them in its own language. Sources are bare table names: each platform
-# prefixes its own schema.
+# The baseline: the model in Ossie, with all 16 measures. No extension.
+# Version 0.3.0.dev0 is the unreleased development version on apache/ossie main (read 2026-11-26, commit 7fb92a7);
+# it can still change. An open proposal (apache/ossie#817) would rename expression.dialects to nonportable_dialects.
+# 7 datasets and 8 relationships. 4 measures are in portable SQL (expression.sql): three sums, each declared on its
+# own dataset, and one ratio across the two facts that reads them with AGG(). The other 12 have no portable form
+# yet, so they are in the DAX dialect, and they read the SQL ones by name ([sales_quantity]). measures.md defines
+# all 16 in words. Sources are bare table names: each platform prefixes its own schema.
 version: 0.3.0.dev0
 name: sales_and_budget
 description: Sales by day, store and product, and a monthly budget by country and category (2020-2022).
@@ -45,6 +46,80 @@ datasets:
     description: Net profit (negative for Clearance).
     expression:
       sql: SUM(net_profit)
+  # The 12 below have no SQL form in the standard: period over period, and fields taken out of the grouping, are
+  # its "evaluation controls", deferred to a later extension. They are written in the DAX dialect instead.
+  - name: sales_qty_ly
+    description: Units sold in the same period one calendar year earlier, at any grain.
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: CALCULATE([sales_quantity], SAMEPERIODLASTYEAR(dim_calendar[date_key]))
+  - name: net_profit_ly
+    description: Net profit in the same period one calendar year earlier.
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: CALCULATE([net_profit_total], SAMEPERIODLASTYEAR(dim_calendar[date_key]))
+  - name: sales_qty_fly
+    description: Units sold in the same period of the last fiscal year (4-4-5, 52 weeks, so 364 days earlier).
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: CALCULATE([sales_quantity], DATEADD(dim_calendar[date_key], -364, DAY))
+  - name: sales_qty_yoy_pct
+    description: (sales - last year) / last year.
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: DIVIDE([sales_quantity] - [sales_qty_ly], [sales_qty_ly])
+  - name: country_qty_all_customers
+    description: Units sold to every customer, whatever customers the query filters or shows. Every other filter is kept.
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: CALCULATE([sales_quantity], ALL(dim_store[customer]))
+  - name: customer_share_all
+    description: sales / country_qty_all_customers.
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: DIVIDE([sales_quantity], [country_qty_all_customers])
+  - name: country_total_allselected
+    description: Units sold to the customers the query shows, taken together.
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: CALCULATE([sales_quantity], ALLSELECTED(dim_store[customer]))
+  - name: customer_share_allselected
+    description: sales / country_total_allselected.
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: DIVIDE([sales_quantity], [country_total_allselected])
+  - name: country_total_allexcept
+    description: Units sold with every filter removed except those on country and year.
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: CALCULATE([sales_quantity], ALLEXCEPT(fact_sales, dim_country[country], dim_calendar[year]))
+  - name: country_total_fixed
+    description: Units sold for the country and the year shown, whatever else is filtered.
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: CALCULATE([sales_quantity], REMOVEFILTERS(), VALUES(dim_country[country]), VALUES(dim_calendar[year]))
+  - name: country_qty_all_cust_cat
+    description: Units sold to every customer in every category. Every other filter is kept.
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: CALCULATE([sales_quantity], REMOVEFILTERS(dim_store[customer]), REMOVEFILTERS(dim_category[category]))
+  - name: cust_cat_share_all
+    description: sales / country_qty_all_cust_cat.
+    expression:
+      dialects:
+      - dialect: DAX
+        expression: DIVIDE([sales_quantity], [country_qty_all_cust_cat])
 - name: fact_budget
   source: fact_budget
   primary_key:
