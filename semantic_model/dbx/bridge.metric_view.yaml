@@ -1,5 +1,6 @@
 version: '1.1'
-comment: 'Bridge: both facts in one metric view, through their shared keys (calendar, category, country).'
+comment: 'Bridge: both facts in one metric view, through their shared keys (calendar, category, country). The source is
+  a cross join of the dimensions, so a fact row whose key is in no dimension (q15''s Skin Care budget) never joins.'
 source: SELECT c.date_key, cat.category, co.country FROM databricks_ne.ossie_demo.dim_calendar c CROSS JOIN databricks_ne.ossie_demo.dim_category
   cat CROSS JOIN databricks_ne.ossie_demo.dim_country co
 joins:

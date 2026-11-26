@@ -1,8 +1,8 @@
 -- How Snowflake really models it: the semantic view, derived from dax_context_demo.ipynb (its SV_SQL).
--- Changes from the notebook are marked [added] / [removed]:
+-- Changes from the notebook are marked [added] / [removed] / [changed] (+ / - / ~ below):
 --   + FACT_BUDGET, the second fact (month x country x category), its relationships and metrics
 --   + product_name, and country_total_fixed (the neutral name of the notebook's FIXED metric)
---   + sales_ly_day, a third copy of the fact for "last year" by day (Feb 29 dropped, as DAX does)
+--   + sales_ly_day, another copy of the fact for "last year" by day (Feb 29 dropped, as DAX does)
 --   - the two time_shift metrics (Private Preview, not on this account)
 --   ~ the LOD written inline in its metrics, not as three view-level facts
 -- The copies of the fact stay. Last year: a copy joined to the calendar on a shifted date. Folding it into sales

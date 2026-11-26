@@ -11,3 +11,5 @@ as DAX does, so a SQL engine matches only with `COALESCE`.
 - Snowflake: `AGG(a) - AGG(b)` in the semantic SQL; `snowflake_workaround.sql` wraps each side in `COALESCE(..., 0)`.
 - Databricks: `dbx.sql` subtracts the window measure (wrong by year, as in q05, and NULL at both ends);
   `dbx_workaround.sql` joins the shifted fact's view (as q05) and uses `COALESCE`.
+- BigQuery: no last-year measure, and from sales 2023 is missing. `bigquery_workaround.sql` takes the calendar as root,
+  joins sales and sales a year back by year, and uses `COALESCE`.

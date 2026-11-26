@@ -3,8 +3,8 @@
     python tools/sf.py setup       # the notebook's data + FACT_BUDGET as Iceberg tables, then
                                           #   semantic_model/snowflake/semantic_view.sql, in DAX_DEMO.MODEL
     python tools/sf.py orphans     # only q15's budget rows whose category DIM_CATEGORY lacks (part of setup)
-    python tools/sf.py view       # only semantic_model/snowflake/semantic_view.sql, on the existing tables
-    python tools/sf.py export      # the tables -> data/<table>.parquet (what Fabric and Databricks load)
+    python tools/sf.py view        # only semantic_model/snowflake/semantic_view.sql, on the existing tables
+    python tools/sf.py export      # the tables -> data/<table>.parquet (what Fabric, Databricks, BigQuery and dax-sql read)
     python tools/sf.py ossie-out   # SYSTEM$READ_OSSIE_YAML_FROM_SEMANTIC_VIEW
                                           #   -> semantic_model/snowflake/tests/export_from_semantic_view.ossie.yaml
     python tools/sf.py ossie-reimport  # the export above, imported back into a scratch view (then dropped)
@@ -39,7 +39,7 @@ SV = f"{FQ}.SEMANTIC_VIEW"
 TABLES = ["DIM_CALENDAR", "DIM_PRODUCT", "DIM_STORE", "FACT_SALES",
           "DIM_COUNTRY", "DIM_BRAND", "DIM_CATEGORY", "DIM_ALL_MEMBERS", "FACT_BUDGET"]
 
-# The second fact: a monthly budget by country and category (432 rows), deterministic like the notebook's data:
+# The second fact: a monthly budget by country and category (432 rows, before the 12 orphans of q15), deterministic like the notebook's data:
 # the month's actual quantity times a factor in [0.95, 1.05).
 BUDGET_SQL = """
 CREATE OR REPLACE ICEBERG TABLE {FQ}.FACT_BUDGET AS
@@ -79,7 +79,6 @@ def notebook_python_value(name):
     raise KeyError(name)
 
 
-
 def connect():
     # The default connection of ~/.snowflake/config.toml (`pat`: a PAT in the password slot), or SNOWFLAKE_CONNECTION.
     name = os.environ.get("SNOWFLAKE_CONNECTION")
@@ -110,7 +109,6 @@ def setup(conn):
     cur.execute(sv_sql.replace("{FQ}", FQ))
     cur.execute(f"SELECT (SELECT COUNT(*) FROM {FQ}.FACT_SALES), (SELECT COUNT(*) FROM {FQ}.FACT_BUDGET)")
     print("setup done, sales / budget rows:", cur.fetchone())
-
 
 
 def orphans(conn):

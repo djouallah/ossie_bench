@@ -6,8 +6,8 @@
 
 In questions/<question>/: daxsql.sql -> the reference: the baseline Ossie file compiled by dax-sql, run on DuckDB over
 data/*.parquet (always run, it is local); fabric.dax -> Fabric (executeQueries), snowflake.sql -> Snowflake,
-dbx.sql -> Databricks; <platform>_<route>.sql, where there is one, is another route on that platform (more model, or
-logic in the query), e.g. dbx_workaround.sql.
+dbx.sql -> Databricks, bigquery.sql -> BigQuery; <platform>_<route>.sql, where there is one, is another route on that
+platform (more model, or logic in the query), e.g. dbx_workaround.sql.
 results.csv has a `platform` column (`daxsql` first, status `reference`), a `status` column, then the columns of the answers.
 status, against the reference: match, partial (what it returned matches, but not every column could be asked),
 differs (an answer, no error, other rows or numbers), refused (one row, with the platform's own message in `error`).

@@ -14,12 +14,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_questions import REF, ROOT, files, num, same  # noqa: E402 - the labels and the comparison of the runner
 
-# Columns that are answers, not groups: the 16 measures and the count of q13. Every other column is a group.
+# Columns that are answers, not groups: the 16 measures and the columns written in the query (q13's count, q14's
+# growth). Every other column is a group.
 MEASURES = {
     "sales_quantity", "net_profit_total", "budget_quantity", "sales_vs_budget_pct", "sales_qty_ly", "net_profit_ly",
     "sales_qty_fly", "sales_qty_yoy_pct", "country_qty_all_customers", "customer_share_all",
     "country_total_allselected", "customer_share_allselected", "country_total_allexcept", "country_total_fixed",
-    "country_qty_all_cust_cat", "cust_cat_share_all", "day_count",
+    "country_qty_all_cust_cat", "cust_cat_share_all", "day_count", "sales_qty_growth",
 }
 PLATFORMS = ["fabric", "snowflake", "dbx", "bigquery", "daxsql"]
 
@@ -67,7 +68,7 @@ def ossie():
 def evidence():
     """What each platform answered when given Ossie: {name: text} of the response files in semantic_model/."""
     sm = ROOT / "semantic_model"
-    files = {
+    paths = {
         "fabric_publish": sm / "fabric" / "publish_response.json",
         "sf_import": sm / "snowflake" / "tests" / "import_response.txt",
         "sf_reimport": sm / "snowflake" / "tests" / "export_reimport_response.txt",
@@ -77,7 +78,7 @@ def evidence():
         "fabric_export": sm / "fabric" / "export_response.txt",
         "dbx_export": sm / "dbx" / "export_to_ossie_response.txt",
     }
-    out = {k: p.read_text(encoding="utf-8").strip() for k, p in files.items()}
+    out = {k: p.read_text(encoding="utf-8").strip() for k, p in paths.items()}
     head = lambda p: next(x for x in p.read_text(encoding="utf-8").splitlines() if x.startswith("version:"))  # noqa: E731
     out["fabric_version"] = head(sm / "fabric" / "oss_dax_dialect.ossie.yaml")
     out["sf_export_version"] = head(sm / "snowflake" / "tests" / "export_from_semantic_view.ossie.yaml")

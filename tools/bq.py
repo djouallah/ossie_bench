@@ -4,7 +4,9 @@
     python tools/bq.py graph    # semantic_model/bigquery/graph.sql -> the property graph ossie_bench.sales_graph
 
 Auth: application default credentials (`gcloud auth application-default login`). On this laptop gcloud lives in WSL,
-so when GOOGLE_APPLICATION_CREDENTIALS is unset the WSL file is used. Project: BIGQUERY_PROJECT. Commands chain.
+so when GOOGLE_APPLICATION_CREDENTIALS is unset the WSL file is used. Project: BIGQUERY_PROJECT (the default is the author's).
+The dataset is BIGQUERY_DATASET for the loader, but questions/*/bigquery*.sql name ossie_bench.sales_graph.
+Commands chain: `load graph`.
 """
 import os
 import sys
@@ -57,5 +59,7 @@ def graph():
 
 
 if __name__ == "__main__":
-    for cmd in sys.argv[1:] or [print(__doc__)] and []:
+    if len(sys.argv) < 2:
+        print(__doc__)
+    for cmd in sys.argv[1:]:
         {"load": load, "graph": graph}[cmd]()

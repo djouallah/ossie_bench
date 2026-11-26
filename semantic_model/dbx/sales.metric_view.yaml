@@ -195,7 +195,8 @@ measures:
   expr: MEASURE(sales_quantity) / MEASURE(country_qty_all_customers)
 - name: country_total_fixed
   expr: SUM(sales_qty)
-  comment: 'FIXED (country, year): range all over customer, brand and every calendar column but year, current on year.'
+  comment: 'FIXED (country, year): range all over customer, brand and every calendar column but year, current on year.
+    Narrower than DAX REMOVEFILTERS(): a filter on category, product or store still applies (q09 filters none).'
   window:
   - order: customer
     range: all
@@ -235,7 +236,7 @@ measures:
   expr: MEASURE(sales_quantity) / MEASURE(country_qty_all_cust_cat)
 - name: sales_qty_ly_month
   expr: SUM(sales_qty)
-  comment: 'Last year by month: a second flavour, ordered by month_start (offset -12 month).'
+  comment: 'Last year by month: a second flavor, ordered by month_start (offset -12 month).'
   window:
   - order: month_start
     semiadditive: last
@@ -255,7 +256,7 @@ measures:
     range: all
 - name: sales_qty_ly_year
   expr: SUM(sales_qty)
-  comment: 'Last year by year: a third flavour, ordered by year (offset -1).'
+  comment: 'Last year by year: a third flavor, ordered by year (offset -1).'
   window:
   - order: year
     semiadditive: last

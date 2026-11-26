@@ -10,7 +10,8 @@ q04_last_year_by_month/
   snowflake.sql        SELECT ... AGG(metric) FROM the semantic view
   dbx.sql              SELECT ... AGG(measure) FROM the metric view
   bigquery.sql         SELECT ... AGG(measure) FROM GRAPH_EXPAND(the property graph)
-  dbx_workaround.sql   another route on a platform, where the plain query doesn't match (more model, or query logic)
+  <platform>_<route>.sql  another route on a platform, where the plain query doesn't match (more model, or query
+                       logic): dbx_workaround.sql, dbx_per_grain.sql, snowflake_workaround.sql, bigquery_workaround.sql
   results.csv          the reference and every platform's answer, with a `platform` and a `status` column
 ```
 Run them all: `python tools/run_questions.py`.
@@ -33,7 +34,7 @@ SQL and DAX, with one SQL query per question.
 |---|---|---|---|---|---|
 | [q01](q01_sales_by_country_year/) sales by country and year | match | match | match | match | reference |
 | [q02](q02_top10_products_2021/) top 10 products | match | match | match | match | reference |
-| [q03](q03_last_year_by_day/) last year, by day | match | **differs**: Feb 28 gets Feb 28 + Feb 29. Matches with a second copy of the fact without Feb 29 (`sales_ly_day`). Both use a copy of the fact with the date moved a year (`sales_ly`). | match | **partial**: no last-year measure (a measure can't shift dates or hold a window). Matches with a second `GRAPH_EXPAND` over last year's days, joined in the query. | reference |
+| [q03](q03_last_year_by_day/) last year, by day | match | **differs**: Feb 28 gets Feb 28 + Feb 29. Matches with another copy of the fact, without Feb 29 (`sales_ly_day`). Both use a copy of the fact with the date moved a year (`sales_ly`). | match | **partial**: no last-year measure (a measure can't shift dates or hold a window). Matches with a second `GRAPH_EXPAND` over last year's days, joined in the query. | reference |
 | [q04](q04_last_year_by_month/) last year, by month + total | match | match, with `sales_ly`; the total row is a second query (no ROLLUP) | **differs**: each month gets one day's value. A measure per grain: months match, total differs. Matches with a second view of the shifted fact (`sales_ly_mv`), joined in the query. | **partial**: no last-year measure; the total row is a second query (ROLLUP is refused with `AGG`). Matches with a second `GRAPH_EXPAND`, months moved a year, joined in the query. | reference |
 | [q05](q05_last_year_by_year/) last year, by year + total | match | match, with `sales_ly`; the total row is a second query | **differs**. A measure per grain: years match, total differs. Matches with `sales_ly_mv`, joined in the query. | **partial**, as q04. Matches with a second `GRAPH_EXPAND`, years moved by one, joined in the query. | reference |
 | [q06](q06_last_fiscal_year_by_period/) last fiscal year (4-4-5), by period | match | match, with a copy of the fact, date moved 364 days (`sales_fly`) | **differs**. Matches with a second measure ordered by fiscal period. | **partial**: no last-fiscal-year measure. Matches with a second `GRAPH_EXPAND`, periods moved 364 days. | reference |

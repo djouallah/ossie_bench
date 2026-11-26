@@ -128,6 +128,8 @@ def publish():
                 time.sleep(30)
                 continue
             sys.exit(f"publish refused (HTTP {e.code}): {text[:3000]}")
+    else:
+        sys.exit("publish: the lakehouse still has not discovered the tables after 10 tries")
     (ROOT / "semantic_model" / "fabric" / "publish_response.json").write_text(json.dumps(result, indent=1), encoding="utf-8")
     print("publish:", json.dumps(result.get("summary", result))[:500])
 
@@ -150,6 +152,7 @@ def ossie_out():
     p.write_text("Fabric semantic views API (beta), lakehouse " + LAKEHOUSE + ":\n\n" + "\n".join(out) +
                  "\n\nThe API publishes a view into a semantic model; it has no call that writes a model back out as Ossie.\n", encoding="utf-8")
     print(p.read_text(encoding="utf-8"))
+
 
 def ossie_sql():
     """Does Publish take Ossie's own SQL instead of the DAX dialect? Two scratch views, each published, queried, then

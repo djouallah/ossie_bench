@@ -131,7 +131,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "#,##0"}'
 - name: sales_vs_budget_pct
-  description: Actual against budget. Each side is evaluated at its own fact's grain, then compared.
+  description: (sales - budget) / budget. Each side is summed over its own table first.
   expression:
     dialects:
     - dialect: DAX
@@ -140,7 +140,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "0.0%"}'
 - name: sales_qty_ly
-  description: Sales quantity, same period last year (calendar).
+  description: Units sold in the same period one calendar year earlier, at any grain.
   expression:
     dialects:
     - dialect: DAX
@@ -149,7 +149,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "#,##0"}'
 - name: net_profit_ly
-  description: Net profit, same period last year (calendar).
+  description: Net profit in the same period one calendar year earlier.
   expression:
     dialects:
     - dialect: DAX
@@ -158,7 +158,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "#,##0"}'
 - name: sales_qty_fly
-  description: Sales quantity, same period last fiscal year (4-4-5, so 364 days back).
+  description: Units sold in the same period of the last fiscal year (4-4-5, 52 weeks, so 364 days earlier).
   expression:
     dialects:
     - dialect: DAX
@@ -167,7 +167,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "#,##0"}'
 - name: sales_qty_yoy_pct
-  description: Sales quantity growth on last year.
+  description: (sales - last year) / last year.
   expression:
     dialects:
     - dialect: DAX
@@ -176,7 +176,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "0.0%"}'
 - name: country_qty_all_customers
-  description: Sales quantity of all the country's customers; every other filter kept (DAX ALL).
+  description: Units sold to every customer, whatever customers the query filters or shows. Every other filter is kept.
   expression:
     dialects:
     - dialect: DAX
@@ -185,6 +185,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "#,##0"}'
 - name: customer_share_all
+  description: sales / country_qty_all_customers.
   expression:
     dialects:
     - dialect: DAX
@@ -193,7 +194,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "0.0%"}'
 - name: country_total_allselected
-  description: Sales quantity of the visible customers of the country (DAX ALLSELECTED).
+  description: Units sold to the customers the query shows, taken together.
   expression:
     dialects:
     - dialect: DAX
@@ -202,6 +203,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "#,##0"}'
 - name: customer_share_allselected
+  description: sales / country_total_allselected.
   expression:
     dialects:
     - dialect: DAX
@@ -210,7 +212,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "0.0%"}'
 - name: country_total_allexcept
-  description: DAX ALLEXCEPT(country, year). Every other filter removed, including a month's year when only the month is filtered.
+  description: Units sold with every filter removed except those on country and year.
   expression:
     dialects:
     - dialect: DAX
@@ -219,7 +221,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "#,##0"}'
 - name: country_total_fixed
-  description: 'FIXED (country, year), Snowflake''s LOD: every filter removed, then the visible countries and years put back.'
+  description: Units sold for the country and the year shown, whatever else is filtered.
   expression:
     dialects:
     - dialect: DAX
@@ -228,7 +230,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "#,##0"}'
 - name: country_qty_all_cust_cat
-  description: Sales quantity of all customers and categories of the country; every other filter kept.
+  description: Units sold to every customer in every category. Every other filter is kept.
   expression:
     dialects:
     - dialect: DAX
@@ -237,6 +239,7 @@ metrics:
   - vendor_name: POWER_BI
     data: '{"formatString": "#,##0"}'
 - name: cust_cat_share_all
+  description: sales / country_qty_all_cust_cat.
   expression:
     dialects:
     - dialect: DAX

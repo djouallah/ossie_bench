@@ -83,7 +83,7 @@ window.DATA = {
  ],
  "ossie": {
   "version": "0.3.0.dev0",
-  "yaml": "# The baseline: the model in Ossie, with all 16 measures. No extension.\n# Version 0.3.0.dev0 is the unreleased development version on apache/ossie main (read 2026-11-26, commit 7fb92a7);\n# it can still change. An open proposal (apache/ossie#817) would rename expression.dialects to nonportable_dialects.\n# 7 datasets and 8 relationships. 4 measures are in portable SQL (expression.sql): three sums, each declared on its\n# own dataset, and one ratio across the two facts that reads them with AGG(). The other 12 have no portable form\n# yet, so they are in the DAX dialect, and they read the SQL ones by name ([sales_quantity]). measures.md defines\n# all 16 in words. Sources are bare table names: each platform prefixes its own schema.\nversion: 0.3.0.dev0\nname: sales_and_budget\ndescription: Sales by day, store and product, and a monthly budget by country and category (2020-2022).\ndatasets:\n- name: fact_sales\n  source: fact_sales\n  primary_key:\n  - sale_date\n  - store_id\n  - product_id\n  description: One row per day, store and product.\n  fields:\n  - name: sale_date\n    expression:\n      sql: sale_date\n    datatype: Date\n  - name: store_id\n    expression:\n      sql: store_id\n    datatype: Integer\n  - name: product_id\n    expression:\n      sql: product_id\n    datatype: Integer\n  - name: sales_qty\n    expression:\n      sql: sales_qty\n    datatype: Integer\n  - name: net_profit\n    expression:\n      sql: net_profit\n    datatype: Float\n  metrics:\n  - name: sales_quantity\n    description: Units sold.\n    expression:\n      sql: SUM(sales_qty)\n  - name: net_profit_total\n    description: Net profit (negative for Clearance).\n    expression:\n      sql: SUM(net_profit)\n  # The 12 below have no SQL form in the standard: period over period, and fields taken out of the grouping, are\n  # its \"evaluation controls\", deferred to a later extension. They are written in the DAX dialect instead.\n  - name: sales_qty_ly\n    description: Units sold in the same period one calendar year earlier, at any grain.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], SAMEPERIODLASTYEAR(dim_calendar[date_key]))\n  - name: net_profit_ly\n    description: Net profit in the same period one calendar year earlier.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([net_profit_total], SAMEPERIODLASTYEAR(dim_calendar[date_key]))\n  - name: sales_qty_fly\n    description: Units sold in the same period of the last fiscal year (4-4-5, 52 weeks, so 364 days earlier).\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], DATEADD(dim_calendar[date_key], -364, DAY))\n  - name: sales_qty_yoy_pct\n    description: (sales - last year) / last year.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity] - [sales_qty_ly], [sales_qty_ly])\n  - name: country_qty_all_customers\n    description: Units sold to every customer, whatever customers the query filters or shows. Every other filter is kept.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], ALL(dim_store[customer]))\n  - name: customer_share_all\n    description: sales / country_qty_all_customers.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity], [country_qty_all_customers])\n  - name: country_total_allselected\n    description: Units sold to the customers the query shows, taken together.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], ALLSELECTED(dim_store[customer]))\n  - name: customer_share_allselected\n    description: sales / country_total_allselected.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity], [country_total_allselected])\n  - name: country_total_allexcept\n    description: Units sold with every filter removed except those on country and year.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], ALLEXCEPT(fact_sales, dim_country[country], dim_calendar[year]))\n  - name: country_total_fixed\n    description: Units sold for the country and the year shown, whatever else is filtered.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], REMOVEFILTERS(), VALUES(dim_country[country]), VALUES(dim_calendar[year]))\n  - name: country_qty_all_cust_cat\n    description: Units sold to every customer in every category. Every other filter is kept.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], REMOVEFILTERS(dim_store[customer]), REMOVEFILTERS(dim_category[category]))\n  - name: cust_cat_share_all\n    description: sales / country_qty_all_cust_cat.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity], [country_qty_all_cust_cat])\n- name: fact_budget\n  source: fact_budget\n  primary_key:\n  - month_start\n  - country\n  - category\n  description: One row per month, country and category. month_start is the first day of the month.\n  fields:\n  - name: month_start\n    expression:\n      sql: month_start\n    datatype: Date\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n  - name: budget_qty\n    expression:\n      sql: budget_qty\n    datatype: Integer\n  metrics:\n  - name: budget_quantity\n    description: Budgeted units (month x country x category).\n    expression:\n      sql: SUM(budget_qty)\n- name: dim_calendar\n  source: dim_calendar\n  primary_key:\n  - date_key\n  description: Calendar 2020-2023, with 4-4-5 fiscal periods (52-week fiscal years starting 2019-12-30).\n  fields:\n  - name: date_key\n    expression:\n      sql: date_key\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: year\n    expression:\n      sql: year\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: year_month_num\n    expression:\n      sql: year_month_num\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: year_month_name\n    expression:\n      sql: year_month_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: month_start\n    expression:\n      sql: month_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: year_start\n    expression:\n      sql: year_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: fiscal_year\n    expression:\n      sql: fiscal_year\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: fiscal_period\n    expression:\n      sql: fiscal_period\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: fiscal_period_name\n    expression:\n      sql: fiscal_period_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: fiscal_period_start\n    expression:\n      sql: fiscal_period_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: fiscal_year_start\n    expression:\n      sql: fiscal_year_start\n    datatype: Date\n    dimension:\n      is_time: true\n- name: dim_product\n  source: dim_product\n  primary_key:\n  - product_id\n  description: 40 products, 8 brands. Its category is a key to dim_category (Clearance has negative margins).\n  fields:\n  - name: product_id\n    expression:\n      sql: product_id\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: product_name\n    expression:\n      sql: product_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: brand\n    expression:\n      sql: brand\n    datatype: String\n    dimension:\n      is_time: false\n  - name: manufacturer\n    expression:\n      sql: manufacturer\n    datatype: String\n    dimension:\n      is_time: false\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n- name: dim_category\n  source: dim_category\n  primary_key:\n  - category\n  description: 4 categories, shared by sales (through product) and budget.\n  fields:\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n    dimension:\n      is_time: false\n- name: dim_store\n  source: dim_store\n  primary_key:\n  - store_id\n  description: 55 stores; a customer is a store chain within one country. Its country is a key to dim_country.\n  fields:\n  - name: store_id\n    expression:\n      sql: store_id\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: store_name\n    expression:\n      sql: store_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: customer\n    expression:\n      sql: customer\n    datatype: String\n    dimension:\n      is_time: false\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n- name: dim_country\n  source: dim_country\n  primary_key:\n  - country\n  description: 3 countries, shared by sales (through store) and budget.\n  fields:\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n    dimension:\n      is_time: false\nrelationships:\n- name: sales_to_calendar\n  from: fact_sales\n  to: dim_calendar\n  from_columns:\n  - sale_date\n  to_columns:\n  - date_key\n- name: sales_to_product\n  from: fact_sales\n  to: dim_product\n  from_columns:\n  - product_id\n  to_columns:\n  - product_id\n- name: sales_to_store\n  from: fact_sales\n  to: dim_store\n  from_columns:\n  - store_id\n  to_columns:\n  - store_id\n- name: product_to_category\n  from: dim_product\n  to: dim_category\n  from_columns:\n  - category\n  to_columns:\n  - category\n- name: store_to_country\n  from: dim_store\n  to: dim_country\n  from_columns:\n  - country\n  to_columns:\n  - country\n- name: budget_to_calendar\n  from: fact_budget\n  to: dim_calendar\n  from_columns:\n  - month_start\n  to_columns:\n  - date_key\n- name: budget_to_category\n  from: fact_budget\n  to: dim_category\n  from_columns:\n  - category\n  to_columns:\n  - category\n- name: budget_to_country\n  from: fact_budget\n  to: dim_country\n  from_columns:\n  - country\n  to_columns:\n  - country\nmetrics:\n- name: sales_vs_budget_pct\n  description: (sales - budget) / budget. Each side is summed over its own table first.\n  expression:\n    sql: (AGG(fact_sales.sales_quantity) - AGG(fact_budget.budget_quantity)) / AGG(fact_budget.budget_quantity)",
+  "yaml": "# The baseline: the model in Ossie, with all 16 measures. No extension.\n# Version 0.3.0.dev0 is the unreleased development version on apache/ossie main (read 2026-11-26, commit 7fb92a7);\n# it can still change. An open proposal (apache/ossie#817) would rename expression.dialects to nonportable_dialects.\n# 7 datasets and 8 relationships. 4 measures are in portable SQL (expression.sql): three sums, each declared on its\n# own dataset, and one ratio across the two facts that reads them with AGG(). The other 12 have no portable form\n# yet, so they are in the DAX dialect, and they read the SQL ones by name ([sales_quantity]). measures.md defines\n# all 16 in words. Sources are bare table names: each platform prefixes its own schema.\nversion: 0.3.0.dev0\nname: sales_and_budget\ndescription: Sales by day, store and product, and a monthly budget by country and category (2020-2022).\ndatasets:\n- name: fact_sales\n  source: fact_sales\n  primary_key:\n  - sale_date\n  - store_id\n  - product_id\n  description: One row per day, store and product.\n  fields:\n  - name: sale_date\n    expression:\n      sql: sale_date\n    datatype: Date\n  - name: store_id\n    expression:\n      sql: store_id\n    datatype: Integer\n  - name: product_id\n    expression:\n      sql: product_id\n    datatype: Integer\n  - name: sales_qty\n    expression:\n      sql: sales_qty\n    datatype: Integer\n  - name: net_profit\n    expression:\n      sql: net_profit\n    datatype: Float\n  metrics:\n  - name: sales_quantity\n    description: Units sold.\n    expression:\n      sql: SUM(sales_qty)\n  - name: net_profit_total\n    description: Net profit (negative for Clearance).\n    expression:\n      sql: SUM(net_profit)\n  # The 12 below have no SQL form in the standard: period over period, and fields taken out of the grouping, are\n  # its \"evaluation controls\", deferred to a later extension. They are written in the DAX dialect instead.\n  - name: sales_qty_ly\n    description: Units sold in the same period one calendar year earlier, at any grain.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], SAMEPERIODLASTYEAR(dim_calendar[date_key]))\n  - name: net_profit_ly\n    description: Net profit in the same period one calendar year earlier.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([net_profit_total], SAMEPERIODLASTYEAR(dim_calendar[date_key]))\n  - name: sales_qty_fly\n    description: Units sold in the same period of the last fiscal year (4-4-5, 52 weeks, so 364 days earlier).\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], DATEADD(dim_calendar[date_key], -364, DAY))\n  - name: sales_qty_yoy_pct\n    description: (sales - last year) / last year.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity] - [sales_qty_ly], [sales_qty_ly])\n  - name: country_qty_all_customers\n    description: Units sold to every customer, whatever customers the query filters or shows. Every other filter is kept.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], ALL(dim_store[customer]))\n  - name: customer_share_all\n    description: sales / country_qty_all_customers.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity], [country_qty_all_customers])\n  - name: country_total_allselected\n    description: Units sold to the customers the query shows, taken together.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], ALLSELECTED(dim_store[customer]))\n  - name: customer_share_allselected\n    description: sales / country_total_allselected.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity], [country_total_allselected])\n  - name: country_total_allexcept\n    description: Units sold with every filter removed except those on country and year.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], ALLEXCEPT(fact_sales, dim_country[country], dim_calendar[year]))\n  - name: country_total_fixed\n    description: Units sold for the country and the year shown, whatever else is filtered.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], REMOVEFILTERS(), VALUES(dim_country[country]), VALUES(dim_calendar[year]))\n  - name: country_qty_all_cust_cat\n    description: Units sold to every customer in every category. Every other filter is kept.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: CALCULATE([sales_quantity], REMOVEFILTERS(dim_store[customer]), REMOVEFILTERS(dim_category[category]))\n  - name: cust_cat_share_all\n    description: sales / country_qty_all_cust_cat.\n    expression:\n      dialects:\n      - dialect: DAX\n        expression: DIVIDE([sales_quantity], [country_qty_all_cust_cat])\n- name: fact_budget\n  source: fact_budget\n  primary_key:\n  - month_start\n  - country\n  - category\n  description: One row per month, country and category. month_start is the first day of the month.\n  fields:\n  - name: month_start\n    expression:\n      sql: month_start\n    datatype: Date\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n  - name: budget_qty\n    expression:\n      sql: budget_qty\n    datatype: Integer\n  metrics:\n  - name: budget_quantity\n    description: Budgeted units (month x country x category).\n    expression:\n      sql: SUM(budget_qty)\n- name: dim_calendar\n  source: dim_calendar\n  primary_key:\n  - date_key\n  description: Calendar 2020-2023, with 4-4-5 fiscal periods (52-week fiscal years starting 2019-12-30).\n  fields:\n  - name: date_key\n    expression:\n      sql: date_key\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: year\n    expression:\n      sql: year\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: year_month_num\n    expression:\n      sql: year_month_num\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: year_month_name\n    expression:\n      sql: year_month_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: month_start\n    expression:\n      sql: month_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: year_start\n    expression:\n      sql: year_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: fiscal_year\n    expression:\n      sql: fiscal_year\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: fiscal_period\n    expression:\n      sql: fiscal_period\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: fiscal_period_name\n    expression:\n      sql: fiscal_period_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: fiscal_period_start\n    expression:\n      sql: fiscal_period_start\n    datatype: Date\n    dimension:\n      is_time: true\n  - name: fiscal_year_start\n    expression:\n      sql: fiscal_year_start\n    datatype: Date\n    dimension:\n      is_time: true\n- name: dim_product\n  source: dim_product\n  primary_key:\n  - product_id\n  description: 40 products, 8 brands. Its category is a key to dim_category (Clearance has negative margins).\n  fields:\n  - name: product_id\n    expression:\n      sql: product_id\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: product_name\n    expression:\n      sql: product_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: brand\n    expression:\n      sql: brand\n    datatype: String\n    dimension:\n      is_time: false\n  - name: manufacturer\n    expression:\n      sql: manufacturer\n    datatype: String\n    dimension:\n      is_time: false\n  # A key to dim_category, not a dimension: category is grouped and filtered from dim_category (see q10).\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n- name: dim_category\n  source: dim_category\n  primary_key:\n  - category\n  description: 4 categories, shared by sales (through product) and budget.\n  fields:\n  - name: category\n    expression:\n      sql: category\n    datatype: String\n    dimension:\n      is_time: false\n- name: dim_store\n  source: dim_store\n  primary_key:\n  - store_id\n  description: 55 stores; a customer is a store chain within one country. Its country is a key to dim_country.\n  fields:\n  - name: store_id\n    expression:\n      sql: store_id\n    datatype: Integer\n    dimension:\n      is_time: false\n  - name: store_name\n    expression:\n      sql: store_name\n    datatype: String\n    dimension:\n      is_time: false\n  - name: customer\n    expression:\n      sql: customer\n    datatype: String\n    dimension:\n      is_time: false\n  # A key to dim_country, not a dimension: country is grouped and filtered from dim_country.\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n- name: dim_country\n  source: dim_country\n  primary_key:\n  - country\n  description: 3 countries, shared by sales (through store) and budget.\n  fields:\n  - name: country\n    expression:\n      sql: country\n    datatype: String\n    dimension:\n      is_time: false\nrelationships:\n- name: sales_to_calendar\n  from: fact_sales\n  to: dim_calendar\n  from_columns:\n  - sale_date\n  to_columns:\n  - date_key\n- name: sales_to_product\n  from: fact_sales\n  to: dim_product\n  from_columns:\n  - product_id\n  to_columns:\n  - product_id\n- name: sales_to_store\n  from: fact_sales\n  to: dim_store\n  from_columns:\n  - store_id\n  to_columns:\n  - store_id\n- name: product_to_category\n  from: dim_product\n  to: dim_category\n  from_columns:\n  - category\n  to_columns:\n  - category\n- name: store_to_country\n  from: dim_store\n  to: dim_country\n  from_columns:\n  - country\n  to_columns:\n  - country\n- name: budget_to_calendar\n  from: fact_budget\n  to: dim_calendar\n  from_columns:\n  - month_start\n  to_columns:\n  - date_key\n- name: budget_to_category\n  from: fact_budget\n  to: dim_category\n  from_columns:\n  - category\n  to_columns:\n  - category\n- name: budget_to_country\n  from: fact_budget\n  to: dim_country\n  from_columns:\n  - country\n  to_columns:\n  - country\nmetrics:\n- name: sales_vs_budget_pct\n  description: (sales - budget) / budget. Each side is summed over its own table first.\n  expression:\n    sql: (AGG(fact_sales.sales_quantity) - AGG(fact_budget.budget_quantity)) / AGG(fact_budget.budget_quantity)",
   "expr": {
    "sales_quantity": {
     "lang": "sql",
@@ -1296,7 +1296,7 @@ window.DATA = {
    "id": "q03",
    "folder": "q03_last_year_by_day",
    "title": "Sales vs last year, by day (Feb 25 - Mar 3, 2021)",
-   "text": "Last year at the date grain. Watch Feb 28, 2021: 2020 was a leap year, so \"last year\" of Feb 28 is either Feb 28, 2020 alone, or Feb 28 + Feb 29. The reference takes the first: the same calendar date one year earlier. - DAX: `SAMEPERIODLASTYEAR` (shifts the date filter). - Snowflake: `sales_qty_ly` is a second copy of the fact whose date key is moved forward one year, which puts Feb 29, 2020 on Feb 28, 2021. A second copy that drops Feb 29 matches the reference. - Databricks: a window on `date_key` with `offset: -1 year`.",
+   "text": "Last year at the date grain. Watch Feb 28, 2021: 2020 was a leap year, so \"last year\" of Feb 28 is either Feb 28, 2020 alone, or Feb 28 + Feb 29. The reference takes the first: the same calendar date one year earlier. - DAX: `SAMEPERIODLASTYEAR` (shifts the date filter). - Snowflake: `sales_qty_ly` sums `sales_ly`, a copy of the fact whose date key is moved forward one year, which puts Feb 29, 2020 on Feb 28, 2021. Another copy that drops Feb 29 (`sales_ly_day`) matches the reference. - Databricks: a window on `date_key` with `offset: -1 year`. - BigQuery: no last-year measure (a measure can't shift dates). `bigquery_workaround.sql` adds a second `GRAPH_EXPAND` over last year's days, joined on the date a year back, so Feb 29, 2020 drops out.",
    "columns": [
     "date_key",
     "sales_quantity",
@@ -1515,7 +1515,7 @@ window.DATA = {
      "label": "snowflake (workaround)",
      "platform": "snowflake",
      "file": "snowflake_workaround.sql",
-     "code": "-- A third copy of the fact (sales_ly_day) whose shifted date drops Feb 29: one more logical table, four more relationships.\nSELECT date_key, AGG(sales_quantity) AS sales_quantity, AGG(sales_qty_ly_day) AS sales_qty_ly\nFROM DAX_DEMO.MODEL.SEMANTIC_VIEW\nWHERE date_key BETWEEN DATE '2021-02-25' AND DATE '2021-03-03'\nGROUP BY ALL\nORDER BY date_key",
+     "code": "-- Another copy of the fact (sales_ly_day) whose shifted date drops Feb 29: one more logical table, four more relationships.\nSELECT date_key, AGG(sales_quantity) AS sales_quantity, AGG(sales_qty_ly_day) AS sales_qty_ly\nFROM DAX_DEMO.MODEL.SEMANTIC_VIEW\nWHERE date_key BETWEEN DATE '2021-02-25' AND DATE '2021-03-03'\nGROUP BY ALL\nORDER BY date_key",
      "status": "match",
      "rows": [
       [
@@ -1924,7 +1924,7 @@ window.DATA = {
    ],
    "notes": {
     "fabric": "match",
-    "snowflake": "**differs**: Feb 28 gets Feb 28 + Feb 29. Matches with a second copy of the fact without Feb 29 (`sales_ly_day`). Both use a copy of the fact with the date moved a year (`sales_ly`).",
+    "snowflake": "**differs**: Feb 28 gets Feb 28 + Feb 29. Matches with another copy of the fact, without Feb 29 (`sales_ly_day`). Both use a copy of the fact with the date moved a year (`sales_ly`).",
     "dbx": "match",
     "bigquery": "**partial**: no last-year measure (a measure can't shift dates or hold a window). Matches with a second `GRAPH_EXPAND` over last year's days, joined in the query.",
     "daxsql": "reference"
@@ -1934,7 +1934,7 @@ window.DATA = {
    "id": "q04",
    "folder": "q04_last_year_by_month",
    "title": "Sales vs last year, by month (Jan - Apr 2021), with a total",
-   "text": "The same \"last year\" measure as q03, asked by month. A semantic layer should give each month's last-year total. - Total row: DAX `ROLLUPADDISSUBTOTAL`; Databricks `GROUP BY ROLLUP`; Snowflake refuses ROLLUP in a semantic query (\"GROUPING SETS/CUBE/ROLLUP is not supported within semantic query blocks\"), so its total is a second query. - Databricks: the day-grain window measure returns one day's value per month, with no error. `dbx_per_grain.sql` uses a second measure ordered by month: the months match, the total repeats the last month. `dbx_workaround.sql` uses a second view of the fact with its date moved a year, joined in the query: it matches.",
+   "text": "The same \"last year\" measure as q03, asked by month. A semantic layer should give each month's last-year total. - Total row: DAX `ROLLUPADDISSUBTOTAL`; Databricks `GROUP BY ROLLUP`; Snowflake refuses ROLLUP in a semantic query (\"GROUPING SETS/CUBE/ROLLUP is not supported within semantic query blocks\"), so its total is a second query; BigQuery refuses ROLLUP with `AGG`, so its total is a second query too. - Databricks: the day-grain window measure returns one day's value per month, with no error. `dbx_per_grain.sql` uses a second measure ordered by month: the months match, the total repeats the last month. `dbx_workaround.sql` uses a second view of the fact with its date moved a year, joined in the query: it matches. - BigQuery: no last-year measure. `bigquery_workaround.sql` adds a second `GRAPH_EXPAND` over last year's months, moved a year, joined in the query.",
    "columns": [
     "month_start",
     "sales_quantity",
@@ -5752,7 +5752,7 @@ window.DATA = {
    "id": "q11",
    "folder": "q11_actual_vs_budget",
    "title": "Actual vs budget, by country and category, 2021",
-   "text": "Two facts at two grains: sales (day x store x product) and budget (month x country x category), through the dimensions they share. - Power BI and Snowflake: one model holds both facts; one query. - Databricks: a metric view has one source fact, so `dbx.sql` queries the sales view and the budget view and joins them.",
+   "text": "Two facts at two grains: sales (day x store x product) and budget (month x country x category), through the dimensions they share. - Power BI and Snowflake: one model holds both facts; one query. - Databricks: a metric view has one source fact, so `dbx.sql` queries the sales view and the budget view and joins them. `dbx_workaround.sql` uses a bridge view over both facts. - BigQuery: a query has one root, and from sales the budget is out of reach. `bigquery_workaround.sql` adds a second `GRAPH_EXPAND` from the budget, joined in the query (the docs' pattern).",
    "columns": [
     "country",
     "category",
@@ -7129,7 +7129,7 @@ window.DATA = {
    "id": "q12",
    "folder": "q12_budget_and_growth_by_category",
    "title": "Actual vs budget and growth on last year, by category, 2021, with a total",
-   "text": "Three things in one answer: sales against the budget (two facts at two grains), sales against last year (a shift in time), and a total row where both percentages are recomputed from the totals, not summed or averaged. - Power BI and Snowflake: the five measures are in the one model; Snowflake's total row is a second query. - Databricks: budget and last year live in other metric views. `dbx.sql` joins the sales and budget views and uses the window measure for last year; `dbx_workaround.sql` joins three views (sales, sales last year, budget).",
+   "text": "Three things in one answer: sales against the budget (two facts at two grains), sales against last year (a shift in time), and a total row where both percentages are recomputed from the totals, not summed or averaged. - Power BI and Snowflake: the five measures are in the one model; Snowflake's total row is a second query. - Databricks: budget and last year live in other metric views. `dbx.sql` joins the sales and budget views and uses the window measure for last year; `dbx_workaround.sql` joins three views (sales, sales last year, budget). - BigQuery: from sales the budget is out of reach, and there is no last-year measure. `bigquery_workaround.sql` joins three `GRAPH_EXPAND`s (sales, a year back, budget); the total row is another part of the query.",
    "columns": [
     "category",
     "sales_quantity",
@@ -8253,7 +8253,7 @@ window.DATA = {
    "id": "q14",
    "folder": "q14_growth_minus_blank",
    "title": "Growth on last year in units, by year (2020-2023): a measure minus a blank",
-   "text": "`sales_quantity - sales_qty_ly`, written in the query. 2020 has no last year (the data starts in 2020) and 2023 has no sales (they stop at 2022), so each end has one side blank. DAX reads a blank as 0 in `+` and `-`: 2020's growth is all of its sales, 2023's is minus last year. SQL's NULL makes the whole expression NULL: no growth either year. Neither is wrong; they are two languages. The reference, dax-sql, does as DAX does, so a SQL engine matches only with `COALESCE`. - Power BI: the expression in the DAX query. - Snowflake: `AGG(a) - AGG(b)` in the semantic SQL; `snowflake_workaround.sql` wraps each side in `COALESCE(..., 0)`. - Databricks: `dbx.sql` subtracts the window measure (wrong by year, as in q05, and NULL at both ends); `dbx_workaround.sql` joins the shifted fact's view (as q05) and uses `COALESCE`.",
+   "text": "`sales_quantity - sales_qty_ly`, written in the query. 2020 has no last year (the data starts in 2020) and 2023 has no sales (they stop at 2022), so each end has one side blank. DAX reads a blank as 0 in `+` and `-`: 2020's growth is all of its sales, 2023's is minus last year. SQL's NULL makes the whole expression NULL: no growth either year. Neither is wrong; they are two languages. The reference, dax-sql, does as DAX does, so a SQL engine matches only with `COALESCE`. - Power BI: the expression in the DAX query. - Snowflake: `AGG(a) - AGG(b)` in the semantic SQL; `snowflake_workaround.sql` wraps each side in `COALESCE(..., 0)`. - Databricks: `dbx.sql` subtracts the window measure (wrong by year, as in q05, and NULL at both ends); `dbx_workaround.sql` joins the shifted fact's view (as q05) and uses `COALESCE`. - BigQuery: no last-year measure, and from sales 2023 is missing. `bigquery_workaround.sql` takes the calendar as root, joins sales and sales a year back by year, and uses `COALESCE`.",
    "columns": [
     "year",
     "sales_quantity",
@@ -8264,7 +8264,7 @@ window.DATA = {
     false,
     true,
     true,
-    false
+    true
    ],
    "reference": {
     "rows": [
@@ -8390,9 +8390,9 @@ window.DATA = {
      "diff": [
       [
        false,
-       true,
-       true,
-       false
+       false,
+       false,
+       true
       ],
       [
        false,
@@ -8408,25 +8408,12 @@ window.DATA = {
       ],
       [
        false,
-       true,
-       true,
-       false
+       false,
+       false,
+       true
       ]
      ],
-     "missing": [
-      [
-       "2020",
-       "82797945",
-       "",
-       "82797945"
-      ],
-      [
-       "2023",
-       "",
-       "94792246",
-       "-94792246"
-      ]
-     ]
+     "missing": []
     },
     {
      "label": "snowflake (workaround)",
@@ -8517,42 +8504,24 @@ window.DATA = {
      "diff": [
       [
        false,
-       true,
-       true,
-       false
+       false,
+       false,
+       true
       ],
       [
        false,
+       false,
        true,
-       true,
-       false
+       true
       ],
       [
        false,
+       false,
        true,
-       true,
-       false
+       true
       ]
      ],
      "missing": [
-      [
-       "2020",
-       "82797945",
-       "",
-       "82797945"
-      ],
-      [
-       "2021",
-       "89070158",
-       "82797945",
-       "6272213"
-      ],
-      [
-       "2022",
-       "94792246",
-       "89070158",
-       "5722088"
-      ],
       [
        "2023",
        "",
@@ -8650,42 +8619,24 @@ window.DATA = {
      "diff": [
       [
        false,
-       true,
-       true,
-       false
+       false,
+       false,
+       true
       ],
       [
        false,
+       false,
        true,
-       true,
-       false
+       true
       ],
       [
        false,
+       false,
        true,
-       true,
-       false
+       true
       ]
      ],
      "missing": [
-      [
-       "2020",
-       "82797945",
-       "",
-       "82797945"
-      ],
-      [
-       "2021",
-       "89070158",
-       "82797945",
-       "6272213"
-      ],
-      [
-       "2022",
-       "94792246",
-       "89070158",
-       "5722088"
-      ],
       [
        "2023",
        "",
@@ -8827,7 +8778,7 @@ window.DATA = {
    "id": "q15",
    "folder": "q15_budget_blank_row",
    "title": "Budget by category except Laundry, 2022: budget rows whose category isn't in the category table",
-   "text": "The budget has 12 rows for Germany in 2022 under Skin Care, a category `dim_category` doesn't have (50,000 units a month, 600,000 in all; `python tools/sf.py orphans`). Every model relates the budget to `dim_category` by category. Grouped by category, every platform keeps them: Power BI under its blank row, Snowflake and Databricks under NULL, as their joins from the fact to the dimension are outer. The filter is where they part. In DAX the blank row is a member of the category column, and a blank is not \"Laundry\", so `category <> \"Laundry\"` keeps it. In SQL, `NULL <> 'Laundry'` is not true, so the same filter drops the 600,000 with no error. - Snowflake and Databricks: `<platform>_workaround.sql` says what DAX does: `category <> 'Laundry' OR category IS NULL`.",
+   "text": "The budget has 12 rows for Germany in 2022 under Skin Care, a category `dim_category` doesn't have (50,000 units a month, 600,000 in all; `python tools/sf.py orphans`). Every model relates the budget to `dim_category` by category. Grouped by category, every platform keeps them: Power BI under its blank row, Snowflake, Databricks and BigQuery under NULL, as their joins from the fact to the dimension are outer. The filter is where they part. In DAX the blank row is a member of the category column, and a blank is not \"Laundry\", so `category <> \"Laundry\"` keeps it. In SQL, `NULL <> 'Laundry'` is not true, so the same filter drops the 600,000 with no error. - Snowflake, Databricks and BigQuery: `<platform>_workaround.sql` says what DAX does: `category <> 'Laundry' OR category IS NULL`.",
    "columns": [
     "category",
     "budget_quantity"

@@ -5,6 +5,7 @@
     python tools/dbx.py ossie-out # export_to_ossie on sales_mv -> semantic_model/dbx/export_to_ossie_response.txt
 
 Auth: the Databricks CLI, profile `analyst`; SQL warehouse 2x-small. Commands chain: `load deploy`.
+DATABRICKS_FQ moves the loader, but the metric views and questions/*/dbx*.sql name databricks_ne.ossie_demo.
 """
 import json
 import os

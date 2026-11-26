@@ -251,6 +251,7 @@ datasets:
     datatype: String
     dimension:
       is_time: false
+  # A key to dim_category, not a dimension: category is grouped and filtered from dim_category (see q10).
   - name: category
     expression:
       sql: category
@@ -291,6 +292,7 @@ datasets:
     datatype: String
     dimension:
       is_time: false
+  # A key to dim_country, not a dimension: country is grouped and filtered from dim_country.
   - name: country
     expression:
       sql: country
