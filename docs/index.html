@@ -562,7 +562,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 (function () {
   "use strict";
   var Q = {}; DATA.questions.forEach(function (q) { Q[q.id] = q; });
-  var NAME = { ossie: "Ossie", fabric: "Power BI", snowflake: "Snowflake", dbx: "Databricks", daxsql: "dax-sql" };
+  var NAME = { ossie: "Ossie", fabric: "Power BI", snowflake: "Snowflake", dbx: "Databricks", daxsql: "Reference (dax-sql)" };
   var ICON = { match: "✓", differs: "≠", partial: "◐", refused: "✕", na: "–" };
   var PLATS = ["fabric", "snowflake", "dbx", "daxsql"];   // the clients that answer the questions
   var MODELS = ["ossie", "fabric", "snowflake", "dbx"];    // the models, Ossie first
@@ -873,9 +873,9 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     }
 
     var PLAT = {
-      ossie: { g: OSS, cap: "The baseline, in Ossie <code>" + esc(DATA.ossie.version) + "</code>: 7 datasets, 8 relationships, 16 metrics. 4 are in the standard's SQL; 12 have no SQL form yet, so they are in the DAX dialect. This file is what dax-sql answers from.",
+      ossie: { g: OSS, cap: "The baseline, in Ossie <code>" + esc(DATA.ossie.version) + "</code>: 7 tables, 8 relationships, 16 measures. 4 are in the standard's SQL; 12 have no SQL form yet, so they are in the DAX dialect. This file is what dax-sql answers from.",
         leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Shared by both facts"], ["k-measures", "Model-level metric"]] },
-      fabric: { g: PBI, cap: "One model: 7 tables, 8 relationships, 16 measures.",
+      fabric: { g: PBI, cap: "The same as Ossie: 7 tables, 8 relationships, 16 measures, except that all 16 measures are DAX.",
         leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Shared by both facts"], ["k-measures", "Measures"]] },
       snowflake: { g: SF, cap: "One semantic view: 16 logical tables over 9 physical ones, 32 relationships. FACT_SALES is in it six times.",
         leg: [["k-fact", "Fact"], ["k-fact copy", "FACT_SALES again"], ["k-dim", "Dimension"], ["k-dim copy", "Dimension again"], ["k-helper", "Added for the model"]] },
@@ -931,36 +931,28 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     var W = { yes: ["match", "yes"], part: ["partial", "partly"], no: ["refused", "no"], na: ["na", "n/a"] };
     var fv = E.fabric_version.split(":")[1].trim(), sv = E.sf_export_version.split(":")[1].trim();
     function ev(path) { return ' <a href="' + GH + path + '">response</a>'; }
-    var BASE = "<a href=\"" + GH + "semantic_model/a_baseline/model.ossie.yaml\">the baseline</a>";
     var F = [
       ["Imports an Ossie file", ["yes", "Publish compiles it into a Direct Lake model." + ev("semantic_model/fabric/publish_response.json")],
-        ["yes", "<code>SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML</code>" + ev("semantic_model/snowflake/tests/import_response.txt")], ["no", "No Ossie import."],
-        ["yes", "It reads the file each time it compiles a query; there is no import step."]],
+        ["yes", "<code>SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML</code>" + ev("semantic_model/snowflake/tests/import_response.txt")], ["no", "No Ossie import."]],
       ["Ossie version it reads", ["part", "<code>" + fv + "</code>, a development version. <code>" + esc(O.version) + "</code> is refused: <em>OSSIE_VERSION_MISMATCH</em>." + ev("semantic_model/fabric/ossie_sql_response.txt")],
-        ["part", "<code>0.1.1</code>, the released version. <code>" + esc(O.version) + "</code> is refused: <em>Unsupported OSI specification version</em>." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["na", ""],
-        ["yes", "<code>" + esc(O.version) + "</code>, the version on main, and the earlier drafts."]],
+        ["part", "<code>0.1.1</code>, the released version. <code>" + esc(O.version) + "</code> is refused: <em>Unsupported OSI specification version</em>." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["na", ""]],
       ["Measures in Ossie's own SQL", ["no", "<code>ANSI_SQL</code> metrics are ignored, with the warning <em>Non-DAX metric expressions are not supported</em>." + ev("semantic_model/fabric/ossie_sql_response.txt")],
-        ["yes", "<code>ANSI_SQL</code> metrics work in 0.1.1, the released version." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["na", ""],
-        ["yes", "<code>expression.sql</code>, read as a measure; <code>AGG()</code> across the two facts works."]],
+        ["yes", "<code>ANSI_SQL</code> metrics work in 0.1.1, the released version." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["na", ""]],
       ["A vendor dialect inside the file", ["yes", "DAX: all 16 measures, 0 errors."],
         ["part", "The SNOWFLAKE dialect, the LOD inline in a model-level metric: imported, and q09's numbers come back." + ev("semantic_model/snowflake/tests/lod_inline_via_ossie_response.txt") +
-          " An LOD as a field (a view-level fact) is refused: <code>FIXED</code>, <code>EXCLUDE DIMENSIONS</code>." + ev("semantic_model/snowflake/tests/lod_via_ossie_response.txt")], ["na", ""],
-        ["yes", "DAX beside SQL in one file: the 12 DAX measures read the SQL ones by name, <code>[sales_quantity]</code>."]],
+          " An LOD as a field (a view-level fact) is refused: <code>FIXED</code>, <code>EXCLUDE DIMENSIONS</code>." + ev("semantic_model/snowflake/tests/lod_via_ossie_response.txt")], ["na", ""]],
       ["Vendor extensions", ["part", "Its own <code>POWER_BI</code> format strings are dropped without a warning."],
-        ["part", "Its own <code>SNOWFLAKE</code> extension: a table metric is applied, an access modifier is kept but not applied. Another vendor's is dropped without a warning." + ev("semantic_model/snowflake/tests/extensions_response.txt")], ["na", ""],
-        ["na", "Not tried here."]],
+        ["part", "Its own <code>SNOWFLAKE</code> extension: a table metric is applied, an access modifier is kept but not applied. Another vendor's is dropped without a warning." + ev("semantic_model/snowflake/tests/extensions_response.txt")], ["na", ""]],
       ["Exports Ossie", ["no", "No way back: the semantic views API lists views and publishes them; reading one returns 404." + ev("semantic_model/fabric/export_response.txt")],
         ["yes", "As <code>" + sv + "</code>."],
-        ["no", "<code>export_to_ossie</code> exists but is disabled, and the SQL warehouse refuses the flag that enables it." + ev("semantic_model/dbx/export_to_ossie_response.txt")],
-        ["na", "Not tried here."]],
-      ["Re-imports its own export", ["na", ""], ["no", "<em>invalid identifier 'SALES.SALES_QUANTITY'</em>" + ev("semantic_model/snowflake/tests/export_reimport_response.txt")], ["na", ""], ["na", ""]],
+        ["no", "<code>export_to_ossie</code> exists but is disabled, and the SQL warehouse refuses the flag that enables it." + ev("semantic_model/dbx/export_to_ossie_response.txt")]],
+      ["Re-imports its own export", ["na", ""], ["no", "<em>invalid identifier 'SALES.SALES_QUANTITY'</em>" + ev("semantic_model/snowflake/tests/export_reimport_response.txt")], ["na", ""]],
       ["This repo's model is in Ossie", ["yes", "<a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">Ossie with the DAX dialect</a>, in <code>" + fv + "</code>"],
-        ["no", "<a href=\"" + GH + "semantic_model/snowflake/semantic_view.sql\">Semantic view DDL</a>"], ["no", "<a href=\"" + GH + "semantic_model/dbx/\">Metric view YAML</a>"],
-        ["yes", BASE + ", as it is"]]
+        ["no", "<a href=\"" + GH + "semantic_model/snowflake/semantic_view.sql\">Semantic view DDL</a>"], ["no", "<a href=\"" + GH + "semantic_model/dbx/\">Metric view YAML</a>"]]
     ];
-    $("sup-feat").innerHTML = "<thead><tr><th></th>" + PLATS.map(function (p) { return '<th><span class="dot ' + p + '"></span>' + NAME[p] + "</th>"; }).join("") +
+    $("sup-feat").innerHTML = "<thead><tr><th></th>" + ["fabric", "snowflake", "dbx"].map(function (p) { return '<th><span class="dot ' + p + '"></span>' + NAME[p] + "</th>"; }).join("") +
       "</tr></thead><tbody>" + F.map(function (f) {
-        return "<tr><td>" + f[0] + "</td>" + [1, 2, 3, 4].map(function (j) {
+        return "<tr><td>" + f[0] + "</td>" + [1, 2, 3].map(function (j) {
           var w = W[f[j][0]];
           return "<td>" + c(w[0], w[1]) + (f[j][1] ? '<span class="why">' + f[j][1] + "</span>" : "") + "</td>";
         }).join("") + "</tr>";
