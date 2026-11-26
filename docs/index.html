@@ -156,6 +156,15 @@ nav#nav .ind.off { opacity: 0; }
 .graph .island rect { fill: color-mix(in srgb, var(--p-dbx) 5%, transparent); stroke: color-mix(in srgb, var(--p-dbx) 55%, transparent);
   stroke-width: 1.3; filter: drop-shadow(0 0 14px color-mix(in srgb, var(--p-dbx) 22%, transparent)); }
 .graph .island .it { fill: var(--ink); font: 750 14px var(--mono); } .graph .island .is { fill: var(--muted); font-size: 11.5px; }
+.graph .bqe { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+.graph .bqa { fill: var(--muted); }
+.graph .bqn { stroke: var(--surface); stroke-width: 3; }
+.graph .bqg { animation: pop .6s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i) * 60ms); transform-box: fill-box; transform-origin: center; }
+.graph .bqt { fill: var(--ink); font: 700 14px var(--mono); }
+.graph .bqs { fill: var(--ink-2); font: 11.5px var(--mono); }
+.graph .bqm { fill: var(--ink); font: 600 11.5px var(--mono); }
+.legend .k.bqn { width: 13px; border-radius: 50%; background: #1e8e3e; border: 0; }
+.legend .k.bqe { border: 0; border-radius: 0; background: none; border-top: 2px solid var(--muted); height: 0; margin-top: 7px; }
 .graph .gulf line { stroke: var(--crit); stroke-width: 1.5; stroke-dasharray: 4 5; opacity: .8; }
 .graph .gulf circle { fill: var(--surface); stroke: var(--crit); stroke-width: 1.3; }
 .graph .gulf text { fill: var(--crit); font: 800 12px system-ui, sans-serif; }
@@ -433,6 +442,9 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
         <div class="fbox"><h4>4 · Engine</h4><p>Any SQL engine runs that SQL and returns the answer. Here, DuckDB.</p>
           <span class="ftag">exists</span></div>
       </div>
+      <div class="note"><b>This repo's Ossie file is a proof of concept: no platform imports it.</b> It is in <code>0.3.0.dev0</code>, unreleased,
+        and 12 of its 16 measures are in DAX, because we could not express them any other way yet. Fabric and Snowflake refuse its version;
+        Databricks has no Ossie import. Only dax-sql reads it (<a href="#support">Industry support</a>).</div>
       <div class="today"><b>Today:</b> <span class="st">Ossie file</span><span class="farrow" aria-hidden="true">&rarr;</span>
         <span>a platform that supports Ossie imports it into its own semantic model</span><span class="farrow" aria-hidden="true">&rarr;</span>
         <span>its planner and engine answer the query (<a href="#support">Industry support</a>).</span></div>
@@ -445,7 +457,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       </ul>
       <div class="plat daxsql stack" style="padding-top:14px">
         <header><h3><span class="dot daxsql"></span>The stand-in engine here: dax-sql</h3></header>
-        <p class="lead">A toy compiler, open source (MIT), started by N.S. Devaraj and worked on by me. It reads the baseline file as it is,
+        <p class="lead">A toy compiler, open source (MIT), started by N.S. Devaraj and worked on by me. It reads the baseline file as it is, the only tool that does:
           the 4 SQL measures and the 12 DAX ones together, and turns a SQL query on the model into one DuckDB query on the same
           parquet files. Its answers are the reference every platform is judged against (<a href="#results">Results</a>). That shows the file
           is enough to answer them; it is not how an engine should be built. <a class="src" href="https://github.com/djouallah/dax-sql">dax-sql</a></p>
@@ -513,6 +525,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
 <section id="support" class="view">
   <div class="card stack">
     <header class="stack" style="gap:6px"><h3>What each platform does with an Ossie file</h3>
+      <div class="note"><b>No platform imports this repo's Ossie file.</b> It is a proof of concept, in the development version. 12 of its 16
+        measures are written in DAX, because we could not express them any other way yet: Ossie's SQL has no form for them. Only dax-sql reads it.</div>
       <p class="sub">As tried on this model. Each answer links to the platform's own response. Ossie <b>released <code>0.1.1</code></b> (December 2025), its only
         release; <code id="os-ver"></code> is the development version on main, unreleased and still changing, and the next release is planned as
         <code>0.3.0-incubating</code>. <a href="https://github.com/apache/ossie/blob/main/core-spec/spec.md#version-history">version history</a></p></header>
@@ -810,13 +824,6 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     OSS.nodes.fact_budget.l = ["one row per month, country, category", "1 metric, SQL"];
     OSS.nodes.model = { x: 480, y: 500, w: 220, k: "measures", t: "the model", rows: "1", l: ["1 metric, SQL: AGG() of both facts"] };
 
-    // BigQuery, semantic_model/bigquery/graph.sql: one property graph, 7 node tables, 8 edge tables, 3 measures on their nodes.
-    var BQ = { w: PBI.w, h: PBI.h, minw: PBI.minw, card: true, nodes: {}, edges: PBI.edges };
-    Object.keys(OSS.nodes).forEach(function (k) { var n = OSS.nodes[k], m = {}; for (var f in n) m[f] = n[f]; BQ.nodes[k] = m; });
-    delete BQ.nodes.model;
-    BQ.nodes.fact_sales.l = ["one row per day, store, product", "2 measures: SUM(sales_qty), SUM(net_profit)"];
-    BQ.nodes.fact_budget.l = ["one row per month, country, category", "1 measure: SUM(budget_qty)"];
-
     // Snowflake, read with DESCRIBE SEMANTIC VIEW: 16 logical tables over 9 physical ones, 32 relationships.
     function sn(x, y, k, sub, badge, phys, t) { return { x: x, y: y, w: 158, k: k, compact: true, sub: sub, badge: badge, phys: phys, t: t }; }
     var SF = { w: 1190, h: 570, minw: 900, dense: true, labels: false, nodes: {
@@ -883,7 +890,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     }
 
     var PLAT = {
-      ossie: { g: OSS, cap: "The baseline, in Ossie <code>" + esc(DATA.ossie.version) + "</code>: 7 tables, 8 relationships, 16 measures. 4 are in the standard's SQL; 12 have no SQL form yet, so they are in the DAX dialect. This file is what dax-sql answers from.",
+      ossie: { g: OSS, cap: "The baseline, in Ossie <code>" + esc(DATA.ossie.version) + "</code>: 7 tables, 8 relationships, 16 measures. 4 are in the standard's SQL; 12 have no SQL form yet, so they are in the DAX dialect. A proof of concept: no platform imports it; dax-sql answers from it.",
         leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Shared by both facts"], ["k-measures", "Model-level metric"]] },
       fabric: { g: PBI, cap: "Same as Ossie, but only DAX measures; no SQL support.",
         leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Shared by both facts"], ["k-measures", "Measures"]] },
@@ -891,8 +898,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
         leg: [["k-fact", "Fact"], ["k-fact copy", "FACT_SALES again"], ["k-dim", "Dimension"], ["k-dim copy", "Dimension again"], ["k-helper", "Added for the model"]] },
       dbx: { cap: "Five metric views, each one table with its dimensions joined on. Nothing relates them.",
         leg: [["k-fact", "Base table"], ["k-dim", "Dimension"], ["gulf", "No relationship"]] },
-      bigquery: { g: BQ, cap: "One property graph: the same 7 tables and 8 relationships, and 3 measures, the sums, each on its table. A query starts from one table and follows the edges to the one side, so from fact_sales the budget is out of reach.",
-        leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Shared by both facts"]] }
+      bigquery: { cap: "One property graph, drawn as BigQuery draws it: the 7 tables are node tables, the 8 relationships are edge tables, each an arrow to the one side. The 3 measures, the sums, sit on their facts. The two facts are the graph's two roots: a query starts from one, and follows the arrows.",
+        leg: [["bqn", "Node table"], ["bqe", "Edge table, many to one"]] }
     };
     function legend(items) {
       return items.map(function (x) { return '<span><i class="k ' + x[0] + '">' + (x[0] === "gulf" ? "✕" : "") + "</i>" + x[1] + "</span>"; }).join("");
@@ -906,8 +913,43 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       '<div class="card stack" data-pane-of="st-model" data-k="ossie" style="margin-top:16px"><header class="stack" style="gap:6px"><h3>The 16 metrics in the file</h3>' +
       '<p class="sub" id="os-std-sub"></p></header><div class="tw"><table id="os-std" class="wrapcell"></table></div></div>';
     var phoneLayout = null;
+    // BigQuery: the property graph as its console draws it, node tables as circles, edge tables as arrows to the one side.
+    function bqGraph(svg) {
+      var N = {
+        category: [600, 70, "#12a4af", ["dim_category"], [], "above"],
+        product:  [330, 210, "#9334e6", ["dim_product"], [], "left"],
+        budget:   [870, 230, "#1a73e8", ["fact_budget · 444 rows"], ["budget_quantity = SUM(budget_qty)"], "right"],
+        calendar: [610, 360, "#d01884", ["dim_calendar · shared"], [], "right"],
+        sales:    [360, 490, "#5f9a2b", ["fact_sales · 2.4M rows"], ["sales_quantity = SUM(sales_qty)", "net_profit_total = SUM(net_profit)"], "left"],
+        store:    [600, 630, "#3949ab", ["dim_store"], [], "below"],
+        country:  [890, 510, "#e8590c", ["dim_country"], [], "right"]
+      };
+      var E = [["sales", "calendar"], ["sales", "product"], ["sales", "store"], ["product", "category"], ["store", "country"],
+               ["budget", "calendar"], ["budget", "category"], ["budget", "country"]];
+      var R = 15, s = '<defs><pattern id="dots-bq" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" class="dotp"/></pattern>' +
+        '<marker id="bqarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="bqa"/></marker></defs>' +
+        '<rect x="0" y="0" width="1160" height="720" fill="url(#dots-bq)"/>';
+      E.forEach(function (e) {
+        var a = N[e[0]], b = N[e[1]], dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy), ux = dx / d, uy = dy / d;
+        s += '<line class="bqe" x1="' + (a[0] + ux * R) + '" y1="' + (a[1] + uy * R) + '" x2="' + (b[0] - ux * (R + 3)) + '" y2="' + (b[1] - uy * (R + 3)) + '" marker-end="url(#bqarrow)"/>';
+      });
+      Object.keys(N).forEach(function (k, i) {
+        var n = N[k], lines = n[3].map(function (x) { return [x, "bqt"]; }).concat(n[4].map(function (x) { return [x, "bqm"]; }));
+        var pos = { above: [0, -30, "middle"], below: [0, 36, "middle"], left: [-26, 5, "end"], right: [26, 5, "start"] }[n[5]];
+        var y0 = n[1] + pos[1] - (n[5] === "above" ? (lines.length - 1) * 17 : 0) - (n[5] === "left" || n[5] === "right" ? (lines.length - 1) * 8.5 : 0);
+        s += '<g class="bqg" style="--i:' + i + '"><circle class="bqn" cx="' + n[0] + '" cy="' + n[1] + '" r="' + R + '" fill="' + n[2] + '"><title>' + k + "</title></circle>" +
+          lines.map(function (l, j) {
+            return '<text class="' + (j === 0 ? "bqt" : l[1]) + '" x="' + (n[0] + pos[0]) + '" y="' + (y0 + 17 * j) + '" text-anchor="' + pos[2] + '">' +
+              (j === 0 ? '<tspan>' + esc(k) + '</tspan><tspan class="bqs" dx="8">' + esc(l[0]) + "</tspan>" : esc(l[0])) + "</text>";
+          }).join("") + "</g>";
+      });
+      svg.setAttribute("viewBox", "0 0 1160 720");
+      svg.style.minWidth = "760px";
+      svg.innerHTML = s;
+    }
     function plot(p) {
       var wrap = $("gw-" + p), phone = wrap.clientWidth < 640;
+      if (p === "bigquery") { bqGraph($("g-" + p)); return; }
       if (p === "dbx") phoneLayout = phone;
       drawGraph($("g-" + p), p === "dbx" ? DBX(phone) : PLAT[p].g, $("tip-" + p), wrap);
     }
@@ -944,6 +986,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     var fv = E.fabric_version.split(":")[1].trim(), sv = E.sf_export_version.split(":")[1].trim();
     function ev(path) { return ' <a href="' + GH + path + '">response</a>'; }
     var F = [
+      ["Imports this repo's Ossie file (<code>" + esc(O.version) + "</code>, SQL and DAX)", ["no", "<em>OSSIE_VERSION_MISMATCH</em>. Its model is built from a rewrite, below." + ev("semantic_model/fabric/ossie_sql_response.txt")],
+        ["no", "<em>Unsupported OSI specification version</em>; and it reads no DAX." + ev("semantic_model/snowflake/tests/ossie_sql_response.txt")], ["no", "No Ossie import."], ["no", "No Ossie import found."]],
       ["Imports an Ossie file", ["yes", "Publish compiles it into a Direct Lake model." + ev("semantic_model/fabric/publish_response.json")],
         ["yes", "<code>SYSTEM$CREATE_SEMANTIC_VIEW_FROM_OSSIE_YAML</code>" + ev("semantic_model/snowflake/tests/import_response.txt")], ["no", "No Ossie import."], ["no", "No Ossie import found. Knowledge Catalog reads the graph and its measures as metadata."]],
       ["Ossie version it reads", ["part", "<code>" + fv + "</code>, a development version. <code>" + esc(O.version) + "</code> is refused: <em>OSSIE_VERSION_MISMATCH</em>." + ev("semantic_model/fabric/ossie_sql_response.txt")],
@@ -959,7 +1003,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
         ["yes", "As <code>" + sv + "</code>."],
         ["no", "<code>export_to_ossie</code> exists but is disabled, and the SQL warehouse refuses the flag that enables it." + ev("semantic_model/dbx/export_to_ossie_response.txt")], ["na", ""]],
       ["Re-imports its own export", ["na", ""], ["no", "<em>invalid identifier 'SALES.SALES_QUANTITY'</em>" + ev("semantic_model/snowflake/tests/export_reimport_response.txt")], ["na", ""], ["na", ""]],
-      ["This repo's model is in Ossie", ["yes", "<a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">Ossie with the DAX dialect</a>, in <code>" + fv + "</code>"],
+      ["This repo's model is in Ossie", ["yes", "<a href=\"" + GH + "semantic_model/fabric/oss_dax_dialect.ossie.yaml\">Ossie with the DAX dialect</a>, a rewrite in <code>" + fv + "</code>, all 16 measures in DAX"],
         ["no", "<a href=\"" + GH + "semantic_model/snowflake/semantic_view.sql\">Semantic view DDL</a>"], ["no", "<a href=\"" + GH + "semantic_model/dbx/\">Metric view YAML</a>"],
         ["no", "<a href=\"" + GH + "semantic_model/bigquery/graph.sql\">Property graph DDL</a>"]]
     ];

@@ -5,6 +5,12 @@ on Power BI / Fabric, Snowflake, Databricks and BigQuery, then asked the same 15
 The Ossie file itself is answered by [dax-sql](https://github.com/djouallah/dax-sql), a toy compiler, since Ossie is a
 specification and has no engine of its own.
 
+**The Ossie file is a proof of concept. No platform imports it.** It is written against `0.3.0.dev0`, the unreleased
+version on main, and 12 of its 16 measures are written in DAX, because we could not express them any other way yet:
+Ossie's SQL has no form for them. Fabric refuses its version (`OSSIE_VERSION_MISMATCH`), and so does Snowflake,
+which reads `0.1.1` only and no DAX. Databricks has no Ossie import. dax-sql is the only tool that reads it. Each
+platform's model is built natively, Fabric's from a separate Ossie file rewritten for it.
+
 Every platform can reach every answer. What differs is how much has to be added to the model, or moved into the
 query, to get there.
 
@@ -22,7 +28,7 @@ Apache Software Foundation. dax-sql was started by N.S. Devaraj and I work on it
 | | Format | |
 |---|---|---|
 | [a_baseline](semantic_model/a_baseline/) | Ossie: portable SQL, and the DAX dialect | The model without a vendor: [model.ossie.yaml](semantic_model/a_baseline/model.ossie.yaml) has 7 tables, 8 relationships and all 16 measures. The 4 the standard can express are in its SQL (three sums over one table, and one ratio across the two facts); the other 12 need evaluation controls, which the standard defers, so they are in the DAX dialect. It follows the unreleased development version on main, `0.3.0.dev0`, and passes Ossie's validator. [measures.md](semantic_model/a_baseline/measures.md) defines all 16 in words. dax-sql answers from this file as it is. |
-| [fabric](semantic_model/fabric/) | Ossie with the DAX dialect | The baseline with the 16 measures in DAX. Fabric's Publish compiles the file into a Direct Lake model: 0 errors, 0 warnings. One extension, the measures' format strings (`POWER_BI`), which Publish drops without a warning. |
+| [fabric](semantic_model/fabric/) | Ossie with the DAX dialect | Not the baseline: a rewrite of it in `0.2.0.dev0`, the version Fabric reads, with all 16 measures in DAX, since Fabric ignores Ossie's SQL measures. Fabric's Publish compiles this file into a Direct Lake model: 0 errors, 0 warnings. The baseline itself is refused ([ossie_sql_response.txt](semantic_model/fabric/ossie_sql_response.txt)). One extension, the measures' format strings (`POWER_BI`), which Publish drops without a warning. |
 | [snowflake](semantic_model/snowflake/) | SQL (semantic view DDL) | Written as DDL, as in the Snowflake notebook it comes from, with the LOD inline in its metrics. Its Ossie import reads 0.1.1, the released version, and takes an inline LOD in a model metric (SNOWFLAKE dialect), but not one as a field. It can't re-import its own Ossie export ([tests/](semantic_model/snowflake/tests/)). |
 | [dbx](semantic_model/dbx/) | Metric view YAML | Databricks has no Ossie import. A metric view has one source, so the model is a set of views. |
 | [bigquery](semantic_model/bigquery/) | Property graph DDL | One property graph: the 7 tables as nodes, the 8 relationships as edges, and the 3 sums as measures, each on its table (`MEASURE`, GA in November 2026). A measure can't shift dates, hold a window, ignore a filter or read another table's measure, so the other 13 are written in the query. No Ossie import found. |
