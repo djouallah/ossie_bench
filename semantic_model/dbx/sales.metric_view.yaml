@@ -195,12 +195,23 @@ measures:
   expr: MEASURE(sales_quantity) / MEASURE(country_qty_all_customers)
 - name: country_total_fixed
   expr: SUM(sales_qty)
-  comment: 'FIXED (country, year): range all over customer, brand and every calendar column but year, current on year.
-    Narrower than DAX REMOVEFILTERS(): a filter on category, product or store still applies (q09 filters none).'
+  comment: 'FIXED (country, year): range all over every product, store and calendar column but year, current on year.'
   window:
   - order: customer
     range: all
+  - order: store_id
+    range: all
+  - order: store_name
+    range: all
   - order: brand
+    range: all
+  - order: product_id
+    range: all
+  - order: product_name
+    range: all
+  - order: manufacturer
+    range: all
+  - order: category
     range: all
   - order: date_key
     range: all

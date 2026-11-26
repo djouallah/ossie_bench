@@ -15,15 +15,15 @@ fields:
 - name: date_key
   expr: dim_calendar.date_key
 - name: year
-  expr: YEAR(date_key)
+  expr: dim_calendar.year
 - name: year_month_num
-  expr: YEAR(date_key) * 100 + MONTH(date_key)
+  expr: dim_calendar.year_month_num
 - name: year_month_name
-  expr: DATE_FORMAT(date_key, 'MMM yyyy')
+  expr: dim_calendar.year_month_name
 - name: month_start
-  expr: TRUNC(date_key, 'MM')
+  expr: dim_calendar.month_start
 - name: year_start
-  expr: TRUNC(date_key, 'YEAR')
+  expr: dim_calendar.year_start
 - name: fiscal_year
   expr: dim_calendar.fiscal_year
 - name: fiscal_period

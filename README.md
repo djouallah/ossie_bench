@@ -19,8 +19,8 @@ query, to get there.
 explains what Ossie is and how each platform answers (drill-across: group each table on its own, then merge), what
 each platform does with an Ossie file, and every query and answer beside the reference.
 
-This is not a benchmark. It is an educational repo about semantic modeling. All the models were built with AI; I
-know Power BI well, Databricks less, and Snowflake's LOD least. Any mistake is still mine. A personal project: the
+This is not a benchmark. It is an educational repo about semantic modeling. All the models were built with AI. I
+know Power BI well. Any mistake is still mine. A personal project: the
 views are mine, not my employer's, and nothing here is endorsed by Microsoft, Snowflake, Databricks, Google or the
 Apache Software Foundation. dax-sql was started by N.S. Devaraj and I work on it; it is not a product, and it is not Ossie's.
 
