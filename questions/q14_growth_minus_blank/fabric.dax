@@ -1,0 +1,8 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    dim_calendar[year],
+    "sales_quantity", [sales_quantity],
+    "sales_qty_ly", [sales_qty_ly],
+    "sales_qty_growth", [sales_quantity] - [sales_qty_ly]
+)
+ORDER BY dim_calendar[year]

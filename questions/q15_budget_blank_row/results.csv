@@ -1,0 +1,23 @@
+platform,status,category,budget_quantity
+daxsql,reference,,600000
+daxsql,reference,Clearance,23984711
+daxsql,reference,Hair Care,23839126
+daxsql,reference,Oral Care,23494372
+fabric,match,,600000
+fabric,match,Clearance,23984711
+fabric,match,Hair Care,23839126
+fabric,match,Oral Care,23494372
+snowflake,differs,Clearance,23984711
+snowflake,differs,Hair Care,23839126
+snowflake,differs,Oral Care,23494372
+snowflake (workaround),match,Clearance,23984711
+snowflake (workaround),match,Hair Care,23839126
+snowflake (workaround),match,Oral Care,23494372
+snowflake (workaround),match,,600000
+dbx,differs,Clearance,23984711
+dbx,differs,Hair Care,23839126
+dbx,differs,Oral Care,23494372
+dbx (workaround),match,,600000
+dbx (workaround),match,Clearance,23984711
+dbx (workaround),match,Hair Care,23839126
+dbx (workaround),match,Oral Care,23494372

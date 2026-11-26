@@ -1,7 +1,7 @@
 # ossie_bench: one semantic model, in Ossie and on three platforms
 
 One model, with two facts at two grains (daily sales, monthly budget), written once in Apache Ossie and built natively
-on Power BI / Fabric, Snowflake and Databricks, then asked the same 13 questions on each ([questions/](questions/)).
+on Power BI / Fabric, Snowflake and Databricks, then asked the same 15 questions on each ([questions/](questions/)).
 The Ossie file itself is answered by [dax-sql](https://github.com/djouallah/dax-sql), a toy compiler, since Ossie is a
 specification and has no engine of its own.
 
@@ -39,8 +39,8 @@ error, other numbers or rows), `partial` or `refused`.
 | Models | 1 | 1 semantic view | 5 metric views (sales, sales last year, budget, a bridge over both facts, calendar) | 1 Ossie file, the baseline |
 | Tables | 7 | 16 logical over 9 physical: 5 copies of the fact, copies of store and product, 2 helper tables | one source per view | 7 |
 | Measures | 16 | 19 (6 with an LOD inline) | 20 across 4 views (9 with window specs) | 16: 4 SQL, 12 DAX |
-| Plain query matches the reference | 13 of 13 | 12 of 13 | 6 of 13 | the reference |
-| Matches after more model or query logic | 13 of 13 | 13 of 13 | 13 of 13 | the reference |
+| Plain query matches the reference | 15 of 15 | 12 of 15 | 6 of 15 | the reference |
+| Matches after more model or query logic | 15 of 15 | 15 of 15 | 15 of 15 | the reference |
 
 - **Power BI:** the 7 tables and 16 measures, nothing added; one query per question.
 - **dax-sql:** the Ossie file as it is, one SQL query per question (`SELECT ... AGG(measure) FROM model`), totals by

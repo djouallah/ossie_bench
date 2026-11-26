@@ -1,0 +1,8 @@
+EVALUATE
+SUMMARIZECOLUMNS (
+    dim_category[category],
+    TREATAS ( { 2022 }, dim_calendar[year] ),
+    FILTER ( ALL ( dim_category[category] ), dim_category[category] <> "Laundry" ),
+    "budget_quantity", [budget_quantity]
+)
+ORDER BY dim_category[category]

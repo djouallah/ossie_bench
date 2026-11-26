@@ -43,6 +43,8 @@ SQL and DAX, with one SQL query per question.
 | [q11](q11_actual_vs_budget/) actual vs budget (two facts) | match | match | match, with two views joined in the query, or with a bridge view over both facts | reference |
 | [q12](q12_budget_and_growth_by_category/) actual vs budget and growth on last year, by category + total | match | match; the total row is a second query | **differs**: last year is one day's value. Matches with three views joined in the query (sales, `sales_ly_mv`, budget). | reference |
 | [q13](q13_days_and_sales_by_year/) days in the calendar, by year | match | match | **differs**: 2023 is missing. Matches with a calendar view, joined in the query. | reference |
+| [q14](q14_growth_minus_blank/) growth on last year: a measure minus a blank | match | **differs**: 2020 and 2023 are NULL (SQL's `x - NULL`; DAX reads a blank as 0). Matches with `COALESCE(..., 0)` on each side. | **differs**: NULL at both ends, 2023 missing, and last year is one day's value. Matches with `sales_ly_mv`, joined in the query, and `COALESCE`. | reference |
+| [q15](q15_budget_blank_row/) budget by category except Laundry: rows with no category | match | **differs**: the 600,000 of budget without a category are dropped (`NULL <> 'Laundry'` isn't true; DAX's blank row is not Laundry). Matches with `OR category IS NULL`. | **differs**, as Snowflake. Matches with `OR category IS NULL`. | reference |
 
 ## The models it took
 

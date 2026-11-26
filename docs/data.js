@@ -6269,6 +6269,746 @@ window.DATA = {
     "dbx": "**differs**: 2023 is missing. Matches with a calendar view, joined in the query.",
     "daxsql": "reference"
    }
+  },
+  {
+   "id": "q14",
+   "folder": "q14_growth_minus_blank",
+   "title": "Growth on last year in units, by year (2020-2023): a measure minus a blank",
+   "text": "`sales_quantity - sales_qty_ly`, written in the query. 2020 has no last year (the data starts in 2020) and 2023 has no sales (they stop at 2022), so each end has one side blank. DAX reads a blank as 0 in `+` and `-`: 2020's growth is all of its sales, 2023's is minus last year. SQL's NULL makes the whole expression NULL: no growth either year. Neither is wrong; they are two languages. The reference, dax-sql, does as DAX does, so a SQL engine matches only with `COALESCE`. - Power BI: the expression in the DAX query. - Snowflake: `AGG(a) - AGG(b)` in the semantic SQL; `snowflake_workaround.sql` wraps each side in `COALESCE(..., 0)`. - Databricks: `dbx.sql` subtracts the window measure (wrong by year, as in q05, and NULL at both ends); `dbx_workaround.sql` joins the shifted fact's view (as q05) and uses `COALESCE`.",
+   "columns": [
+    "year",
+    "sales_quantity",
+    "sales_qty_ly",
+    "sales_qty_growth"
+   ],
+   "measures": [
+    false,
+    true,
+    true,
+    false
+   ],
+   "reference": {
+    "rows": [
+     [
+      "2020",
+      "82797945",
+      "",
+      "82797945"
+     ],
+     [
+      "2021",
+      "89070158",
+      "82797945",
+      "6272213"
+     ],
+     [
+      "2022",
+      "94792246",
+      "89070158",
+      "5722088"
+     ],
+     [
+      "2023",
+      "",
+      "94792246",
+      "-94792246"
+     ]
+    ]
+   },
+   "runs": [
+    {
+     "label": "fabric",
+     "platform": "fabric",
+     "file": "fabric.dax",
+     "code": "EVALUATE\nSUMMARIZECOLUMNS (\n    dim_calendar[year],\n    \"sales_quantity\", [sales_quantity],\n    \"sales_qty_ly\", [sales_qty_ly],\n    \"sales_qty_growth\", [sales_quantity] - [sales_qty_ly]\n)\nORDER BY dim_calendar[year]",
+     "status": "match",
+     "rows": [
+      [
+       "2020",
+       "82797945",
+       "",
+       "82797945"
+      ],
+      [
+       "2021",
+       "89070158",
+       "82797945",
+       "6272213"
+      ],
+      [
+       "2022",
+       "94792246",
+       "89070158",
+       "5722088"
+      ],
+      [
+       "2023",
+       "",
+       "94792246",
+       "-94792246"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "snowflake",
+     "platform": "snowflake",
+     "file": "snowflake.sql",
+     "code": "SELECT year, AGG(sales_quantity) AS sales_quantity, AGG(sales_qty_ly) AS sales_qty_ly,\n       AGG(sales_quantity) - AGG(sales_qty_ly) AS sales_qty_growth\nFROM DAX_DEMO.MODEL.SEMANTIC_VIEW\nGROUP BY ALL\nORDER BY year",
+     "status": "differs",
+     "rows": [
+      [
+       "2020",
+       "82797945",
+       "",
+       ""
+      ],
+      [
+       "2021",
+       "89070158",
+       "82797945",
+       "6272213"
+      ],
+      [
+       "2022",
+       "94792246",
+       "89070158",
+       "5722088"
+      ],
+      [
+       "2023",
+       "",
+       "94792246",
+       ""
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       true,
+       true,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       true,
+       true,
+       false
+      ]
+     ],
+     "missing": [
+      [
+       "2020",
+       "82797945",
+       "",
+       "82797945"
+      ],
+      [
+       "2023",
+       "",
+       "94792246",
+       "-94792246"
+      ]
+     ]
+    },
+    {
+     "label": "snowflake (workaround)",
+     "platform": "snowflake",
+     "file": "snowflake_workaround.sql",
+     "code": "-- A missing side counts as 0, as DAX reads a blank.\nSELECT year, AGG(sales_quantity) AS sales_quantity, AGG(sales_qty_ly) AS sales_qty_ly,\n       COALESCE(AGG(sales_quantity), 0) - COALESCE(AGG(sales_qty_ly), 0) AS sales_qty_growth\nFROM DAX_DEMO.MODEL.SEMANTIC_VIEW\nGROUP BY ALL\nORDER BY year",
+     "status": "match",
+     "rows": [
+      [
+       "2020",
+       "82797945",
+       "",
+       "82797945"
+      ],
+      [
+       "2021",
+       "89070158",
+       "82797945",
+       "6272213"
+      ],
+      [
+       "2022",
+       "94792246",
+       "89070158",
+       "5722088"
+      ],
+      [
+       "2023",
+       "",
+       "94792246",
+       "-94792246"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "dbx",
+     "platform": "dbx",
+     "file": "dbx.sql",
+     "code": "SELECT year, AGG(sales_quantity) AS sales_quantity, AGG(sales_qty_ly) AS sales_qty_ly,\n       AGG(sales_quantity) - AGG(sales_qty_ly) AS sales_qty_growth\nFROM databricks_ne.ossie_demo.sales_mv\nGROUP BY ALL\nORDER BY year",
+     "status": "differs",
+     "rows": [
+      [
+       "2020",
+       "82797945",
+       "",
+       ""
+      ],
+      [
+       "2021",
+       "89070158",
+       "225216",
+       "88844942"
+      ],
+      [
+       "2022",
+       "94792246",
+       "243036",
+       "94549210"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       true,
+       true,
+       false
+      ],
+      [
+       false,
+       true,
+       true,
+       false
+      ],
+      [
+       false,
+       true,
+       true,
+       false
+      ]
+     ],
+     "missing": [
+      [
+       "2020",
+       "82797945",
+       "",
+       "82797945"
+      ],
+      [
+       "2021",
+       "89070158",
+       "82797945",
+       "6272213"
+      ],
+      [
+       "2022",
+       "94792246",
+       "89070158",
+       "5722088"
+      ],
+      [
+       "2023",
+       "",
+       "94792246",
+       "-94792246"
+      ]
+     ]
+    },
+    {
+     "label": "dbx (workaround)",
+     "platform": "dbx",
+     "file": "dbx_workaround.sql",
+     "code": "-- Last year from the shifted fact's view (as q05), joined by the query; a missing side counts as 0, as DAX reads a blank.\nWITH cur AS (\n    SELECT year, AGG(sales_quantity) AS sales_quantity FROM databricks_ne.ossie_demo.sales_mv GROUP BY ALL\n), ly AS (\n    SELECT year, AGG(sales_qty_ly) AS sales_qty_ly FROM databricks_ne.ossie_demo.sales_ly_mv GROUP BY ALL\n)\nSELECT COALESCE(cur.year, ly.year) AS year, cur.sales_quantity, ly.sales_qty_ly,\n       COALESCE(cur.sales_quantity, 0) - COALESCE(ly.sales_qty_ly, 0) AS sales_qty_growth\nFROM cur FULL OUTER JOIN ly ON cur.year = ly.year\nORDER BY year",
+     "status": "match",
+     "rows": [
+      [
+       "2020",
+       "82797945",
+       "",
+       "82797945"
+      ],
+      [
+       "2021",
+       "89070158",
+       "82797945",
+       "6272213"
+      ],
+      [
+       "2022",
+       "94792246",
+       "89070158",
+       "5722088"
+      ],
+      [
+       "2023",
+       "",
+       "94792246",
+       "-94792246"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_calendar.year,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(sales_qty_ly) AS sales_qty_ly,\n       AGG(sales_quantity) - AGG(sales_qty_ly) AS sales_qty_growth\nFROM model\nGROUP BY ALL\nORDER BY year",
+     "status": "reference",
+     "rows": [
+      [
+       "2020",
+       "82797945",
+       "",
+       "82797945"
+      ],
+      [
+       "2021",
+       "89070158",
+       "82797945",
+       "6272213"
+      ],
+      [
+       "2022",
+       "94792246",
+       "89070158",
+       "5722088"
+      ],
+      [
+       "2023",
+       "",
+       "94792246",
+       "-94792246"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ],
+      [
+       false,
+       false,
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    }
+   ],
+   "notes": {
+    "fabric": "match",
+    "snowflake": "**differs**: 2020 and 2023 are NULL (SQL's `x - NULL`; DAX reads a blank as 0). Matches with `COALESCE(..., 0)` on each side.",
+    "dbx": "**differs**: NULL at both ends, 2023 missing, and last year is one day's value. Matches with `sales_ly_mv`, joined in the query, and `COALESCE`.",
+    "daxsql": "reference"
+   }
+  },
+  {
+   "id": "q15",
+   "folder": "q15_budget_blank_row",
+   "title": "Budget by category except Laundry, 2022: budget rows whose category isn't in the category table",
+   "text": "The budget has 12 rows for Germany in 2022 under Skin Care, a category `dim_category` doesn't have (50,000 units a month, 600,000 in all; `python tools/sf.py orphans`). Every model relates the budget to `dim_category` by category. Grouped by category, every platform keeps them: Power BI under its blank row, Snowflake and Databricks under NULL, as their joins from the fact to the dimension are outer. The filter is where they part. In DAX the blank row is a member of the category column, and a blank is not \"Laundry\", so `category <> \"Laundry\"` keeps it. In SQL, `NULL <> 'Laundry'` is not true, so the same filter drops the 600,000 with no error. - Snowflake and Databricks: `<platform>_workaround.sql` says what DAX does: `category <> 'Laundry' OR category IS NULL`.",
+   "columns": [
+    "category",
+    "budget_quantity"
+   ],
+   "measures": [
+    false,
+    true
+   ],
+   "reference": {
+    "rows": [
+     [
+      "",
+      "600000"
+     ],
+     [
+      "Clearance",
+      "23984711"
+     ],
+     [
+      "Hair Care",
+      "23839126"
+     ],
+     [
+      "Oral Care",
+      "23494372"
+     ]
+    ]
+   },
+   "runs": [
+    {
+     "label": "fabric",
+     "platform": "fabric",
+     "file": "fabric.dax",
+     "code": "EVALUATE\nSUMMARIZECOLUMNS (\n    dim_category[category],\n    TREATAS ( { 2022 }, dim_calendar[year] ),\n    FILTER ( ALL ( dim_category[category] ), dim_category[category] <> \"Laundry\" ),\n    \"budget_quantity\", [budget_quantity]\n)\nORDER BY dim_category[category]",
+     "status": "match",
+     "rows": [
+      [
+       "",
+       "600000"
+      ],
+      [
+       "Clearance",
+       "23984711"
+      ],
+      [
+       "Hair Care",
+       "23839126"
+      ],
+      [
+       "Oral Care",
+       "23494372"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "snowflake",
+     "platform": "snowflake",
+     "file": "snowflake.sql",
+     "code": "SELECT category, AGG(budget_quantity) AS budget_quantity\nFROM DAX_DEMO.MODEL.SEMANTIC_VIEW\nWHERE year = 2022 AND category <> 'Laundry'\nGROUP BY ALL\nORDER BY category",
+     "status": "differs",
+     "rows": [
+      [
+       "Clearance",
+       "23984711"
+      ],
+      [
+       "Hair Care",
+       "23839126"
+      ],
+      [
+       "Oral Care",
+       "23494372"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ]
+     ],
+     "missing": [
+      [
+       "",
+       "600000"
+      ]
+     ]
+    },
+    {
+     "label": "snowflake (workaround)",
+     "platform": "snowflake",
+     "file": "snowflake_workaround.sql",
+     "code": "-- The rows without a category are not Laundry either, as DAX reads its blank row.\nSELECT category, AGG(budget_quantity) AS budget_quantity\nFROM DAX_DEMO.MODEL.SEMANTIC_VIEW\nWHERE year = 2022 AND (category <> 'Laundry' OR category IS NULL)\nGROUP BY ALL\nORDER BY category",
+     "status": "match",
+     "rows": [
+      [
+       "Clearance",
+       "23984711"
+      ],
+      [
+       "Hair Care",
+       "23839126"
+      ],
+      [
+       "Oral Care",
+       "23494372"
+      ],
+      [
+       "",
+       "600000"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "dbx",
+     "platform": "dbx",
+     "file": "dbx.sql",
+     "code": "SELECT category, AGG(budget_quantity) AS budget_quantity\nFROM databricks_ne.ossie_demo.budget_mv\nWHERE year = 2022 AND category <> 'Laundry'\nGROUP BY ALL\nORDER BY category",
+     "status": "differs",
+     "rows": [
+      [
+       "Clearance",
+       "23984711"
+      ],
+      [
+       "Hair Care",
+       "23839126"
+      ],
+      [
+       "Oral Care",
+       "23494372"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ]
+     ],
+     "missing": [
+      [
+       "",
+       "600000"
+      ]
+     ]
+    },
+    {
+     "label": "dbx (workaround)",
+     "platform": "dbx",
+     "file": "dbx_workaround.sql",
+     "code": "-- The rows without a category are not Laundry either, as DAX reads its blank row.\nSELECT category, AGG(budget_quantity) AS budget_quantity\nFROM databricks_ne.ossie_demo.budget_mv\nWHERE year = 2022 AND (category <> 'Laundry' OR category IS NULL)\nGROUP BY ALL\nORDER BY category",
+     "status": "match",
+     "rows": [
+      [
+       "",
+       "600000"
+      ],
+      [
+       "Clearance",
+       "23984711"
+      ],
+      [
+       "Hair Care",
+       "23839126"
+      ],
+      [
+       "Oral Care",
+       "23494372"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    },
+    {
+     "label": "daxsql",
+     "platform": "daxsql",
+     "file": "daxsql.sql",
+     "code": "SELECT dim_category.category, AGG(budget_quantity) AS budget_quantity\nFROM model\nWHERE dim_calendar.year = 2022 AND dim_category.category <> 'Laundry'\nGROUP BY ALL\nORDER BY category",
+     "status": "reference",
+     "rows": [
+      [
+       "",
+       "600000"
+      ],
+      [
+       "Clearance",
+       "23984711"
+      ],
+      [
+       "Hair Care",
+       "23839126"
+      ],
+      [
+       "Oral Care",
+       "23494372"
+      ]
+     ],
+     "diff": [
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ],
+      [
+       false,
+       false
+      ]
+     ],
+     "missing": []
+    }
+   ],
+   "notes": {
+    "fabric": "match",
+    "snowflake": "**differs**: the 600,000 of budget without a category are dropped (`NULL <> 'Laundry'` isn't true; DAX's blank row is not Laundry). Matches with `OR category IS NULL`.",
+    "dbx": "**differs**, as Snowflake. Matches with `OR category IS NULL`.",
+    "daxsql": "reference"
+   }
   }
  ]
 };

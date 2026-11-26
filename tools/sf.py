@@ -2,7 +2,8 @@
 
     python tools/sf.py setup       # the notebook's data + FACT_BUDGET as Iceberg tables, then
                                           #   semantic_model/snowflake/semantic_view.sql, in DAX_DEMO.MODEL
-    python tools/sf.py view        # only semantic_model/snowflake/semantic_view.sql, on the existing tables
+    python tools/sf.py orphans     # only q15's budget rows whose category DIM_CATEGORY lacks (part of setup)
+    python tools/sf.py view       # only semantic_model/snowflake/semantic_view.sql, on the existing tables
     python tools/sf.py export      # the tables -> data/<table>.parquet (what Fabric and Databricks load)
     python tools/sf.py ossie-out   # SYSTEM$READ_OSSIE_YAML_FROM_SEMANTIC_VIEW
                                           #   -> semantic_model/snowflake/tests/export_from_semantic_view.ossie.yaml
@@ -52,6 +53,15 @@ JOIN {FQ}.DIM_PRODUCT p  ON f.product_id = p.product_id
 GROUP BY c.month_start, s.country, p.category
 """
 
+# The orphans of q15: a 2022 budget for Germany in Skin Care, a category DIM_CATEGORY doesn't have (12 rows, 50,000 a
+# month). Power BI shows them under a blank category; other models may drop them. Re-running replaces them.
+ORPHAN_SQL = [
+    "DELETE FROM {FQ}.FACT_BUDGET WHERE category = 'Skin Care'",
+    "INSERT INTO {FQ}.FACT_BUDGET (month_start, country, category, budget_qty) "
+    "SELECT DATEADD(month, column1, DATE '2022-01-01'), 'Germany', 'Skin Care', 50000 "
+    "FROM VALUES (0), (1), (2), (3), (4), (5), (6), (7), (8), (9), (10), (11)",
+]
+
 
 def cells():
     nb = json.loads(NOTEBOOK.read_text(encoding="utf-8"))
@@ -95,11 +105,21 @@ def setup(conn):
         stmt = stmt.replace("{FQ}", FQ).replace("CREATE OR REPLACE TABLE", "CREATE OR REPLACE ICEBERG TABLE", 1)
         cur.execute(stmt)
     cur.execute(BUDGET_SQL.replace("{FQ}", FQ))
+    orphans(conn)
     sv_sql = (ROOT / "semantic_model" / "snowflake" / "semantic_view.sql").read_text(encoding="utf-8")
     cur.execute(sv_sql.replace("{FQ}", FQ))
     cur.execute(f"SELECT (SELECT COUNT(*) FROM {FQ}.FACT_SALES), (SELECT COUNT(*) FROM {FQ}.FACT_BUDGET)")
     print("setup done, sales / budget rows:", cur.fetchone())
 
+
+
+def orphans(conn):
+    """The budget rows of q15 whose category is in no row of DIM_CATEGORY (ORPHAN_SQL)."""
+    cur = conn.cursor()
+    for stmt in ORPHAN_SQL:
+        cur.execute(stmt.replace("{FQ}", FQ))
+    cur.execute(f"SELECT COUNT(*), SUM(budget_qty) FROM {FQ}.FACT_BUDGET WHERE category NOT IN (SELECT category FROM {FQ}.DIM_CATEGORY)")
+    print("orphan budget rows, units:", cur.fetchone())
 
 
 def view(conn):
@@ -295,7 +315,7 @@ def main(argv):
         return
     conn = connect()
     for cmd in argv:
-        {"setup": setup, "view": view, "export": export, "ossie-out": ossie_out, "ossie-in": ossie_in, "ossie-ext": ossie_ext, "ossie-sql": ossie_sql, "ossie-reimport": ossie_reimport, "ossie-lod": ossie_lod}[cmd](conn)
+        {"setup": setup, "orphans": orphans, "view": view, "export": export, "ossie-out": ossie_out, "ossie-in": ossie_in, "ossie-ext": ossie_ext, "ossie-sql": ossie_sql, "ossie-reimport": ossie_reimport, "ossie-lod": ossie_lod}[cmd](conn)
 
 
 if __name__ == "__main__":
