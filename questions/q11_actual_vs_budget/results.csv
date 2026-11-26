@@ -1,16 +1,16 @@
 platform,status,country,category,sales_quantity,budget_quantity,sales_vs_budget_pct
-expected,,Germany,Clearance,9037851,9019629,0.00202026047856
-expected,,Germany,Hair Care,9055308,9096916,-0.00457385777773
-expected,,Germany,Laundry,9061647,9124124,-0.00684745187593
-expected,,Germany,Oral Care,9048601,9083304,-0.00382052609931
-expected,,Poland,Clearance,7674383,7664571,0.00128017602029
-expected,,Poland,Hair Care,7693248,7666825,0.00344640708507
-expected,,Poland,Laundry,7688170,7732939,-0.00578939003657
-expected,,Poland,Oral Care,7699261,7709646,-0.00134701385771
-expected,,UK,Clearance,5534210,5575135,-0.00734062941974
-expected,,UK,Hair Care,5512252,5523247,-0.00199067686091
-expected,,UK,Laundry,5535746,5480303,0.0101167763899
-expected,,UK,Oral Care,5529481,5572849,-0.007782015985
+daxsql,reference,Germany,Clearance,9037851,9019629,0.00202026047856
+daxsql,reference,Germany,Hair Care,9055308,9096916,-0.00457385777773
+daxsql,reference,Germany,Laundry,9061647,9124124,-0.00684745187593
+daxsql,reference,Germany,Oral Care,9048601,9083304,-0.00382052609931
+daxsql,reference,Poland,Clearance,7674383,7664571,0.00128017602029
+daxsql,reference,Poland,Hair Care,7693248,7666825,0.00344640708507
+daxsql,reference,Poland,Laundry,7688170,7732939,-0.00578939003657
+daxsql,reference,Poland,Oral Care,7699261,7709646,-0.00134701385771
+daxsql,reference,UK,Clearance,5534210,5575135,-0.00734062941974
+daxsql,reference,UK,Hair Care,5512252,5523247,-0.00199067686091
+daxsql,reference,UK,Laundry,5535746,5480303,0.0101167763899
+daxsql,reference,UK,Oral Care,5529481,5572849,-0.007782015985
 fabric,match,Germany,Clearance,9037851,9019629,0.00202026047856
 fabric,match,Germany,Hair Care,9055308,9096916,-0.00457385777773
 fabric,match,Germany,Laundry,9061647,9124124,-0.00684745187593
@@ -59,15 +59,3 @@ dbx (workaround),match,UK,Clearance,5534210,5575135,-0.007340629419736024
 dbx (workaround),match,UK,Hair Care,5512252,5523247,-0.0019906768609117063
 dbx (workaround),match,UK,Laundry,5535746,5480303,0.010116776389918586
 dbx (workaround),match,UK,Oral Care,5529481,5572849,-0.007782015985001567
-daxsql,match,Germany,Clearance,9037851,9019629,0.00202026047856
-daxsql,match,Germany,Hair Care,9055308,9096916,-0.00457385777773
-daxsql,match,Germany,Laundry,9061647,9124124,-0.00684745187593
-daxsql,match,Germany,Oral Care,9048601,9083304,-0.00382052609931
-daxsql,match,Poland,Clearance,7674383,7664571,0.00128017602029
-daxsql,match,Poland,Hair Care,7693248,7666825,0.00344640708507
-daxsql,match,Poland,Laundry,7688170,7732939,-0.00578939003657
-daxsql,match,Poland,Oral Care,7699261,7709646,-0.00134701385771
-daxsql,match,UK,Clearance,5534210,5575135,-0.00734062941974
-daxsql,match,UK,Hair Care,5512252,5523247,-0.00199067686091
-daxsql,match,UK,Laundry,5535746,5480303,0.0101167763899
-daxsql,match,UK,Oral Care,5529481,5572849,-0.007782015985

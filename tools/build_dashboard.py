@@ -2,8 +2,8 @@
 
     python tools/build_dashboard.py     # questions/q*/ -> docs/data.js
 
-For every question: its title and text (README.md), the reference query, each platform's query and its answer
-(results.csv), and the grid notes of questions/README.md. Run it after tools/run_questions.py.
+For every question: its title and text (README.md), each platform's query and its answer (results.csv), the
+reference being dax-sql's, and the grid notes of questions/README.md. Run it after tools/run_questions.py.
 """
 import csv
 import json
@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from run_questions import ROOT, files, num, same  # noqa: E402 - the labels and the comparison of the runner
+from run_questions import REF, ROOT, files, num, same  # noqa: E402 - the labels and the comparison of the runner
 
 # Columns that are answers, not groups: the 16 measures and the count of q13. Every other column is a group.
 MEASURES = {
@@ -97,7 +97,7 @@ def question(qdir, notes):
     by = {}
     for r in rows:
         by.setdefault(r["platform"], []).append(r)
-    ref = by["expected"]
+    ref = by[REF]
     dims = [c for c in cols if c not in MEASURES]
 
     def run(label, name):
@@ -122,8 +122,7 @@ def question(qdir, notes):
         "id": qid, "folder": qdir.name, "title": lines[0].lstrip("# ").strip(),
         "text": " ".join(x.strip() for x in lines[1:] if x.strip()),
         "columns": cols, "measures": [c in MEASURES for c in cols],
-        "expected": {"code": (qdir / "expected.sql").read_text(encoding="utf-8").strip(),
-                     "rows": [[x[c] for c in cols] for x in ref]},
+        "reference": {"rows": [[x[c] for c in cols] for x in ref]},
         "runs": [run(label, name) for label, name in files(qdir)],
         "notes": notes.get(qid, {}),
     }

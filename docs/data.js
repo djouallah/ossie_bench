@@ -196,8 +196,7 @@ window.DATA = {
     false,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\nSELECT s.country, c.year, SUM(f.sales_qty) AS sales_quantity\nFROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\nWHERE c.year <= 2022\nGROUP BY ALL\nORDER BY country, year",
+   "reference": {
     "rows": [
      [
       "Germany",
@@ -558,7 +557,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_country.country, dim_calendar.year, AGG(sales_quantity) AS sales_quantity\nFROM model\nWHERE dim_calendar.year <= 2022\nGROUP BY ALL\nORDER BY country, year",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "Germany",
@@ -660,7 +659,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match",
     "dbx": "match",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -676,8 +675,7 @@ window.DATA = {
     false,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\nSELECT p.product_name, SUM(f.sales_qty) AS sales_quantity\nFROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\nWHERE c.year = 2021\nGROUP BY ALL\nORDER BY sales_quantity DESC\nLIMIT 10",
+   "reference": {
     "rows": [
      [
       "Persil SKU 5",
@@ -1003,7 +1001,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_product.product_name, AGG(sales_quantity) AS sales_quantity\nFROM model\nWHERE dim_calendar.year = 2021\nGROUP BY ALL\nORDER BY sales_quantity DESC\nLIMIT 10",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "Persil SKU 5",
@@ -1095,7 +1093,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match",
     "dbx": "match",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -1113,8 +1111,7 @@ window.DATA = {
     true,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- Last year of a day is the same calendar date one year earlier, so Feb 29, 2020 belongs to no day of 2021.\nWITH day AS (\n    SELECT sale_date, SUM(sales_qty) AS qty FROM 'data/fact_sales.parquet' GROUP BY ALL\n)\nSELECT c.date_key, cur.qty AS sales_quantity, ly.qty AS sales_qty_ly\nFROM 'data/dim_calendar.parquet' c\nLEFT JOIN day cur ON cur.sale_date = c.date_key\nLEFT JOIN day ly ON ly.sale_date = c.date_key - INTERVAL 1 YEAR\nWHERE c.date_key BETWEEN DATE '2021-02-25' AND DATE '2021-03-03'\nORDER BY c.date_key",
+   "reference": {
     "rows": [
      [
       "2021-02-25",
@@ -1487,7 +1484,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_calendar.date_key, AGG(sales_quantity) AS sales_quantity, AGG(sales_qty_ly) AS sales_qty_ly\nFROM model\nWHERE dim_calendar.date_key BETWEEN DATE '2021-02-25' AND DATE '2021-03-03'\nGROUP BY ALL\nORDER BY date_key",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "2021-02-25",
@@ -1569,7 +1566,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "**differs**: Feb 28 gets Feb 28 + Feb 29. Matches with a second copy of the fact without Feb 29 (`sales_ly_day`). Both use a copy of the fact with the date moved a year (`sales_ly`).",
     "dbx": "match",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -1589,8 +1586,7 @@ window.DATA = {
     true,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- Last year of a month is the whole same month one year earlier (February 2020 with its 29 days).\nWITH m AS (\n    SELECT c.month_start, SUM(f.sales_qty) AS qty\n    FROM 'data/fact_sales.parquet' f JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    GROUP BY ALL\n), r AS (\n    SELECT cur.month_start, cur.qty AS sales_quantity, ly.qty AS sales_qty_ly\n    FROM m cur LEFT JOIN m ly ON ly.month_start = cur.month_start - INTERVAL 1 YEAR\n    WHERE cur.month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\n)\nSELECT month_start, SUM(sales_quantity) AS sales_quantity, SUM(sales_qty_ly) AS sales_qty_ly,\n       (SUM(sales_quantity) - SUM(sales_qty_ly)) / SUM(sales_qty_ly) AS sales_qty_yoy_pct\nFROM r\nGROUP BY ROLLUP (month_start)\nORDER BY month_start NULLS LAST",
+   "reference": {
     "rows": [
      [
       "2021-01-01",
@@ -1990,7 +1986,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_calendar.month_start, GROUPING(dim_calendar.month_start) AS is_total,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(sales_qty_ly) AS sales_qty_ly,\n       AGG(sales_qty_yoy_pct) AS sales_qty_yoy_pct\nFROM model\nWHERE dim_calendar.month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\nGROUP BY ROLLUP(dim_calendar.month_start)\nORDER BY is_total, month_start",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "2021-01-01",
@@ -2062,7 +2058,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match, with `sales_ly`; the total row is a second query (no ROLLUP)",
     "dbx": "**differs**: each month gets one day's value. A measure per grain: months match, total differs. Matches with a second view of the shifted fact (`sales_ly_mv`), joined in the query.",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -2082,8 +2078,7 @@ window.DATA = {
     true,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- The total of last year is the sum of the rows above it (2019 has no sales, so 2020 + 2021).\nWITH y AS (\n    SELECT c.year, SUM(f.sales_qty) AS qty\n    FROM 'data/fact_sales.parquet' f JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    GROUP BY ALL\n), r AS (\n    SELECT cur.year, cur.qty AS sales_quantity, ly.qty AS sales_qty_ly\n    FROM y cur LEFT JOIN y ly ON ly.year = cur.year - 1\n    WHERE cur.year <= 2022\n)\nSELECT year, SUM(sales_quantity) AS sales_quantity, SUM(sales_qty_ly) AS sales_qty_ly,\n       (SUM(sales_quantity) - SUM(sales_qty_ly)) / SUM(sales_qty_ly) AS sales_qty_yoy_pct\nFROM r\nGROUP BY ROLLUP (year)\nORDER BY year NULLS LAST",
+   "reference": {
     "rows": [
      [
       "2020",
@@ -2417,7 +2412,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_calendar.year, GROUPING(dim_calendar.year) AS is_total,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(sales_qty_ly) AS sales_qty_ly,\n       AGG(sales_qty_yoy_pct) AS sales_qty_yoy_pct\nFROM model\nWHERE dim_calendar.year <= 2022\nGROUP BY ROLLUP(dim_calendar.year)\nORDER BY is_total, year",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "2020",
@@ -2477,7 +2472,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match, with `sales_ly`; the total row is a second query",
     "dbx": "**differs**. A measure per grain: years match, total differs. Matches with `sales_ly_mv`, joined in the query.",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -2497,8 +2492,7 @@ window.DATA = {
     true,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- A 4-4-5 fiscal year is 52 weeks: last fiscal year of a day is the day 364 days earlier.\nWITH day AS (\n    SELECT sale_date, SUM(sales_qty) AS qty FROM 'data/fact_sales.parquet' GROUP BY ALL\n)\nSELECT c.fiscal_period_name, c.fiscal_period_start, SUM(cur.qty) AS sales_quantity, SUM(ly.qty) AS sales_qty_fly\nFROM 'data/dim_calendar.parquet' c\nLEFT JOIN day cur ON cur.sale_date = c.date_key\nLEFT JOIN day ly ON ly.sale_date = c.date_key - INTERVAL 364 DAY\nWHERE c.fiscal_period_start BETWEEN DATE '2021-01-25' AND DATE '2021-05-24'\nGROUP BY ALL\nORDER BY c.fiscal_period_start",
+   "reference": {
     "rows": [
      [
       "FY2021 P02",
@@ -2826,7 +2820,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_calendar.fiscal_period_name, dim_calendar.fiscal_period_start,\n       AGG(sales_quantity) AS sales_quantity, AGG(sales_qty_fly) AS sales_qty_fly\nFROM model\nWHERE dim_calendar.fiscal_period_start BETWEEN DATE '2021-01-25' AND DATE '2021-05-24'\nGROUP BY ALL\nORDER BY fiscal_period_start",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "FY2021 P02",
@@ -2898,7 +2892,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match, with a copy of the fact, date moved 364 days (`sales_fly`)",
     "dbx": "**differs**. Matches with a second measure ordered by fiscal period.",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -2916,8 +2910,7 @@ window.DATA = {
     true,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\nWITH m AS (\n    SELECT c.month_start, SUM(f.net_profit) AS profit\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE p.category = 'Clearance'\n    GROUP BY ALL\n)\nSELECT cur.month_start, cur.profit AS net_profit_total, ly.profit AS net_profit_ly\nFROM m cur LEFT JOIN m ly ON ly.month_start = cur.month_start - INTERVAL 1 YEAR\nWHERE cur.month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\nORDER BY cur.month_start",
+   "reference": {
     "rows": [
      [
       "2021-01-01",
@@ -3155,7 +3148,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_calendar.month_start, AGG(net_profit_total) AS net_profit_total, AGG(net_profit_ly) AS net_profit_ly\nFROM model\nWHERE dim_category.category = 'Clearance'\n  AND dim_calendar.month_start BETWEEN DATE '2021-01-01' AND DATE '2021-04-01'\nGROUP BY ALL\nORDER BY month_start",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "2021-01-01",
@@ -3207,7 +3200,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match, with `sales_ly`",
     "dbx": "**differs**. Matches with `sales_ly_mv`, joined in the query.",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -3229,8 +3222,7 @@ window.DATA = {
     true,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- One row per customer that has sales under the filters. Two denominators per country: every customer of the\n-- country (the filtered-out ones too), and only the customers shown.\nWITH base AS (\n    SELECT s.country, s.customer, SUM(f.sales_qty) AS qty\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.month_start = DATE '2021-02-01' AND p.brand <> 'Somat'\n    GROUP BY ALL\n), r AS (\n    SELECT country, customer, qty AS sales_quantity,\n           SUM(qty) OVER (PARTITION BY country) AS country_qty_all_customers,\n           customer NOT IN ('Zabka', 'Rewe', 'Superdrug') AS shown\n    FROM base\n)\nSELECT country, customer, sales_quantity,\n       sales_quantity / country_qty_all_customers AS customer_share_all,\n       sales_quantity / SUM(sales_quantity) OVER (PARTITION BY country) AS customer_share_allselected\nFROM r\nWHERE shown\nORDER BY country, customer",
+   "reference": {
     "rows": [
      [
       "Germany",
@@ -3792,7 +3784,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_country.country, dim_store.customer,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(customer_share_all) AS customer_share_all,\n       AGG(customer_share_allselected) AS customer_share_allselected\nFROM model\nWHERE dim_store.customer NOT IN ('Zabka', 'Rewe', 'Superdrug')\n  AND dim_calendar.month_start = DATE '2021-02-01'\n  AND dim_product.brand <> 'Somat'\nGROUP BY ALL\nORDER BY country, customer",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "Germany",
@@ -3916,7 +3908,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match. All customers: a copy of the fact through a copy of the store table (`store_geo`). Customers shown: LOD.",
     "dbx": "**partial**: all customers by a window; customers shown has no metric-view form. Matches with a window function in the query.",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -3936,8 +3928,7 @@ window.DATA = {
     true,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- Three numbers per country: February without Tesco; February, every customer; the whole of 2021, every customer.\nWITH r AS (\n    SELECT s.country,\n           SUM(f.sales_qty) FILTER (WHERE c.month_start = DATE '2021-02-01' AND s.customer <> 'Tesco') AS sales_quantity,\n           SUM(f.sales_qty) FILTER (WHERE c.month_start = DATE '2021-02-01') AS country_qty_all_customers,\n           SUM(f.sales_qty) AS country_total_fixed\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.year = 2021\n    GROUP BY ALL\n)\nSELECT country, SUM(sales_quantity) AS sales_quantity, SUM(country_qty_all_customers) AS country_qty_all_customers,\n       SUM(country_total_fixed) AS country_total_fixed\nFROM r\nGROUP BY ROLLUP (country)\nORDER BY country NULLS LAST",
+   "reference": {
     "rows": [
      [
       "Germany",
@@ -4151,7 +4142,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_country.country, GROUPING(dim_country.country) AS is_total,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(country_qty_all_customers) AS country_qty_all_customers,\n       AGG(country_total_fixed) AS country_total_fixed\nFROM model\nWHERE dim_calendar.month_start = DATE '2021-02-01'\n  AND dim_store.customer <> 'Tesco'\nGROUP BY ROLLUP(dim_country.country)\nORDER BY is_total, country",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "Germany",
@@ -4211,7 +4202,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match (LOD; the total row is a second query)",
     "dbx": "match",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -4229,8 +4220,7 @@ window.DATA = {
     true,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- The denominator drops the customer and category filters and keeps year and brand.\nWITH r AS (\n    SELECT s.country,\n           SUM(f.sales_qty) FILTER (WHERE p.category = 'Laundry' AND s.customer <> 'Tesco') AS sales_quantity,\n           SUM(f.sales_qty) AS country_qty_all_cust_cat\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.year = 2021 AND p.brand IN ('Tide', 'Dove')\n    GROUP BY ALL\n)\nSELECT country, sales_quantity, sales_quantity / country_qty_all_cust_cat AS cust_cat_share_all\nFROM r\nORDER BY country",
+   "reference": {
     "rows": [
      [
       "Germany",
@@ -4381,7 +4371,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_country.country, AGG(sales_quantity) AS sales_quantity, AGG(cust_cat_share_all) AS cust_cat_share_all\nFROM model\nWHERE dim_calendar.year = 2021\n  AND dim_product.brand IN ('Tide', 'Dove')\n  AND dim_category.category = 'Laundry'\n  AND dim_store.customer <> 'Tesco'\nGROUP BY ALL\nORDER BY country",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "Germany",
@@ -4423,7 +4413,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match, with a copy of the fact through a one-row `all_members` table",
     "dbx": "match",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -4445,8 +4435,7 @@ window.DATA = {
     true,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- Each fact is summed at its own grain, then the two are joined on what they share.\nWITH a AS (\n    SELECT s.country, p.category, SUM(f.sales_qty) AS sales_quantity\n    FROM 'data/fact_sales.parquet' f\n    JOIN 'data/dim_calendar.parquet' c ON f.sale_date = c.date_key\n    JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    JOIN 'data/dim_store.parquet' s ON f.store_id = s.store_id\n    WHERE c.year = 2021\n    GROUP BY ALL\n), b AS (\n    SELECT country, category, SUM(budget_qty) AS budget_quantity\n    FROM 'data/fact_budget.parquet'\n    WHERE YEAR(month_start) = 2021\n    GROUP BY ALL\n)\nSELECT country, category, a.sales_quantity, b.budget_quantity,\n       (a.sales_quantity - b.budget_quantity) / b.budget_quantity AS sales_vs_budget_pct\nFROM a FULL OUTER JOIN b USING (country, category)\nORDER BY country, category",
+   "reference": {
     "rows": [
      [
       "Germany",
@@ -5260,7 +5249,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_country.country, dim_category.category,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(budget_quantity) AS budget_quantity,\n       AGG(sales_vs_budget_pct) AS sales_vs_budget_pct\nFROM model\nWHERE dim_calendar.year = 2021\nGROUP BY ALL\nORDER BY country, category",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "Germany",
@@ -5440,7 +5429,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match",
     "dbx": "match, with two views joined in the query, or with a bridge view over both facts",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -5464,8 +5453,7 @@ window.DATA = {
     true,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- Each number is summed on its own, by category; the percentages are computed after, so the total row is right.\nWITH s AS (\n    SELECT p.category,\n           SUM(f.sales_qty) FILTER (WHERE YEAR(f.sale_date) = 2021) AS sales_quantity,\n           SUM(f.sales_qty) FILTER (WHERE YEAR(f.sale_date) = 2020) AS sales_qty_ly\n    FROM 'data/fact_sales.parquet' f JOIN 'data/dim_product.parquet' p ON f.product_id = p.product_id\n    GROUP BY ALL\n), b AS (\n    SELECT category, SUM(budget_qty) AS budget_quantity\n    FROM 'data/fact_budget.parquet'\n    WHERE YEAR(month_start) = 2021\n    GROUP BY ALL\n)\nSELECT category, SUM(sales_quantity) AS sales_quantity, SUM(budget_quantity) AS budget_quantity,\n       (SUM(sales_quantity) - SUM(budget_quantity)) / SUM(budget_quantity) AS sales_vs_budget_pct,\n       SUM(sales_qty_ly) AS sales_qty_ly,\n       (SUM(sales_quantity) - SUM(sales_qty_ly)) / SUM(sales_qty_ly) AS sales_qty_yoy_pct\nFROM s JOIN b USING (category)\nGROUP BY ROLLUP (category)\nORDER BY category NULLS LAST",
+   "reference": {
     "rows": [
      [
       "Clearance",
@@ -5883,7 +5871,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_category.category, GROUPING(dim_category.category) AS is_total,\n       AGG(sales_quantity) AS sales_quantity,\n       AGG(budget_quantity) AS budget_quantity,\n       AGG(sales_vs_budget_pct) AS sales_vs_budget_pct,\n       AGG(sales_qty_ly) AS sales_qty_ly,\n       AGG(sales_qty_yoy_pct) AS sales_qty_yoy_pct\nFROM model\nWHERE dim_calendar.year = 2021\nGROUP BY ROLLUP(dim_category.category)\nORDER BY is_total, category",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "Clearance",
@@ -5975,7 +5963,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match; the total row is a second query",
     "dbx": "**differs**: last year is one day's value. Matches with three views joined in the query (sales, `sales_ly_mv`, budget).",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   },
   {
@@ -5993,8 +5981,7 @@ window.DATA = {
     true,
     true
    ],
-   "expected": {
-    "code": "-- The reference answer: raw SQL over the tables (data/*.parquet), no semantic model.\n-- The calendar is counted on its own, then sales are joined to it.\nSELECT c.year, COUNT(*) AS day_count, SUM(d.qty) AS sales_quantity\nFROM 'data/dim_calendar.parquet' c\nLEFT JOIN (SELECT sale_date, SUM(sales_qty) AS qty FROM 'data/fact_sales.parquet' GROUP BY ALL) d\n       ON d.sale_date = c.date_key\nGROUP BY ALL\nORDER BY c.year",
+   "reference": {
     "rows": [
      [
       "2020",
@@ -6228,7 +6215,7 @@ window.DATA = {
      "platform": "daxsql",
      "file": "daxsql.sql",
      "code": "SELECT dim_calendar.year, COUNT(dim_calendar.date_key) AS day_count, AGG(sales_quantity) AS sales_quantity\nFROM model\nGROUP BY ALL\nORDER BY year",
-     "status": "match",
+     "status": "reference",
      "rows": [
       [
        "2020",
@@ -6280,7 +6267,7 @@ window.DATA = {
     "fabric": "match",
     "snowflake": "match",
     "dbx": "**differs**: 2023 is missing. Matches with a calendar view, joined in the query.",
-    "daxsql": "match"
+    "daxsql": "reference"
    }
   }
  ]

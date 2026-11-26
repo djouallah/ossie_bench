@@ -1,8 +1,8 @@
 platform,status,year,day_count,sales_quantity
-expected,,2020,366,82797945
-expected,,2021,365,89070158
-expected,,2022,365,94792246
-expected,,2023,365,
+daxsql,reference,2020,366,82797945
+daxsql,reference,2021,365,89070158
+daxsql,reference,2022,365,94792246
+daxsql,reference,2023,365,
 fabric,match,2020,366,82797945
 fabric,match,2021,365,89070158
 fabric,match,2022,365,94792246
@@ -18,7 +18,3 @@ dbx (workaround),match,2020,366,82797945
 dbx (workaround),match,2021,365,89070158
 dbx (workaround),match,2022,365,94792246
 dbx (workaround),match,2023,365,
-daxsql,match,2020,366,82797945
-daxsql,match,2021,365,89070158
-daxsql,match,2022,365,94792246
-daxsql,match,2023,365,

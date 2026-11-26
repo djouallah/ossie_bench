@@ -2,13 +2,13 @@
 
     python tools/run_questions.py                 # all questions
     python tools/run_questions.py q04 q11         # some questions (by prefix)
-    python tools/run_questions.py --only=daxsql   # some platforms; the others' rows are kept from results.csv
+    python tools/run_questions.py --only=fabric   # some platforms; the others' rows are kept from results.csv, re-judged
 
-In questions/<question>/: expected.sql -> the reference answer (plain SQL over data/*.parquet, on DuckDB);
-fabric.dax -> Fabric (executeQueries), snowflake.sql -> Snowflake, dbx.sql -> Databricks, daxsql.sql -> dax-sql (the
-baseline Ossie file compiled by dax-sql, run on DuckDB over data/*.parquet); <platform>_<route>.sql,
-where there is one, is another route on that platform (more model, or logic in the query), e.g. dbx_workaround.sql.
-results.csv has a `platform` column (`expected` first), a `status` column, then the columns of the answers.
+In questions/<question>/: daxsql.sql -> the reference: the baseline Ossie file compiled by dax-sql, run on DuckDB over
+data/*.parquet (always run, it is local); fabric.dax -> Fabric (executeQueries), snowflake.sql -> Snowflake,
+dbx.sql -> Databricks; <platform>_<route>.sql, where there is one, is another route on that platform (more model, or
+logic in the query), e.g. dbx_workaround.sql.
+results.csv has a `platform` column (`daxsql` first, status `reference`), a `status` column, then the columns of the answers.
 status, against the reference: match, partial (what it returned matches, but not every column could be asked),
 differs (an answer, no error, other rows or numbers), refused (one row, with the platform's own message in `error`).
 """
@@ -24,6 +24,7 @@ warnings.filterwarnings("ignore")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 ROOT = Path(__file__).resolve().parents[1]
 PLAIN = [("fabric", "fabric.dax"), ("snowflake", "snowflake.sql"), ("dbx", "dbx.sql"), ("daxsql", "daxsql.sql")]
+REF = "daxsql"  # the reference: the Ossie baseline, compiled by dax-sql; every other answer is judged against it
 
 
 def files(qdir):
@@ -65,15 +66,6 @@ def cell(v):
     return v
 
 
-def expected(path):
-    """[{column: value}] of the reference query, on DuckDB, from the repo root (its paths are data/*.parquet)."""
-    import duckdb
-    os.chdir(ROOT)
-    cur = duckdb.connect().execute(path.read_text(encoding="utf-8"))
-    cols = [d[0].lower() for d in cur.description]
-    return [{c: cell(v) for c, v in zip(cols, r)} for r in cur.fetchall()]
-
-
 def num(v):
     try:
         return float(v)
@@ -112,24 +104,42 @@ def ask(run, plat, path):
     return [{c: cell(v) for c, v in zip(cols, r) if c != "is_total"} for r in rows]
 
 
+def kept_answers(path):
+    """{platform: [{column: value}]} of an earlier results.csv; an answer's columns are those it filled somewhere."""
+    by = {}
+    for r in csv.DictReader(path.open(encoding="utf-8")):
+        by.setdefault(r.pop("platform"), []).append({k: v for k, v in r.items() if k != "status"})
+    out = {}
+    for plat, rs in by.items():
+        filled = {k for r in rs for k, v in r.items() if v != ""}
+        out[plat] = [{k: v for k, v in r.items() if k in filled} for r in rs]
+    return out
+
+
 def main(argv):
     picks = [a for a in argv if not a.startswith("--")]
     only = next((a.split("=", 1)[1].split(",") for a in argv if a.startswith("--only=")), None)
     run = runners(only)
+    ref_run = runners([REF])
     for qdir in sorted(p for p in (ROOT / "questions").iterdir() if p.is_dir()):
         if picks and not any(qdir.name.startswith(p) for p in picks):
             continue
-        ref = expected(qdir / "expected.sql")
-        rows = [{"platform": "expected", "status": "", **r} for r in ref]
-        kept = {}
-        if only and (qdir / "results.csv").exists():
-            for r in csv.DictReader((qdir / "results.csv").open(encoding="utf-8")):
-                kept.setdefault(r["platform"], []).append({k: v for k, v in r.items() if v != "" or k in ref[0]})
+        os.chdir(ROOT)  # dax-sql's SQL reads data/*.parquet from the repo root
+        ref = ask(ref_run, REF, qdir / f"{REF}.sql")
+        if "error" in ref[0]:
+            raise SystemExit(f"{qdir.name}: the reference (dax-sql) failed: {ref[0]['error']}")
+        rows = [{"platform": REF, "status": "reference", **r} for r in ref]
+        print(f"{qdir.name}/{REF}.sql: reference, {len(ref)} rows")
+        kept = kept_answers(qdir / "results.csv") if only and (qdir / "results.csv").exists() else {}
         for plat, name in files(qdir):
-            if plat.split()[0] not in run:
-                rows += kept.get(plat, [])
+            if plat == REF:
                 continue
-            answer = ask(run, plat.split()[0], qdir / name)
+            if plat.split()[0] in run:
+                answer = ask(run, plat.split()[0], qdir / name)
+            elif plat in kept:
+                answer = kept[plat]
+            else:
+                continue
             st = status(answer, ref)
             rows += [{"platform": plat, "status": st, **r} for r in answer]
             print(f"{qdir.name}/{name}: {st}, " + (answer[0]["error"][:100] if st == "refused" else f"{len(answer)} rows"))

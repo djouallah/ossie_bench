@@ -236,6 +236,7 @@ tr.total td { font-weight: 650; }
 .chip.differs, .chip.refused { background: var(--crit-bg); } .chip.differs i, .chip.refused i { color: var(--crit); }
 .chip.partial { background: var(--warn-bg); } .chip.partial i { color: var(--warn-ink); }
 .chip.na { background: var(--sunken); color: var(--ink-2); } .chip.na i { color: var(--muted); }
+.chip.reference { background: var(--sunken); color: var(--ink-2); } .chip.reference i { color: var(--p-daxsql); }
 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; flex: none; }
 .dot.fabric { background: var(--p-fabric); box-shadow: 0 0 10px var(--p-fabric); }
 .dot.snowflake { background: var(--p-snowflake); box-shadow: 0 0 10px var(--p-snowflake); }
@@ -444,7 +445,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
         <header><h3><span class="dot daxsql"></span>The stand-in engine here: dax-sql</h3></header>
         <p class="lead">A toy compiler, open source (MIT), started by N.S. Devaraj and worked on by me. It reads the baseline file as it is,
           the 4 SQL measures and the 12 DAX ones together, and turns a SQL query on the model into one DuckDB query on the same
-          parquet files the reference reads. It answers all 13 questions (<a href="#results">Results</a>). That shows the file
+          parquet files. Its answers are the reference every platform is judged against (<a href="#results">Results</a>). That shows the file
           is enough to answer them; it is not how an engine should be built. <a class="src" href="https://github.com/djouallah/dax-sql">dax-sql</a></p>
         <div id="dx-example" class="stack"></div>
       </div>
@@ -527,7 +528,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     <h3>How it was built</h3>
     <p>All the models here were built with AI. I have a decent conceptual understanding of Power BI, which is my main
     tool. I kind of understand Databricks, as its metric views remind me of Malloy. I am not sure I really get LOD in
-    Snowflake. Every answer is checked against raw SQL over the same tables, but any mistake is still mine.</p>
+    Snowflake. Every answer is checked against dax-sql's, but any mistake is still mine.</p>
     <p>The Ossie file is answered by dax-sql, a toy compiler that N.S. Devaraj started and I work on; it is not a product,
     and it is not Ossie's.</p>
     <h3>A personal project</h3>
@@ -563,7 +564,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   "use strict";
   var Q = {}; DATA.questions.forEach(function (q) { Q[q.id] = q; });
   var NAME = { ossie: "Ossie", fabric: "Power BI", snowflake: "Snowflake", dbx: "Databricks", daxsql: "Reference (dax-sql)" };
-  var ICON = { match: "✓", differs: "≠", partial: "◐", refused: "✕", na: "–" };
+  var ICON = { match: "✓", differs: "≠", partial: "◐", refused: "✕", na: "–", reference: "★" };
   var PLATS = ["fabric", "snowflake", "dbx", "daxsql"];   // the clients that answer the questions
   var MODELS = ["ossie", "fabric", "snowflake", "dbx"];    // the models, Ossie first
   var GH = "https://github.com/djouallah/ossie_bench/blob/main/";
@@ -1045,7 +1046,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
       "<pre><code>" + esc(r.code) + "</code></pre>" +
       (DATA.evidence.daxsql_q09 ? "<details><summary>The DuckDB SQL dax-sql writes for it (" + DATA.evidence.daxsql_q09.length.toLocaleString("en-US") + " characters)</summary><pre><code>" +
         esc(DATA.evidence.daxsql_q09) + "</code></pre></details>" : "") +
-      runTable(q, r) + '<div class="verdict ok">The same rows as the reference, and as Power BI: the DAX measures are compiled to SQL, filter context and all.</div>';
+      runTable(q, r) + '<div class="verdict ok">The same rows as Power BI: the DAX measures are compiled to SQL, filter context and all.</div>';
   })();
   // The Power BI example: the same q09, as filter contexts. One cell, the UK, and how each CALCULATE edits its filters.
   (function () {
@@ -1104,7 +1105,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     demo.timer = setInterval(function () { if (demo.step < 3) { demo.step++; paintDemo(); } else stopDemo(); }, 2200);
   }
   (function () {
-    var q = Q.q13, ref = q.expected.rows, is2023 = function (r) { return r[0] === "2023"; };
+    var q = Q.q13, ref = q.reference.rows, is2023 = function (r) { return r[0] === "2023"; };
     var cal = pick(q, ["year", "day_count"]), sal = pick(q, ["year", "sales_quantity"]);
     $("d-cal").innerHTML = table(cal.cols, cal.measures, cal.rows(ref), { hot: is2023 });
     $("d-sales").innerHTML = table(sal.cols, sal.measures, sal.rows(ref).filter(function (r) { return r[1] !== ""; }));
@@ -1127,7 +1128,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   // ---------- 4. results: every question's queries and answers, and the grid
   (function () {
     function why(s) {
-      s = s.replace(/^\**(match|differs|partial|refused)\**\s*[:,;.]?\s*/, "").replace(/^\((.*)\)$/, "$1");
+      s = s.replace(/^\**(match|differs|partial|refused|reference)\**\s*[:,;.]?\s*/, "").replace(/^\((.*)\)$/, "$1");
       s = esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<code>$1</code>");
       return s ? '<span class="why">' + s.charAt(0).toUpperCase() + s.slice(1) + "</span>" : "";
     }
@@ -1145,21 +1146,16 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   var cur = { q: "q13", tab: "fabric" };
   function show(id, tab) {
     var q = Q[id]; if (!q) return;
-    cur.q = id; cur.tab = tab && (tab === "expected" || run(q, tab)) ? tab : q.runs[0].label;
+    cur.q = id; cur.tab = tab && run(q, tab) ? tab : q.runs[0].label;
     each($("qlist").children, function (b) { b.setAttribute("aria-selected", b.dataset.q === id); });
     each(document.querySelectorAll("#grid tr[data-q]"), function (tr) { tr.classList.toggle("sel", tr.dataset.q === id); });
-    var r = cur.tab === "expected" ? null : run(q, cur.tab);
-    var tabs = '<button type="button" data-tab="expected" aria-selected="' + (cur.tab === "expected") + '">Reference (raw SQL)</button>' +
-      q.runs.map(function (x) { return '<button type="button" data-tab="' + esc(x.label) + '" aria-selected="' + (x.label === cur.tab) + '">' + esc(label(x.label)) + " " + chip(x.status) + "</button>"; }).join("");
-    var body;
-    if (!r) {
-      body = "<pre><code>" + esc(q.expected.code) + "</code></pre>" + table(q.columns, q.measures, q.expected.rows);
-    } else {
-      body = '<p class="sub"><code>questions/' + q.folder + "/" + r.file + "</code></p><pre><code>" + esc(r.code) + "</code></pre>" +
+    var r = run(q, cur.tab);
+    var tabs = q.runs.map(function (x) { return '<button type="button" data-tab="' + esc(x.label) + '" aria-selected="' + (x.label === cur.tab) + '">' + esc(label(x.label)) + " " + chip(x.status) + "</button>"; }).join("");
+    var body = '<p class="sub"><code>questions/' + q.folder + "/" + r.file + "</code></p><pre><code>" + esc(r.code) + "</code></pre>" +
+      (r.status === "reference" ? table(q.columns, q.measures, q.reference.rows) :
         '<div class="pair"><div class="stack"><h4>' + esc(label(r.label)) + " returned</h4>" +
         (r.error ? '<div class="verdict no">' + esc(r.error) + "</div>" : runTable(q, r)) + "</div>" +
-        '<div class="stack"><h4>Reference</h4>' + table(q.columns, q.measures, q.expected.rows) + "</div></div>";
-    }
+        '<div class="stack"><h4>Reference (dax-sql)</h4>' + table(q.columns, q.measures, q.reference.rows) + "</div></div>");
     $("qview").innerHTML = "<header class='stack' style='gap:6px'><h3>" + q.id + ": " + esc(q.title) + "</h3><p class='sub'>" + esc(q.text).replace(/`(.+?)`/g, "<code>$1</code>") + "</p></header>" +
       '<div class="tabs" role="tablist">' + tabs + "</div>" + body;
   }

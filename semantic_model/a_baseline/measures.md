@@ -46,4 +46,4 @@ What the specification says about these measures:
 | `country_qty_all_cust_cat` | Units sold to every customer in every category. Every other filter is kept. | DAX: fields in or out of the grouping |
 | `cust_cat_share_all` | sales / `country_qty_all_cust_cat`. | DAX: fields in or out of the grouping |
 
-The answer each question expects is in `questions/<question>/expected.sql`: raw SQL straight over the tables.
+The answer each question expects is dax-sql's, from `questions/<question>/daxsql.sql` on this file.

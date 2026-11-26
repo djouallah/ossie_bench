@@ -28,9 +28,9 @@ Software Foundation. dax-sql was started by N.S. Devaraj and I work on it; it is
 
 ## How an answer is judged
 
-Each question has an `expected.sql`: raw SQL straight over the tables, with no semantic model in between. No vendor owns it. Every platform's
-answer is compared with it and gets a status in `results.csv`: `match`, `differs` (an answer, no error, other
-numbers or rows), `partial` or `refused`.
+The reference is dax-sql: each question's `daxsql.sql` on the Ossie baseline as it is, compiled to DuckDB SQL. Every
+other platform's answer is compared with it and gets a status in `results.csv`: `match`, `differs` (an answer, no
+error, other numbers or rows), `partial` or `refused`.
 
 ## What it took ([full grid](questions/README.md))
 
@@ -39,8 +39,8 @@ numbers or rows), `partial` or `refused`.
 | Models | 1 | 1 semantic view | 5 metric views (sales, sales last year, budget, a bridge over both facts, calendar) | 1 Ossie file, the baseline |
 | Tables | 7 | 16 logical over 9 physical: 5 copies of the fact, copies of store and product, 2 helper tables | one source per view | 7 |
 | Measures | 16 | 19 (6 with an LOD inline) | 20 across 4 views (9 with window specs) | 16: 4 SQL, 12 DAX |
-| Plain query matches the reference | 13 of 13 | 12 of 13 | 6 of 13 | 13 of 13 |
-| Matches after more model or query logic | 13 of 13 | 13 of 13 | 13 of 13 | 13 of 13 |
+| Plain query matches the reference | 13 of 13 | 12 of 13 | 6 of 13 | the reference |
+| Matches after more model or query logic | 13 of 13 | 13 of 13 | 13 of 13 | the reference |
 
 - **Power BI:** the 7 tables and 16 measures, nothing added; one query per question.
 - **dax-sql:** the Ossie file as it is, one SQL query per question (`SELECT ... AGG(measure) FROM model`), totals by
@@ -61,8 +61,8 @@ python tools/sf.py setup export          # Snowflake data (Iceberg) + semantic v
 python tools/fabric.py load publish      # Fabric: the Ossie file with the DAX dialect, published by Fabric
 python tools/dbx.py load deploy
 npm ci --prefix tools/daxsql             # dax-sql, from registry.npmjs.org (needs Node 18+)
-python tools/run_questions.py            # every question: the reference (raw SQL), then every platform
-python tools/run_questions.py --only=daxsql   # one platform; the others' answers are kept
+python tools/run_questions.py            # every question: the reference (dax-sql), then every platform
+python tools/run_questions.py --only=fabric   # one platform; the others' answers are kept and re-judged
 python tools/build_dashboard.py          # questions/ -> docs/data.js, the data of the dashboard (docs/index.html)
 ```
 `setup` generates the data from the original Snowflake notebook (`dax_context_demo.ipynb`), which is not in this
