@@ -875,7 +875,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     var PLAT = {
       ossie: { g: OSS, cap: "The baseline, in Ossie <code>" + esc(DATA.ossie.version) + "</code>: 7 tables, 8 relationships, 16 measures. 4 are in the standard's SQL; 12 have no SQL form yet, so they are in the DAX dialect. This file is what dax-sql answers from.",
         leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Shared by both facts"], ["k-measures", "Model-level metric"]] },
-      fabric: { g: PBI, cap: "The same as Ossie: 7 tables, 8 relationships, 16 measures, except that all 16 measures are DAX.",
+      fabric: { g: PBI, cap: "Same as Ossie, but only DAX measures; no SQL support.",
         leg: [["k-fact", "Fact"], ["k-dim", "Dimension"], ["k-shared", "Shared by both facts"], ["k-measures", "Measures"]] },
       snowflake: { g: SF, cap: "One semantic view: 16 logical tables over 9 physical ones, 32 relationships. FACT_SALES is in it six times.",
         leg: [["k-fact", "Fact"], ["k-fact copy", "FACT_SALES again"], ["k-dim", "Dimension"], ["k-dim copy", "Dimension again"], ["k-helper", "Added for the model"]] },
