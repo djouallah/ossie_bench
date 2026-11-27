@@ -343,7 +343,7 @@ details[open] > summary { margin-bottom: 8px; }
   background: var(--surface); color: var(--ink-2); cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
 .tabs button[aria-selected="true"] { border-color: var(--k-fact); color: var(--ink); box-shadow: 0 0 14px -6px var(--k-fact); }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
+footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; } footer p + p { margin-top: 6px; }
 
 /* ossie: what it is */
 .flow { display: grid; grid-template-columns: 1fr 28px 1.15fr 28px 1fr 34px .85fr; align-items: stretch; }
@@ -399,7 +399,6 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     <div class="toplinks">
       <a href="#support">Industry support</a>
       <a href="#faq">FAQ</a>
-      <a href="#about">About</a>
       <button type="button" id="theme">Light</button>
       <a class="gh" href="https://github.com/djouallah/ossie_bench" aria-label="GitHub repository"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
     </div>
@@ -632,24 +631,6 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   </div>
 </section>
 
-<!-- ============================== about -->
-<section id="about" class="view">
-  <div class="card about">
-    <h2>About</h2>
-    <p><b>ossie_bench is not a benchmark.</b> It is an educational repo about semantic modeling, something I care about
-    a lot. One small model, a retailer's daily sales and monthly budget, is written in Apache Ossie and built natively
-    on Power BI, Snowflake, Databricks and BigQuery, then asked the same 15 questions, to see how each one thinks.</p>
-    <h3>How it was built</h3>
-    <p>All the models here were built with AI. I know Power BI well. Every answer is checked against dax-sql's, but
-    any mistake is still mine.</p>
-    <p>The Ossie file is answered by dax-sql, a toy compiler that N.S. Devaraj started and I work on. Its code is fully
-    AI generated and it is just a proof of concept: not a product, and not Ossie's.</p>
-    <h3>A personal project</h3>
-    <p>This is a personal project. The views are mine, not my employer's, and nothing here is endorsed by Microsoft,
-    Snowflake, Databricks, Google or the Apache Software Foundation.</p>
-  </div>
-</section>
-
 <!-- ============================== 3. results -->
 <section id="results" class="view">
   <div class="subtabs" id="st-results">
@@ -667,8 +648,10 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   </div>
 </section>
 
-<footer>Built from <code>questions/*/results.csv</code> by <code>tools/build_dashboard.py</code>.
-  Source and models: <a href="https://github.com/djouallah/ossie_bench">github.com/djouallah/ossie_bench</a>.</footer>
+<footer><p>A personal project, built with AI; any mistake is mine. The views are mine, not my employer's, and nothing
+  here is endorsed by Microsoft, Snowflake, Databricks, Google or the Apache Software Foundation.</p>
+  <p>Built from <code>questions/*/results.csv</code> by <code>tools/build_dashboard.py</code>.
+  Source and models: <a href="https://github.com/djouallah/ossie_bench">github.com/djouallah/ossie_bench</a>.</p></footer>
 </div>
 
 <script src="data.js"></script>
@@ -1369,8 +1352,8 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   selResults("q");
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
 
-  // ---------- routing: the 3 tabs, and Industry support and About in the top bar
-  var VIEWS = ["ossie", "answer", "results", "support", "faq", "about"];
+  // ---------- routing: the 3 tabs, and Industry support and FAQ in the top bar
+  var VIEWS = ["ossie", "answer", "results", "support", "faq"];
   var nav = $("nav"), ind = nav.querySelector(".ind");
   function moveInd() {
     var a = nav.querySelector('a[aria-current="page"]'); ind.classList.toggle("off", !a); if (!a) return;
