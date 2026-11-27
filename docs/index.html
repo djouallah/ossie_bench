@@ -557,9 +557,12 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     measures). Something else has to read it and answer the queries.</p>
 
     <h3>Is Ossie legit?</h3>
-    <p><b>Yes.</b> It is an Apache project (still incubating), and its design gets the hard part right: several fact
-    tables at different grains in one model. Each measure is computed on its own table first, then combined
-    (<code>AGG()</code>), so sales by day and budget by month sit in one model without double counting.</p>
+    <p><b>Yes.</b> It is an Apache project (still incubating), and compared with similar open source projects it gets
+    the hard part right. Many of them start from one source table and expand out from it: every query has a root, and a
+    second fact at another grain is out of reach, or joined by hand. Ossie describes the model as a whole, several fact
+    tables at different grains sharing their dimensions. Each measure is computed on its own table first, then combined
+    (<code>AGG()</code>), so sales by day and budget by month sit in one model without double counting. That is why I
+    love it.</p>
 
     <h3>So why are people so excited?</h3>
     <p><b>AI agents.</b> An agent that picks a measure already defined doesn't have to guess the joins and the formula,
