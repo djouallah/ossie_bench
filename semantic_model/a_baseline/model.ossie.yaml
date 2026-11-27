@@ -2,9 +2,11 @@
 # Version 0.3.0.dev0 is the unreleased development version on apache/ossie main (read 2026-11-26, commit 7fb92a7);
 # it can still change. An open proposal (apache/ossie#817) would rename expression.dialects to nonportable_dialects.
 # 7 datasets and 8 relationships. 4 measures are in portable SQL (expression.sql): three sums, each declared on its
-# own dataset, and one ratio across the two facts that reads them with AGG(). The other 12 have no portable form
-# yet, so they are in the DAX dialect, and they read the SQL ones by name ([sales_quantity]). measures.md defines
-# all 16 in words. Sources are bare table names: each platform prefixes its own schema.
+# own dataset, and one ratio across the two facts that reads them with AGG(). Each of the 4 also has its DAX beside
+# the SQL, in the same expression (expression.dialects): an engine that reads SQL takes the one, a DAX engine the
+# other. The other 12 have no portable form yet, so they are in the DAX dialect only, and they read the 4 by name
+# ([sales_quantity]). measures.md defines all 16 in words. Sources are bare table names: each platform prefixes its
+# own schema.
 version: 0.3.0.dev0
 name: sales_and_budget
 description: Sales by day, store and product, and a monthly budget by country and category (2020-2022).
@@ -42,10 +44,16 @@ datasets:
     description: Units sold.
     expression:
       sql: SUM(sales_qty)
+      dialects:
+      - dialect: DAX
+        expression: SUM(fact_sales[sales_qty])
   - name: net_profit_total
     description: Net profit (negative for Clearance).
     expression:
       sql: SUM(net_profit)
+      dialects:
+      - dialect: DAX
+        expression: SUM(fact_sales[net_profit])
   # The 12 below have no SQL form in the standard: period over period, and fields taken out of the grouping, are
   # its "evaluation controls", deferred to a later extension. They are written in the DAX dialect instead.
   - name: sales_qty_ly
@@ -149,6 +157,9 @@ datasets:
     description: Budgeted units (month x country x category).
     expression:
       sql: SUM(budget_qty)
+      dialects:
+      - dialect: DAX
+        expression: SUM(fact_budget[budget_qty])
 - name: dim_calendar
   source: dim_calendar
   primary_key:
@@ -371,3 +382,6 @@ metrics:
   description: (sales - budget) / budget. Each side is summed over its own table first.
   expression:
     sql: (AGG(fact_sales.sales_quantity) - AGG(fact_budget.budget_quantity)) / AGG(fact_budget.budget_quantity)
+    dialects:
+    - dialect: DAX
+      expression: DIVIDE([sales_quantity] - [budget_quantity], [budget_quantity])

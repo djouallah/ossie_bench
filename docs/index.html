@@ -981,16 +981,17 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     var SPEC = "https://github.com/apache/ossie/blob/main/core-spec/", O = DATA.ossie, M = DATA.measures;
     $("os-ver").textContent = $("os-ver2").textContent = O.version;
     var sqlN = Object.keys(O.expr).filter(function (k) { return O.expr[k].lang === "sql"; }).length;
-    $("os-std-sub").innerHTML = "<b>" + sqlN + " of " + M.length + "</b> in the standard's SQL. The other " + (M.length - sqlN) +
+    $("os-std-sub").innerHTML = "<b>" + sqlN + " of " + M.length + "</b> in the standard's SQL, each with its DAX beside the SQL in the same measure. The other " + (M.length - sqlN) +
       " need evaluation controls, which the specification defers (<a href=\"" + SPEC +
       "relational_semantics.md#53-evaluation-controls\">section 5.3</a>, <a href=\"" + SPEC + "relational_semantics.md#appendix-d-relationship-to-measures-in-sql\">Appendix D</a>), " +
-      "so they are in the DAX dialect, which the standard carries but does not read. Ossie's validator passes the file: " +
+      "so they are in the DAX dialect only, which the standard carries but does not read. Ossie's validator passes the file: " +
       "<a href=\"" + GH + "semantic_model/a_baseline/model.ossie.yaml\">model.ossie.yaml</a>.";
     function md(t) { return esc(t).replace(/`(.+?)`/g, "<code>$1</code>"); }
     function c(k, w) { return '<span class="chip ' + k + '"><i aria-hidden="true">' + ICON[k] + "</i>" + w + "</span>"; }
     $("os-std").innerHTML = "<thead><tr><th>Metric</th><th>Meaning</th><th>In the file</th></tr></thead><tbody>" + M.map(function (m) {
       var x = O.expr[m.name], sql = x.lang === "sql";
       var cell = c(sql ? "match" : "partial", sql ? "SQL" : "DAX") + '<span class="why"><code>' + esc(x.code) + "</code> on " + esc(x.home === "model" ? "the model" : x.home) +
+        (x.dax ? ". DAX beside it: <code>" + esc(x.dax) + "</code>" : "") +
         (sql ? "" : ". No SQL form: " + (/period over period/.test(m.standard) ? "period over period" : "fields in or out of the grouping")) + "</span>";
       return "<tr><td><code>" + esc(m.name) + "</code></td><td>" + md(m.meaning) + "</td><td>" + cell + "</td></tr>";
     }).join("") + "</tbody>";

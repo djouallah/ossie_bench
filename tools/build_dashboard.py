@@ -47,8 +47,9 @@ def measures():
 
 
 def ossie():
-    """The baseline Ossie file, and each measure it holds: {yaml, expr: {name: {lang, code, home}}}.
-    lang is "sql" (expression.sql, the standard's portable SQL) or the dialect it is written in (DAX)."""
+    """The baseline Ossie file, and each measure it holds: {yaml, expr: {name: {lang, code, home, dax?}}}.
+    lang is "sql" (expression.sql, the standard's portable SQL) or the dialect it is written in (DAX); a SQL measure
+    with a DAX dialect beside its SQL also has that DAX in `dax`."""
     import yaml
     path = ROOT / "semantic_model" / "a_baseline" / "model.ossie.yaml"
     text = path.read_text(encoding="utf-8")
@@ -56,8 +57,9 @@ def ossie():
 
     def one(m, home):
         e = m["expression"]
+        dax = next((d["expression"] for d in e.get("dialects", []) if d["dialect"] == "DAX"), None)
         if "sql" in e:
-            return {"lang": "sql", "code": e["sql"], "home": home}
+            return {"lang": "sql", "code": e["sql"], "home": home, **({"dax": dax} if dax else {})}
         d = e["dialects"][0]
         return {"lang": d["dialect"].lower(), "code": d["expression"], "home": home}
     expr = {m["name"]: one(m, d["name"]) for d in doc["datasets"] for m in d.get("metrics", [])}

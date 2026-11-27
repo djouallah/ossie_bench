@@ -2,10 +2,12 @@
 
 What each measure means, in business words. [model.ossie.yaml](model.ossie.yaml) holds all 16. Four are in the
 standard's portable SQL (`expression.sql`): three sums, each over one table, and one ratio across the two facts.
+Each of the four also carries its DAX beside the SQL, in the same expression (`expression.dialects`), so one measure
+has one definition per language: an engine that reads SQL takes `sql`, a DAX engine takes the `DAX` dialect.
 The other 12 need what the specification calls evaluation controls, which it does not define yet, so the file
-writes them in the DAX dialect (`expression.dialects`), which the standard carries but does not read. They refer to
-the SQL measures by name (`[sales_quantity]`). The only engine here that reads such a file, SQL and DAX together, is
-[dax-sql](https://github.com/djouallah/dax-sql).
+writes them in the DAX dialect only, which the standard carries but does not read. They refer to the four by name
+(`[sales_quantity]`). The only engine here that reads such a file, SQL and DAX together, is
+[dax-sql](https://github.com/djouallah/dax-sql); where a measure has both, it reads the DAX.
 
 The standard here is the development version on [apache/ossie](https://github.com/apache/ossie) `main`
 (`0.3.0.dev0`, read on 26 Nov 2026 at commit `7fb92a7`), which is unreleased and can still change. Its validator
@@ -29,10 +31,10 @@ What the specification says about these measures:
 
 | Measure | Meaning | How the file writes it |
 |---|---|---|
-| `sales_quantity` | Units sold. | SQL |
-| `net_profit_total` | Net profit (negative for Clearance). | SQL |
-| `budget_quantity` | Budgeted units, by month, country and category. | SQL |
-| `sales_vs_budget_pct` | (sales - budget) / budget. Each side is summed at its own table's grain first. | SQL: `AGG()` of the two measures above |
+| `sales_quantity` | Units sold. | SQL, and DAX beside it |
+| `net_profit_total` | Net profit (negative for Clearance). | SQL, and DAX beside it |
+| `budget_quantity` | Budgeted units, by month, country and category. | SQL, and DAX beside it |
+| `sales_vs_budget_pct` | (sales - budget) / budget. Each side is summed at its own table's grain first. | SQL: `AGG()` of the two measures above, and DAX beside it (`DIVIDE`) |
 | `sales_qty_ly` | Units sold in the same period one calendar year earlier, at whatever grain is asked (day, month, year, total). | DAX: period over period |
 | `net_profit_ly` | Net profit in the same period one calendar year earlier. | DAX: period over period |
 | `sales_qty_fly` | Units sold in the same period of the last fiscal year: 364 days earlier (4-4-5, 52 weeks). | DAX: period over period |
