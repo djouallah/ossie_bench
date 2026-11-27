@@ -10,7 +10,7 @@ writes them in the DAX dialect only, which the standard carries but does not rea
 [dax-sql](https://github.com/djouallah/dax-sql); where a measure has both, it reads the DAX.
 
 The standard here is the development version on [apache/ossie](https://github.com/apache/ossie) `main`
-(`0.3.0.dev0`, read on 26 Nov 2026 at commit `7fb92a7`), which is unreleased and can still change. Its validator
+(`0.3.0.dev0`, read on 27 Nov 2026 at commit `34e4d37`), which is unreleased and can still change. Its validator
 (`validation/validate.py --report`) passes the file: 4 metrics in `OSSIE_SQL_2026`, 12 in "other dialects only".
 What the specification says about these measures:
 

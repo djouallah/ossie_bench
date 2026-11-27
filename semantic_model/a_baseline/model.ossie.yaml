@@ -1,5 +1,5 @@
 # The baseline: the model in Ossie, with all 16 measures. No extension.
-# Version 0.3.0.dev0 is the unreleased development version on apache/ossie main (read 2026-11-26, commit 7fb92a7);
+# Version 0.3.0.dev0 is the unreleased development version on apache/ossie main (read 2026-11-27, commit 34e4d37);
 # it can still change. An open proposal (apache/ossie#817) would rename expression.dialects to nonportable_dialects.
 # 7 datasets and 8 relationships. 4 measures are in portable SQL (expression.sql): three sums, each declared on its
 # own dataset, and one ratio across the two facts that reads them with AGG(). Each of the 4 also has its DAX beside
