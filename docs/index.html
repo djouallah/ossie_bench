@@ -83,6 +83,8 @@ nav#nav .ind.off { opacity: 0; }
 .about h3 { margin-top: 8px; }
 .about p { color: var(--ink-2); font-size: 15.5px; line-height: 1.65; }
 .about p b { color: var(--ink); }
+.faq h3 { margin-top: 10px; font-size: 16px; }
+.faq .tw { margin: 2px 0; }
 .btn { font: inherit; font-size: 13px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line-2);
   border-radius: 8px; padding: 6px 11px; cursor: pointer; white-space: nowrap; text-decoration: none; }
 .btn:hover { color: var(--ink); border-color: var(--muted); }
@@ -395,6 +397,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
     <span class="tagline">not a benchmark</span>
     <div class="toplinks">
       <a href="#support">Industry support</a>
+      <a href="#faq">FAQ</a>
       <a href="#about">About</a>
       <button type="button" id="theme">Light</button>
       <a class="gh" href="https://github.com/djouallah/ossie_bench" aria-label="GitHub repository"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
@@ -540,6 +543,78 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
         release; <code id="os-ver"></code> is the development version on main, unreleased and still changing, and the next release is planned as
         <code>0.3.0-incubating</code>. <a href="https://github.com/apache/ossie/blob/main/core-spec/spec.md#version-history">version history</a></p></header>
     <div class="tw"><table id="sup-feat"></table></div>
+  </div>
+</section>
+
+<!-- ============================== faq -->
+<section id="faq" class="view">
+  <div class="card about faq">
+    <h2>FAQ</h2>
+
+    <h3>Is Ossie an engine?</h3>
+    <p><b>No.</b> It is a specification: a file that describes a semantic model (tables, relationships, fields and
+    measures). Something else has to read it and answer the queries.</p>
+
+    <h3>Is Ossie legit?</h3>
+    <p><b>Yes.</b> It is an Apache project (still incubating), and its design gets the hard part right: several fact
+    tables at different grains in one model. Each measure is computed on its own table first, then combined
+    (<code>AGG()</code>), so sales by day and budget by month sit in one model without double counting.</p>
+
+    <h3>So why are people so excited?</h3>
+    <p><b>AI agents.</b> An agent that picks a measure already defined doesn't have to guess the joins and the formula,
+    which is where agents writing SQL from raw tables go wrong. And the definition is stored independently of the
+    engine: written once, read by any tool. That is a big idea, and it is worth the excitement. It is also early: the
+    standard is still being written, and it will take some time for things to settle.</p>
+
+    <h3>I am a Power BI user, should I care?</h3>
+    <p><b>Not necessarily.</b> But it is good to be aware of it: it may become the real thing in the future. Fabric
+    already reads a development version of it.</p>
+
+    <h3>Can Ossie replace TMDL?</h3>
+    <p><b>No, not today.</b> It is still very basic: Fabric's file needed an extension just for format strings, and 12
+    of this model's 16 measures (last year, % of total) have no Ossie SQL form yet.</p>
+
+    <h3>Is there an open source implementation?</h3>
+    <p><b>Not a real one yet</b>, as far as I know. A reference compiler is on
+    <a href="https://github.com/apache/ossie/blob/main/ROADMAP.md#semantic-query-language--reference-engine">Ossie's roadmap</a>.</p>
+
+    <h3>Is it stable?</h3>
+    <p><b>No.</b> <code>0.1.1</code> is the only release. This repo uses <code>0.3.0.dev0</code>, the development
+    version on main, which still changes.</p>
+
+    <h3>Can I take this repo's file to any platform?</h3>
+    <p><b>Not yet.</b> Each platform reads a different version: Fabric reads <code>0.2.0.dev0</code> (with its measures
+    in DAX), Snowflake reads <code>0.1.1</code> (no DAX), Databricks and BigQuery have no Ossie import. That is what
+    early looks like. <a href="#support">Industry support</a></p>
+
+    <h3>Can one measure have both Ossie SQL and DAX?</h3>
+    <p><b>Yes</b>, side by side in the same measure, and each engine takes the one it reads. Nothing checks that the two
+    say the same thing, though: that is on you, and your tests.</p>
+
+    <h3>Is <code>SUM(sales_qty)</code> in SQL the same as <code>SUM(fact_sales[sales_qty])</code> in DAX?</h3>
+    <p><b>Not necessarily.</b> The sum is the same; what happens around it is not. SQL has NULL, DAX has blank, and they
+    behave differently:</p>
+    <div class="tw"><table class="wrapcell">
+      <thead><tr><th></th><th>DAX</th><th>SQL</th></tr></thead>
+      <tbody>
+        <tr><td>2023 has no sales, last year had 94,792,246 (q14): sales − last year</td>
+          <td>blank counts as 0: <b>−94,792,246</b></td><td>NULL makes it all NULL: <b>no answer</b></td></tr>
+        <tr><td>600,000 budget units under a category the category table doesn't have (q15): filter <code>category &lt;&gt; "Laundry"</code></td>
+          <td>they sit in the blank row, which is not Laundry: <b>kept</b></td><td><code>NULL &lt;&gt; 'Laundry'</code> is not true: <b>dropped, no error</b></td></tr>
+      </tbody>
+    </table></div>
+    <p>Neither is wrong; they are two languages. Ossie's SQL follows SQL here (its own compliance test
+    <a href="https://github.com/apache/ossie/blob/main/compliance/query/a15_null_measure_propagates.ost">A15</a>: a NULL
+    measure makes the expression NULL). So two engines reading one Ossie file can still give two answers, and only a
+    test on the data shows it. Pinning down details like this is exactly what the standard is working through now.</p>
+
+    <h3>What about converters: Ossie to TMDL, to a Snowflake semantic view, to a Databricks metric view?</h3>
+    <p><b>They help, but they are not the point here.</b> This repo is about one Ossie file read by different engines,
+    as it is. A converter has to assume a lot about the target, and the targets differ. For a start, not every engine
+    has multi-fact tables: a Databricks metric view has one source, so the budget becomes a second view joined by hand,
+    and a BigQuery graph query starts from one table, so from sales the budget is out of reach. Then each target has its
+    own rules (blank or NULL, how last year is computed), so the converted model can answer differently from the file
+    it came from, with no error.</p>
   </div>
 </section>
 
@@ -1281,7 +1356,7 @@ footer { padding: 36px 0 48px; color: var(--muted); font-size: 13px; }
   $("qview").addEventListener("click", function (e) { var b = e.target.closest("button[data-tab]"); if (b) show(cur.q, b.dataset.tab); });
 
   // ---------- routing: the 3 tabs, and Industry support and About in the top bar
-  var VIEWS = ["ossie", "answer", "results", "support", "about"];
+  var VIEWS = ["ossie", "answer", "results", "support", "faq", "about"];
   var nav = $("nav"), ind = nav.querySelector(".ind");
   function moveInd() {
     var a = nav.querySelector('a[aria-current="page"]'); ind.classList.toggle("off", !a); if (!a) return;
